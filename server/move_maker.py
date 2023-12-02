@@ -62,6 +62,14 @@ def getAllPeople(grid: grid_pb2.Grid) -> Generator[person_pb2.Person, None, None
 
 
 def moveGridToNextState(grid: grid_pb2.Grid) -> bool:
+    """Updates a grid with position of people to next position.
+    
+    Args:
+      grid: The grid to update.
+    
+    Returns:
+      Whether at least one person has at least one next move.
+    """
     has_next_mouvement = False
     for person in getAllPeople(grid):
         try:
