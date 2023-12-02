@@ -1,0 +1,15 @@
+syntax = "proto2";
+
+package move;
+
+message Move {
+  optional MoveDirection direction = 1;
+}
+
+enum MoveDirection {
+  MOVE_DIRECTION_UNSPECIFIED = 0;
+  MOVE_DIRECTION_UP = 1;
+  MOVE_DIRECTION_DOWN = 2;
+  MOVE_DIRECTION_LEFT = 3;
+  MOVE_DIRECTION_RIGHT = 4;
+}

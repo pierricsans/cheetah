@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package grid;
+
+import "protos/person.proto";
+
+message Grid {
+  optional string name = 1;
+  optional int32 height = 2; 
+  optional int32 width = 3;
+  repeated person.Person aliens = 4;
+  optional person.Person indigenous = 5; 
+}
