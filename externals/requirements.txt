@@ -1,0 +1,6 @@
+absl-py
+webcolors
+typing_extensions
+webapp2==3.0.0b1
+Django==5.0rc1
+Jinja2==3.1.2

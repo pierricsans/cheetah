@@ -1,0 +1,2 @@
+class InvalidGridException(Exception):
+   pass

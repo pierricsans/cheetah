@@ -1,0 +1,7 @@
+## bazel
+bazel-bin
+bazel-cheetah
+bazel-out
+bazel-testlogs
+
+**/__pycache__
