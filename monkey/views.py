@@ -10,4 +10,4 @@ def index(request):
 def script(request):
     with open('monkey/main.js', 'r') as f:
         script = f.read()
-    return http.HttpResponse(script)
+    return http.HttpResponse(script, content_type='text/javascript')
