@@ -1,0 +1,17 @@
+load("@aspect_rules_js//js:defs.bzl", "js_library")
+load("@aspect_rules_js//npm:defs.bzl", "npm_package")
+
+npm_package(
+    name = "js_lib",
+    srcs = ["index.js"],
+    package = "@myorg/js_lib",
+    visibility = ["//fe:__subpackages__"],
+)
+
+js_library(
+    name = "lib",
+    # Provide index.js as declarations available to downstream type checking rules
+    # since it has no corresponding .d.ts file.
+    declarations = ["index.js"],
+    visibility = ["//fe:__subpackages__"],
+)

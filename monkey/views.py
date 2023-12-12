@@ -8,6 +8,5 @@ def index(request):
     return http.HttpResponse(main.RenderTable())
 
 def script(request):
-    with open('monkey/main.js', 'r') as f:
-        script = f.read()
-    return http.HttpResponse(script, content_type='text/javascript')
+    with open('fe/simple/foo.js', 'r') as f:
+        return http.HttpResponse(f.read(), content_type='text/javascript')

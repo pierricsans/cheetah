@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "module": "nodenext",
+    "target": "es2021", // set to the *lowest* target you support
+    "strict": true,
+    "declaration": true,
+    "sourceMap": true,
+    "declarationMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@myorg/*": [
+        "../*"
+      ]
+    },
+    "allowJs": true
+  },
+  "type": "module"
+}

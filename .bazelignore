@@ -1,0 +1,9 @@
+e2e/
+bazel-output-base
+fe/node_modules
+fe/connect_node/node_modules
+fe/linked/node_modules
+fe/linked_consumer/node_modules
+fe/linked_tsconfig/node_modules
+fe/linked_tsconfig_consumer/node_modules
+fe/proto_grpc/node_modules
