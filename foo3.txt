@@ -1,0 +1,31 @@
+asset bundle.js 96.4 KiB [emitted] (name: bundle)
+runtime modules 891 bytes 4 modules
+cacheable modules 86.5 KiB
+  ./simple/foo.js 844 bytes [built] [code generated]
+  ./node_modules/.aspect_rules_js/axios@1.6.2/node_modules/axios/dist/bro...(truncated) 82.5 KiB [built] [code generated]
+  ../protos/level_pb.js 3.17 KiB [built] [code generated]
+
+ERROR in ../protos/level_pb.js 6:0-44
+Module not found: Error: Can't resolve '@bufbuild/protobuf' in '/private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/sandbox/darwin-sandbox/1808/execroot/cheetah/bazel-out/darwin_arm64-fastbuild/bin/protos'
+resolve '@bufbuild/protobuf' in '/private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/sandbox/darwin-sandbox/1808/execroot/cheetah/bazel-out/darwin_arm64-fastbuild/bin/protos'
+  Parsed request is a module
+  No description file found in /private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/sandbox/darwin-sandbox/1808/execroot/cheetah/bazel-out/darwin_arm64-fastbuild/bin/protos or above
+  resolve as module
+    /private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/sandbox/darwin-sandbox/1808/execroot/cheetah/bazel-out/darwin_arm64-fastbuild/bin/protos/node_modules doesn't exist or is not a directory
+    /private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/sandbox/darwin-sandbox/1808/execroot/cheetah/bazel-out/darwin_arm64-fastbuild/bin/node_modules doesn't exist or is not a directory
+    /private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/sandbox/darwin-sandbox/1808/execroot/cheetah/bazel-out/darwin_arm64-fastbuild/node_modules doesn't exist or is not a directory
+    /private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/sandbox/darwin-sandbox/1808/execroot/cheetah/bazel-out/node_modules doesn't exist or is not a directory
+    /private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/sandbox/darwin-sandbox/1808/execroot/cheetah/node_modules doesn't exist or is not a directory
+    /private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/sandbox/darwin-sandbox/1808/execroot/node_modules doesn't exist or is not a directory
+    /private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/sandbox/darwin-sandbox/1808/node_modules doesn't exist or is not a directory
+    /private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/sandbox/darwin-sandbox/node_modules doesn't exist or is not a directory
+    /private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/sandbox/node_modules doesn't exist or is not a directory
+    /private/var/tmp/_bazel_pierricsans/9647ae3ff97a46351e9016045a8cfbbf/node_modules doesn't exist or is not a directory
+    /private/var/tmp/_bazel_pierricsans/node_modules doesn't exist or is not a directory
+    /private/var/tmp/node_modules doesn't exist or is not a directory
+    /private/var/node_modules doesn't exist or is not a directory
+    /private/node_modules doesn't exist or is not a directory
+    /node_modules doesn't exist or is not a directory
+ @ ./simple/foo.js 8:22-57
+
+webpack 5.89.0 compiled with 1 error in 99 ms

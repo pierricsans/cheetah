@@ -1,0 +1,6 @@
+To popupale packages.json:
+cd fe && pnpm update
+
+Start server
+bazel run //cheetahweb:manage -- runserver
+

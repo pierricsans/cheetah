@@ -11,11 +11,10 @@ import jinja2
 _NAME = flags.DEFINE_string("name", None, "Your name.")
 
 DUMMY_LEVEL = """
-name: "dummy"
-size: 10
+size: 5
 rank: 0
-moves: 5
-num_aliens: 2
+moves: 3
+num_aliens: 4
 """
 
 MOVES = [
@@ -33,8 +32,12 @@ def RenderTable() -> str:
    )
    template = env.get_template("table.html")
    level = text_format.Merge(DUMMY_LEVEL, level_pb2.Level())
-   alternate_routes.GenerateInitialGrid(level, MOVES)
    return template.render(level=level)
+
+
+def GetInitialLevel() -> level_pb2.Level:
+   return text_format.Merge(DUMMY_LEVEL, level_pb2.Level())
+   
 
 
 def main(argv):

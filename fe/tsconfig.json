@@ -1,23 +1,22 @@
 {
   "compilerOptions": {
-    "module": "nodenext",
-    "target": "es2021",
     "baseUrl": ".",
+    "target": "ES2015",
+    "module": "NodeNext",
     "strict": true,
+    "moduleResolution": "NodeNext",
+    "lib": ["es2016", "dom", "es5"],
     "sourceMap": true,
     "declarationMap": true,
     "paths": {
-      // Replace <workspace-name> with the name of your workspace
-      "<workspace-name>/*": [
-        "*", // Enables absolute paths for src files in your project
-        "bazel-bin/*" // Enables referencing generate protos with absolute paths
-      ],
       "@myorg/*": [
         "../*"
+      ],
+      "nodemodules/*": [
+        "../node_modules/*"
       ]
     },
     "declaration": true,
-    "allowJs": true
-  },
-  "type": "module"
+    "allowJs": true,
+  }
 }

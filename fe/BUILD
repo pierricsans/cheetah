@@ -42,3 +42,18 @@ npm_link_package(
 npm_link_all_packages()
 
 npm_link_targets()
+
+load("@aspect_rules_webpack//webpack:defs.bzl", "webpack_bundle")
+
+webpack_bundle(
+    name = "bundle",
+    node_modules = ":node_modules",
+    srcs = [
+        "//fe/simple:ts",
+    ],
+    entry_point = "//fe/simple:ts",
+
+    visibility = [
+      "//monkey:__pkg__",
+    ]
+)

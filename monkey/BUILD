@@ -15,7 +15,7 @@ py_library(
     name = "views",
     srcs = ["views.py"],
     data = [
-        "//fe/simple:ts",
+        "//fe:bundle",
     ],
     visibility = ["//cheetahweb:__pkg__"],
     deps = [

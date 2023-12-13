@@ -1,6 +1,0 @@
-{
-  "name": "cheetah",
-  "dependencies": {
-    "axios": "^1.6.2"
-  }
-}

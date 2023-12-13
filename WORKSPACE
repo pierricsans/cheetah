@@ -75,6 +75,7 @@ load("@aspect_rules_js//npm:npm_import.bzl", "npm_translate_lock")
 
 npm_translate_lock(
     name = "npm",
+    npmrc = "//fe:.npmrc",
     pnpm_lock = "//fe:pnpm-lock.yaml",
     verify_node_modules_ignored = "//:.bazelignore",
 )
@@ -162,3 +163,20 @@ go_rules_dependencies()
 # go_register_toolchains(version = "1.20.5")
 
 gazelle_dependencies()
+
+http_archive(
+    name = "aspect_rules_webpack",
+    sha256 = "21a85849d01eebbd0cb0a5c0120eb58e4d3275eda68565918e7c0d84e14d30d9",
+    strip_prefix = "rules_webpack-0.13.0",
+    url = "https://github.com/aspect-build/rules_webpack/releases/download/v0.13.0/rules_webpack-v0.13.0.tar.gz",
+)
+
+#######################
+# rules_webpack setup #
+#######################
+
+# Fetch the Bazel module dependencies
+
+load("@aspect_rules_webpack//webpack:dependencies.bzl", "rules_webpack_dependencies")
+
+rules_webpack_dependencies()
