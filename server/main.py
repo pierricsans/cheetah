@@ -1,5 +1,6 @@
 
 from protos import level_pb2
+from google.protobuf import json_format
 from google.protobuf import text_format
 from server import move_maker
 from server import alternate_routes
@@ -15,6 +16,10 @@ size: 5
 rank: 0
 moves: 3
 num_aliens: 4
+allowed_moves: MOVE_DIRECTION_UP
+allowed_moves: MOVE_DIRECTION_DOWN
+allowed_moves: MOVE_DIRECTION_LEFT
+allowed_moves: MOVE_DIRECTION_RIGHT
 """
 
 MOVES = [
@@ -36,7 +41,8 @@ def RenderTable() -> str:
 
 
 def GetInitialLevel() -> level_pb2.Level:
-   return text_format.Merge(DUMMY_LEVEL, level_pb2.Level())
+   level = text_format.Merge(DUMMY_LEVEL, level_pb2.Level())
+   return json_format.MessageToJson(level)
    
 
 

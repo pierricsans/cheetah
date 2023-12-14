@@ -17,8 +17,10 @@ message Level {
   // If the value is 1, then the grid will contain two pawns:
   // self and 1 intruder.
   optional int32 num_aliens = 5;
+  // The moves that are valid for this level
+  repeated MoveDirection allowed_moves = 6;
   // The name of the grid that this level uses.
-  optional Grid grid = 6;
+  optional Grid grid = 7;
 }
 
 message Grid {

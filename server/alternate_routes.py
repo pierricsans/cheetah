@@ -70,13 +70,11 @@ def GetInitialPosition(grid, person) -> None:
 def GenerateRandomMoves(
         person: level_pb2.Person,
         moves_taken: Sequence[level_pb2.Trajectory],
+        allowed_moves: Sequence[level_pb2.MoveDirection],
         num_moves: int) -> level_pb2.Trajectory:
-    available_directions = [
-        move for move in level_pb2.MoveDirection.values()
-        if move != level_pb2.MoveDirection.MOVE_DIRECTION_UNSPECIFIED]
     trajectory = person.trajectory
     for _ in range(num_moves):
-        trajectory.moves.add(direction=random.choice(available_directions))
+        trajectory.moves.add(direction=random.choice(allowed_moves))
     if trajectory in moves_taken:
         person.ClearField('trajectory')
         GenerateRandomMoves(person, moves_taken, num_moves)
@@ -96,7 +94,7 @@ def GenerateInitialState(
         existing_trajectories = []
         for existin_person in move_maker.GetAllPeople(level.grid):
             existing_trajectories.append(existin_person.trajectory)
-        GenerateRandomMoves(person, existing_trajectories, level.moves)
+        GenerateRandomMoves(person, existing_trajectories, level.allowed_moves, level.moves)
         GetInitialPosition(level.grid, person)
 
 

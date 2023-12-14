@@ -1,3 +1,24 @@
-#foo {
-  background-color: blue;
+#top {
+  width: 50%;
+  max-width: 200px;
+  display: block;
+}
+
+.moveDirection {
+  display: block;
+  border-color: black;
+  border-style: solid;
+}
+.moveDirection:hover {
+  cursor: pointer;
+}
+
+.answerBox {
+  display: block;
+  min-width: 3Opx;
+  min-height: 10px;
+  border-bottom: 5px;
+  border-bottom-color: black;
+  border-bottom-style: solid;
+  margin: 10px;
 }

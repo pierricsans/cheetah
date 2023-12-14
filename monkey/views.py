@@ -8,8 +8,11 @@ def index(request):
     return http.HttpResponse(main.RenderTable())
 
 def getInitialLevel(request):
-    initial_level = main.GetInitialLevel()
-    return http.HttpResponse(initial_level.SerializeToString())
+    return http.HttpResponse(main.GetInitialLevel())
+
+def getStyle(request):
+    with open('monkey/style.css', 'r') as f:
+        return http.HttpResponse(f.read(), content_type='text/css')
 
 def script(request):
     with open('fe/bundle.js', 'r') as f:
