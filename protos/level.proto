@@ -1,4 +1,4 @@
-syntax = "proto2";
+syntax = "proto3";
 
 message Journey {
   optional string name = 1;
@@ -18,7 +18,7 @@ message Level {
   // self and 1 intruder.
   optional int32 num_aliens = 5;
   // The moves that are valid for this level
-  repeated MoveDirection allowed_moves = 6;
+  repeated Move allowed_moves = 6;
   // The name of the grid that this level uses.
   optional Grid grid = 7;
 }

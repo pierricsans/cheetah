@@ -1,26 +1,102 @@
 import axios from 'axios';
-import { Level, MoveDirection } from './../protos/level_pb.js';
+import { Level, Move, MoveDirection } from './../protos/level_pb.js';
+
+class Option {
+    text: string;
+    move: Move;
+    option: HTMLElement = document.createElement("p");
+    selectedOption: HTMLElement = document.createElement("p");
+    optionContainer: SelectorElement;
+
+    constructor(move: Move, optionContainer: SelectorElement) {
+        this.move = move;
+        this.text = MoveDirection[move?.direction!];
+        this.optionContainer = optionContainer;
+        this.prepareElement(this.option);
+        this.option.addEventListener('click', event => this.AddSelectedOption(event));
+    }
+
+    GetOptionAsElement(): HTMLElement {
+        return this.option;
+    }
+
+    GetSelectedOptionAsElement(): HTMLElement {
+        return this.selectedOption;
+    }
+
+    private prepareElement(element: HTMLElement) {
+        element.classList.add('option');
+        element.textContent = this.text;
+    }
+
+    private AddSelectedOption(ev: MouseEvent) {
+        this.prepareElement(this.selectedOption);
+        this.optionContainer.AddSelectedOption(this);
+    }
+
+}
 
 class SelectorElement {
-    level: Level;
+    private level: Level;
+    private selector: HTMLElement = document.createElement("div");
+    private selection: HTMLElement = document.createElement("div");
 
     constructor(level: Level) {
         this.level = level;
+        this.GenerateOptions();
+        this.GenerateSelectorElement();
+        this.GenerateSelectionElement();
     }
 
     GetAsElement(): HTMLElement {
-        const div = document.createElement("div");
-        return div;
+        return this.selector;
+    }
+
+    private GenerateSelectorElement() {
+        this.selector.setAttribute("id", "selector");
+        this.selector.classList.add("banner");
+    }
+
+    private GenerateOptions() {
+        const optionsContainer = document.createElement("div");
+        for (const move of this.level.allowedMoves) {
+            console.log(move);
+            const option = new Option(move, this);
+            optionsContainer.appendChild(option.GetOptionAsElement());
+        }
+        this.selector.appendChild(optionsContainer);
+    }
+
+    private GenerateSelectionElement() {
+        if (this.level.moves === undefined) {
+            console.log('0 moves');
+            return;
+        }
+        this.selection.setAttribute("id", "selection");
+        this.selector.appendChild(this.selection);
+        for (var i = 0; i < this.level.moves; i++) {
+            const emptyOption = document.createElement("span");
+            emptyOption.classList.add("emptyOption");
+            this.selection.appendChild(emptyOption);
+        }
+    }
+
+    AddSelectedOption(option: Option) {
+        const elements = this.selection.getElementsByClassName("emptyOption");
+        const elementToReplace = elements[0]
+        elementToReplace.replaceWith(option.GetSelectedOptionAsElement());
+        this.level.grid?.indigenous?.trajectory?.moves.push(option.move)
+        console.log(this.level.toJson());
     }
 
 }
 
 class WhereIsMyDotApp {
-    readonly level: Level;
-    readonly container: HTMLElement = document.body;
-    readonly header: HTMLElement = document.createElement("div");
-    readonly footer: HTMLElement = document.createElement('div');
-    selectorElement: SelectorElement;
+    private readonly level: Level;
+    private readonly container: HTMLElement = document.body;
+    private readonly header: HTMLElement = document.createElement("div");
+    private readonly footer: HTMLElement = document.createElement('div');
+    private selectorElement: SelectorElement;
     
     constructor(level: Level) {
         this.level = level;
@@ -29,10 +105,8 @@ class WhereIsMyDotApp {
     
     Init() {
         this.appendHeader();
-        this.appendFooter();
         this.appendSelectorElement();
-        this.appendAnswerBox();
-        this.appendAvailableButtons();
+        this.appendFooter();
     }
 
     private appendSelectorElement() {
@@ -51,31 +125,6 @@ class WhereIsMyDotApp {
         this.footer.setAttribute('id', 'footer');
         this.footer.textContent = "2023";
         this.container.appendChild(this.footer);
-    }
-
-    private appendAvailableButtons() {
-        const top = document.getElementById("top");
-        for (const move of this.level.allowedMoves) {
-            const p = document.createElement("p");
-            p.classList.add('moveDirection');
-            p.textContent = MoveDirection[move];
-            p.addEventListener('click', handleMoveChoice)
-            top?.appendChild(p);
-        }
-    }
-
-    private appendAnswerBox() {
-        if (this.level.moves === undefined || this.level.moves === 0) {
-            console.log('Number of moves must be set and higher than O.');
-            return;
-        }
-        const top = document.getElementById("top");
-        var i = 0;
-        for (var i = 0; i < this.level.moves; i++) {
-            const p = document.createElement("div");
-            p.classList.add('answerBox');
-            top?.appendChild(p);
-        }
     }
 }
 

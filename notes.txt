@@ -4,3 +4,4 @@ cd fe && pnpm update
 Start server
 bazel run //cheetahweb:manage -- runserver
 
+Next: send list of moves to the server

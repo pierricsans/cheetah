@@ -16,10 +16,24 @@ size: 5
 rank: 0
 moves: 3
 num_aliens: 4
-allowed_moves: MOVE_DIRECTION_UP
-allowed_moves: MOVE_DIRECTION_DOWN
-allowed_moves: MOVE_DIRECTION_LEFT
-allowed_moves: MOVE_DIRECTION_RIGHT
+allowed_moves {
+  direction: MOVE_DIRECTION_UP
+}
+allowed_moves {
+  direction: MOVE_DIRECTION_DOWN
+}
+allowed_moves {
+  direction: MOVE_DIRECTION_LEFT
+}
+allowed_moves {
+  direction: MOVE_DIRECTION_RIGHT
+}
+grid {
+  indigenous {
+    trajectory {
+    }
+  }
+}
 """
 
 MOVES = [

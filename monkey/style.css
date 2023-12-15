@@ -4,21 +4,25 @@
   display: block;
 }
 
-.moveDirection {
-  display: block;
+.option {
+  display: inline-block;
   border-color: black;
   border-style: solid;
+  margin: 1vw;
 }
-.moveDirection:hover {
+.option:hover {
   cursor: pointer;
 }
 
 #header {
-  position: relative;
+  height: 10vw;
+}
+
+#selector {
+  height: 75vw;
 }
 
 #footer {
-  position: fixed;
   bottom: 0;
   right: 0;
   left: 0;
@@ -27,10 +31,23 @@
 .banner {
   width: 100%;
   max-width: 700px;
-  height: 10vw;
   background-color: bisque;
   margin: auto;
   font-size: 4vw;
+  text-align: center;
+  border-radius: 30px;
+  height: 10vw;
+  margin: 1vw;
+  border: 1vw;
+}
+
+.emptyOption {
+  display: inline-block;
+  width: 15vw;
+  border-bottom: 1vw;
+  border-bottom-style: solid;
+  border-bottom-color: black;
+  margin: 2vw;
 }
 
 .answerBox {

@@ -84,18 +84,15 @@ def GenerateRandomMoves(
 def GenerateInitialState(
         level: level_pb2.Level,
         person: level_pb2.Person,
-        moves: Sequence[level_pb2.MoveDirection] | None = None):
+        generate_random_moves: bool):
     person.color = next(GetRandomColor())
-    if moves:
-        for move in moves:
-            person.trajectory.moves.add(direction=move)
-            GetInitialPosition(level.grid, person)
-    else:
-        existing_trajectories = []
-        for existin_person in move_maker.GetAllPeople(level.grid):
-            existing_trajectories.append(existin_person.trajectory)
+    existing_trajectories = []
+    for existin_person in move_maker.GetAllPeople(level.grid):
+        existing_trajectories.append(existin_person.trajectory)
+    # Skip generating random moves if the person already has some.
+    if generate_random_moves and not person.trajectory.moves:
         GenerateRandomMoves(person, existing_trajectories, level.allowed_moves, level.moves)
-        GetInitialPosition(level.grid, person)
+    GetInitialPosition(level.grid, person)
 
 
 def AddAliens(level: level_pb2.Level) -> None:
@@ -109,7 +106,7 @@ def AddAliens(level: level_pb2.Level) -> None:
     CheckIndigenousHasMoves(level)
     for _ in range(level.num_aliens):
         alien = level.grid.aliens.add()
-        GenerateInitialState(level, alien)
+        GenerateInitialState(level, alien, generate_random_moves=True)
 
 
 def GenerateInitialGrid(level: level_pb2.Level,
@@ -117,5 +114,5 @@ def GenerateInitialGrid(level: level_pb2.Level,
     level.grid.name = level.name
     level.grid.height = level.size
     level.grid.width = level.size
-    GenerateInitialState(level, level.grid.indigenous, moves)
+    GenerateInitialState(level, level.grid.indigenous)
     AddAliens(level)
