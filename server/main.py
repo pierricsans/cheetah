@@ -63,8 +63,17 @@ def GetInitialLevel() -> level_pb2.Level:
 def main(argv):
   del argv  # Unused.
   level = text_format.Merge(DUMMY_LEVEL, level_pb2.Level())
+  moves = [
+     level_pb2.MoveDirection.MOVE_DIRECTION_LEFT,
+     level_pb2.MoveDirection.MOVE_DIRECTION_RIGHT,
+     level_pb2.MoveDirection.MOVE_DIRECTION_DOWN
+  ]
+  for move in moves:
+     new_move = level.grid.indigenous.trajectory.moves.add()
+     new_move.direction = move
+
   logging.info(level)
-  alternate_routes.GenerateInitialGrid(level, MOVES)
+  alternate_routes.GenerateInitialGrid(level)
   logging.info(level)
   while level.grid.indigenous.trajectory.moves:
         move_maker.MoveGridToNextState(level.grid)

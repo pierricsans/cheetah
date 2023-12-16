@@ -70,21 +70,21 @@ def GetInitialPosition(grid, person) -> None:
 def GenerateRandomMoves(
         person: level_pb2.Person,
         moves_taken: Sequence[level_pb2.Trajectory],
-        allowed_moves: Sequence[level_pb2.MoveDirection],
+        allowed_moves: Sequence[level_pb2.Move],
         num_moves: int) -> level_pb2.Trajectory:
     trajectory = person.trajectory
     for _ in range(num_moves):
-        trajectory.moves.add(direction=random.choice(allowed_moves))
+        trajectory.moves.add().CopyFrom(random.choice(allowed_moves))
     if trajectory in moves_taken:
         person.ClearField('trajectory')
-        GenerateRandomMoves(person, moves_taken, num_moves)
+        GenerateRandomMoves(person, moves_taken, allowed_moves, num_moves)
     return trajectory
 
 
 def GenerateInitialState(
         level: level_pb2.Level,
         person: level_pb2.Person,
-        generate_random_moves: bool):
+        generate_random_moves: bool = False):
     person.color = next(GetRandomColor())
     existing_trajectories = []
     for existin_person in move_maker.GetAllPeople(level.grid):
@@ -109,8 +109,7 @@ def AddAliens(level: level_pb2.Level) -> None:
         GenerateInitialState(level, alien, generate_random_moves=True)
 
 
-def GenerateInitialGrid(level: level_pb2.Level,
-                        moves: Sequence[level_pb2.MoveDirection]) -> None:
+def GenerateInitialGrid(level: level_pb2.Level) -> None:
     level.grid.name = level.name
     level.grid.height = level.size
     level.grid.width = level.size

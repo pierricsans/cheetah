@@ -7,4 +7,5 @@ urlpatterns = [
     path("script.js", views.script, name="script"),
     path("getInitialLevel", views.getInitialLevel, name="getInitialLevel"),
     path("style.css", views.getStyle, name="getStyle"),
+    path("fillLevel", views.getFilledLevel, name="getFilledLevel")
 ]

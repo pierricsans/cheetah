@@ -9,12 +9,10 @@
     "sourceMap": true,
     "declarationMap": true,
     "paths": {
-      "@myorg/*": [
-        "../*"
-      ],
       "nodemodules/*": [
         "../node_modules/*"
-      ]
+      ],
+      "frontend/*": ["../bazel-bin/frontend/*"],
     },
     "declaration": true,
     "allowJs": true,
