@@ -24,7 +24,7 @@ load("@rules_python//python:pip.bzl", "pip_install")
 # requirements.txt.
 pip_install(
    name = "my_deps",
-   requirements = "//externals:requirements.txt",
+   requirements = "//:requirements.txt",
 )
 
 http_archive(
