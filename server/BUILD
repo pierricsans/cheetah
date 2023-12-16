@@ -17,7 +17,7 @@ py_library(
         "//fe/protos:level_py_pb2",
         requirement("webcolors"),
         requirement("absl-py"),
-        "//exceptions:errors",
+        ":errors",
     ],
 )
 
@@ -31,3 +31,9 @@ py_binary(
         requirement("jinja2"),
     ],
 )
+
+py_library(
+    name = "errors",
+    srcs = ["errors.py"],
+)
+
