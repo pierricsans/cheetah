@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Level, Move, MoveDirection } from './../protos/level_pb.js';
+import { Level, Move, MoveDirection } from './protos/level_pb.js';
 
 class Option {
     text: string;
