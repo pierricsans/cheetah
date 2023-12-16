@@ -5,7 +5,7 @@ py_library(
     name = "move_maker",
     srcs = ["move_maker.py"],
     deps = [
-        "//fe/protos:level_py_pb2",
+        "//frontend/protos:level_py_pb2",
     ],
 )
 
@@ -14,7 +14,7 @@ py_library(
     srcs = ["alternate_routes.py"],
     deps = [
         ":move_maker",
-        "//fe/protos:level_py_pb2",
+        "//frontend/protos:level_py_pb2",
         requirement("webcolors"),
         requirement("absl-py"),
         ":errors",

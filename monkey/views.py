@@ -15,5 +15,5 @@ def getStyle(request):
         return http.HttpResponse(f.read(), content_type='text/css')
 
 def script(request):
-    with open('fe/bundle.js', 'r') as f:
+    with open('frontend/bundle.js', 'r') as f:
         return http.HttpResponse(f.read(), content_type='text/javascript')

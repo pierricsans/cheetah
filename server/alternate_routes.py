@@ -1,5 +1,5 @@
 
-from fe.protos import level_pb2
+from frontend.protos import level_pb2
 from server import errors
 from collections.abc import Sequence
 import random

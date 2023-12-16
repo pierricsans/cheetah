@@ -1,4 +1,3 @@
-e2e/
 bazel-output-base
 fe/node_modules
 fe/connect_node/node_modules
@@ -7,3 +6,10 @@ fe/linked_consumer/node_modules
 fe/linked_tsconfig/node_modules
 fe/linked_tsconfig_consumer/node_modules
 fe/proto_grpc/node_modules
+frontend/node_modules
+frontend/connect_node/node_modules
+frontend/linked/node_modules
+frontend/linked_consumer/node_modules
+frontend/linked_tsconfig/node_modules
+frontend/linked_tsconfig_consumer/node_modules
+frontend/proto_grpc/node_modules
