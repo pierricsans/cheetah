@@ -2,7 +2,7 @@
 from collections.abc import Sequence
 import copy
 from typing import Generator
-from protos import level_pb2
+from fe.protos import level_pb2
 
 STARTING_GRID = """
 name: "Winnie"

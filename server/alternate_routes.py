@@ -1,5 +1,5 @@
 
-from protos import level_pb2
+from fe.protos import level_pb2
 from exceptions import errors
 from collections.abc import Sequence
 import random

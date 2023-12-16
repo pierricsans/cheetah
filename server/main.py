@@ -1,5 +1,5 @@
 
-from protos import level_pb2
+from fe.protos import level_pb2
 from google.protobuf import json_format
 from google.protobuf import text_format
 from server import move_maker
