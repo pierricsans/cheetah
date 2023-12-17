@@ -3,13 +3,22 @@ import { Grid, Level, Move, MoveDirection, Person, PersonType } from './protos/l
 
 var LEVEL: Level = new Level();
 
-const ICONS: Map<MoveDirection, string> =  new Map([
+const ICONS: Map<MoveDirection, string> = new Map([
     [MoveDirection.LEFT, "arrow_back"],
     [MoveDirection.RIGHT, "arrow_forward"],
-    [MoveDirection.DOWN, "arrow_forward"],
+    [MoveDirection.DOWN, "arrow_downward"],
     [MoveDirection.UP, "arrow_upward"],
     [MoveDirection.UNSPECIFIED, "question_mark"],
 ]);
+
+function shuffleArray(array: Array<any>) {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+}
 
 class Option {
     text: string;
@@ -181,24 +190,37 @@ class MainContentElement {
 }
 
 class Bead {
-    private beadElement: HTMLElement = document.createElement("span");
-    private parentGrid: GridInst;
-    private movementIncrement: number;
+    beadElement: HTMLElement = document.createElement("span");
+    parentGrid: GridInst;
+    person: Person;
+    movementIncrement: number;
     private animationOffset: number;
-    private person: Person;
+    private inactiveBead: InactiveBead | null = null;
 
     constructor(grid: GridInst, person: Person) {
         this.parentGrid = grid;
         this.person = person;
+        this.movementIncrement = 0;
+        this.animationOffset = 0;
+        this.movementIncrement = 100 / this.parentGrid.grid.width!;
+        this.Init();
+    }
+
+    Init() {
         this.beadElement.classList.add('bead');
-        this.beadElement.style.backgroundColor = person.color!;
+        this.beadElement.classList.add('activeBead');
+        this.beadElement.style.backgroundColor = this.person.color!;
         this.beadElement.addEventListener("click", event => this.RegisterClick(event))
-        this.movementIncrement = 100 / grid.grid.width!;
-        this.animationOffset = 1 / person.trajectory?.moves?.length!;
-        this.beadElement.style.bottom = (this.movementIncrement * person.position?.yOffset!).toString() + '%';
-        this.beadElement.style.left = (this.movementIncrement * person.position?.xOffset!).toString() + '%';
+        this.animationOffset = 1 / this.person.trajectory?.moves?.length!;
+        this.beadElement.style.bottom = (this.movementIncrement * this.person.position?.yOffset!).toString() + '%';
+        this.beadElement.style.left = (this.movementIncrement * this.person.position?.xOffset!).toString() + '%';
         this.GenerateFadeInAnimation().play();
         this.GenerateMainAnimation().play();
+        this.inactiveBead = new InactiveBead(this.parentGrid, this.person);
+    }
+
+    GetInactiveBead() {
+        return this.inactiveBead!;
     }
 
     RegisterClick(event: Event) {
@@ -228,7 +250,7 @@ class Bead {
             easing: "ease-in-out"
         }
         );
-        const animation = new Animation(keyframes,document.timeline);
+        const animation = new Animation(keyframes, document.timeline);
         return animation;
     }
 
@@ -248,7 +270,7 @@ class Bead {
         }];
         for (const move of this.person.trajectory?.moves!) {
             animationOffset = animationOffset + this.animationOffset;
-            switch(move.direction!) {
+            switch (move.direction!) {
                 case MoveDirection.UP:
                     bottom = bottom + this.movementIncrement;
                     break;
@@ -282,11 +304,29 @@ class Bead {
     }
 }
 
+class InactiveBead extends Bead {
+
+    constructor(grid: GridInst, person: Person) {
+        super(grid, person);
+    }
+
+    Init() {
+        this.beadElement.classList.add("bead");
+        this.beadElement.classList.add('inactiveBead');
+        this.beadElement.style.backgroundColor = this.person.color!;
+        this.beadElement.addEventListener("click", event => this.RegisterClick(event))
+        this.GenerateFadeInAnimation().play();
+    }
+
+}
+
 class GridInst {
     grid: Grid;
-    private outerContainer: HTMLElement = document.createElement("div");
     private innerContainer: HTMLElement = document.createElement("div");
+    private outerContainer: HTMLElement = document.createElement("div");
+    private overallContainer: HTMLElement = document.createElement("div");
     private app: MainContentElement;
+    private unactiveBeads: Array<InactiveBead> = [];
 
     constructor(app: MainContentElement) {
         this.grid = LEVEL.grid!;
@@ -294,7 +334,7 @@ class GridInst {
     }
 
     GetAsElement(): HTMLElement {
-        return this.outerContainer;
+        return this.overallContainer;
     }
 
     Build() {
@@ -303,10 +343,21 @@ class GridInst {
         for (const alien of this.grid.aliens) {
             const bead = new Bead(this, alien);
             this.innerContainer.appendChild(bead.GetAsElement());
+            this.unactiveBeads.push(bead.GetInactiveBead());
         }
         const bead = new Bead(this, this.grid.indigenous!);
         this.innerContainer.appendChild(bead.GetAsElement());
         this.outerContainer.appendChild(this.innerContainer);
+        this.overallContainer.appendChild(this.outerContainer);
+        this.unactiveBeads.push(bead.GetInactiveBead());
+        this.AppendInactiveBeads();
+    }
+
+    AppendInactiveBeads() {
+        shuffleArray(this.unactiveBeads);
+        for (const bead of this.unactiveBeads) {
+            this.overallContainer.appendChild(bead.GetAsElement());
+        }
     }
 }
 

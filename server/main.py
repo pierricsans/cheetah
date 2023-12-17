@@ -15,7 +15,7 @@ DUMMY_LEVEL = """
 size: 5
 rank: 0
 moves: 3
-num_aliens: 2
+num_aliens: 5
 allowed_moves {
   direction: MOVE_DIRECTION_UP
 }

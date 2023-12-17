@@ -69,11 +69,19 @@
   height: var(--box-size-px);
 }
 
-.bead {
+.activeBead {
   transform: translate(-50%, 50%);
   position: absolute;
-  border-radius: 50%;
+}
+
+.bead {
   opacity: var(--ball-opacity);
+  border-radius: 50%;
+}
+
+.inactiveBead {
+  display: inline-block;
+  margin: 2vw;
 }
 
 .banner {

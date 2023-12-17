@@ -57,7 +57,8 @@ class Grid():
             self,
             person: level_pb2.Person,
             generate_random_moves: bool = False):
-        person.color = self.colors.pop()
+        person.color = random.choice([color for color in self.colors])
+        self.colors.remove(person.color)
         # Skip generating random moves if the person already has some.
         if generate_random_moves and not person.trajectory.moves:
             self.GenerateRandomTrajectory(person)
