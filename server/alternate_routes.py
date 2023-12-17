@@ -49,6 +49,7 @@ class Grid():
         CheckIndigenousHasMoves(self.level)
         for _ in range(self.level.num_aliens):
             alien = self.level.grid.aliens.add()
+            alien.type = level_pb2.PersonType.PERSON_TYPE_ALIEN
             self.GenerateInitialState(alien, generate_random_moves=True)
 
     def GenerateInitialState(

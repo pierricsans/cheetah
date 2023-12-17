@@ -36,6 +36,7 @@ message Person {
   optional string color = 2;
   optional Position position = 3;
   optional Trajectory trajectory = 4;
+  optional PersonType type = 5;
 }
 
 message Trajectory {
@@ -61,4 +62,10 @@ enum MoveDirection {
   MOVE_DIRECTION_DOWN = 2;
   MOVE_DIRECTION_LEFT = 3;
   MOVE_DIRECTION_RIGHT = 4;
+}
+
+enum PersonType {
+  PERSON_TYPE_UNSPECIFIED = 0;
+  PERSON_TYPE_INDIGENOUS = 1;
+  PERSON_TYPE_ALIEN = 2;
 }

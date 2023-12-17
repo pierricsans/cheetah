@@ -15,7 +15,7 @@ DUMMY_LEVEL = """
 size: 5
 rank: 0
 moves: 3
-num_aliens: 4
+num_aliens: 2
 allowed_moves {
   direction: MOVE_DIRECTION_UP
 }
@@ -32,6 +32,7 @@ grid {
   indigenous {
     trajectory {
     }
+    type: PERSON_TYPE_INDIGENOUS
   }
 }
 """

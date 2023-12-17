@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Grid, Level, Move, MoveDirection, Person } from './protos/level_pb.js';
+import { Grid, Level, Move, MoveDirection, Person, PersonType } from './protos/level_pb.js';
 
 var LEVEL: Level = new Level();
 
@@ -183,12 +183,24 @@ class Bead {
         this.person = person;
         this.beadElement.classList.add('bead');
         this.beadElement.style.backgroundColor = person.color!;
+        this.beadElement.addEventListener("click", event => this.RegisterClick(event))
         this.movementIncrement = 100 / grid.grid.width!;
         this.animationOffset = 1 / person.trajectory?.moves?.length!;
         this.beadElement.style.bottom = (this.movementIncrement * person.position?.yOffset!).toString() + '%';
         this.beadElement.style.left = (this.movementIncrement * person.position?.xOffset!).toString() + '%';
         this.GenerateFadeInAnimation().play();
         this.GenerateMainAnimation().play();
+    }
+
+    RegisterClick(event: Event) {
+        switch (this.person.type) {
+            case PersonType.INDIGENOUS:
+                alert('YES');
+                break;
+            case PersonType.ALIEN:
+                alert('NO');
+                break;
+        }
     }
 
     GenerateFadeInAnimation(): Animation {
