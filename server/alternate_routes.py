@@ -33,6 +33,7 @@ class Grid():
     def __init__(self, level: level_pb2.Grid):
         self.level = level
         self.grid = level.grid
+        self.colors = self.GetColors()
         self.registered_trajectories = set()
         self.registered_positions = collections.defaultdict(set)
         self.RegisterTrajectory(self.grid.indigenous)
@@ -43,7 +44,7 @@ class Grid():
         self.grid.width = self.level.size
         self.GenerateInitialState(self.grid.indigenous)
         self.AddAliens()
-    
+
     def AddAliens(self) -> None:
         """Generates initial position and moves for aliens."""
         CheckIndigenousHasMoves(self.level)
@@ -53,15 +54,21 @@ class Grid():
             self.GenerateInitialState(alien, generate_random_moves=True)
 
     def GenerateInitialState(
-        self,
-        person: level_pb2.Person,
-        generate_random_moves: bool = False):
-        person.color = GetRandomColor(len(GetAllPeopleWithPotision(self.grid)))
+            self,
+            person: level_pb2.Person,
+            generate_random_moves: bool = False):
+        person.color = self.colors.pop()
         # Skip generating random moves if the person already has some.
         if generate_random_moves and not person.trajectory.moves:
             self.GenerateRandomTrajectory(person)
         self.GenerateInitialPosition(person)
-    
+
+    def GetColors(self):
+        return set([
+            f'hsl({i * _GOLDEN_ANGLE + 60}, 100%, 60%)'
+              for i in range(self.level.num_aliens + 5)
+            ])
+
     def GenerateRandomTrajectory(
             self,
             person: level_pb2.Person):
@@ -72,7 +79,7 @@ class Grid():
             print('unlucky-trajectory')
             person.ClearField('trajectory')
             self.GenerateRandomTrajectory(person)
-    
+
     def GenerateInitialPosition(self, person) -> None:
         # TODO: Make each position, at each move, unique
         person.position.x_offset = GetOffset(
@@ -95,7 +102,6 @@ class Grid():
             person.ClearField('position')
             self.GenerateInitialPosition(person)
 
-    
     def RegisterTrajectory(self, person: level_pb2.Person) -> bool:
         values = tuple([move.direction for move in person.trajectory.moves])
         if values in self.registered_trajectories:
@@ -103,9 +109,10 @@ class Grid():
         else:
             self.registered_trajectories.add(values)
             return True
-        
+
     def RegisterPositions(self, person) -> bool:
-        initial_position = Position(person.position.x_offset, person.position.y_offset)
+        initial_position = Position(
+            person.position.x_offset, person.position.y_offset)
         if initial_position in self.registered_positions[0]:
             return False
         self.registered_positions[0].add(initial_position)
@@ -114,13 +121,17 @@ class Grid():
         for move in person.trajectory.moves:
             match move.direction:
                 case level_pb2.MoveDirection.MOVE_DIRECTION_UP:
-                    position = Position(current_position.x, current_position.y + 1)
+                    position = Position(current_position.x,
+                                        current_position.y + 1)
                 case level_pb2.MoveDirection.MOVE_DIRECTION_DOWN:
-                    position = Position(current_position.x, current_position.y - 1)
+                    position = Position(current_position.x,
+                                        current_position.y - 1)
                 case level_pb2.MoveDirection.MOVE_DIRECTION_RIGHT:
-                    position = Position(current_position.x + 1, current_position.y)
+                    position = Position(
+                        current_position.x + 1, current_position.y)
                 case level_pb2.MoveDirection.MOVE_DIRECTION_LEFT:
-                    position = Position(current_position.x - 1, current_position.y)
+                    position = Position(
+                        current_position.x - 1, current_position.y)
                 case _:
                     raise KeyError(f'Unknown direction: {move.direction:}')
             if position in self.registered_positions[next_move]:
@@ -132,16 +143,15 @@ class Grid():
         return True
 
 
-
 @attrs.define(frozen=True)
 class Position:
     x: int | None = None
     y: int | None = None
 
 
-
 def GetRandomColor(i: int) -> Generator[str, None, None]:
     return f'hsl({i * _GOLDEN_ANGLE + 60}, 100%, 60%)'
+
 
 def CheckIndigenousHasMoves(level: level_pb2.Level) -> None:
     if not level.grid.indigenous:

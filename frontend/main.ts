@@ -3,6 +3,14 @@ import { Grid, Level, Move, MoveDirection, Person, PersonType } from './protos/l
 
 var LEVEL: Level = new Level();
 
+const ICONS: Map<MoveDirection, string> =  new Map([
+    [MoveDirection.LEFT, "arrow_back"],
+    [MoveDirection.RIGHT, "arrow_forward"],
+    [MoveDirection.DOWN, "arrow_forward"],
+    [MoveDirection.UP, "arrow_upward"],
+    [MoveDirection.UNSPECIFIED, "question_mark"],
+]);
+
 class Option {
     text: string;
     move: Move;
@@ -29,7 +37,8 @@ class Option {
 
     private prepareElement(element: HTMLElement) {
         element.classList.add('option');
-        element.textContent = this.text;
+        element.setAttribute("alt", this.text);
+        element.textContent = ICONS.get(this.move?.direction!)!;
     }
 
     private AddSelectedOption(ev: MouseEvent) {
