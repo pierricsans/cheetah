@@ -43,7 +43,11 @@ message Trajectory {
 }
 
 message Position {
+  // Value between 0 and 1
+  // where 0 is left most and 1 is rightmost.
   optional int32 x_offset = 1;
+  // Value between 0 and 1
+  // where 0 is bottom most and 1 is topmost.
   optional int32 y_offset = 2;
 }
 

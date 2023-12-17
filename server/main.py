@@ -40,8 +40,6 @@ MOVES = [
   level_pb2.MoveDirection.MOVE_DIRECTION_RIGHT,
   level_pb2.MoveDirection.MOVE_DIRECTION_DOWN,
   level_pb2.MoveDirection.MOVE_DIRECTION_RIGHT,
-  level_pb2.MoveDirection.MOVE_DIRECTION_RIGHT,
-  level_pb2.MoveDirection.MOVE_DIRECTION_RIGHT,
 ]
 
 def RenderTable() -> str:
@@ -71,13 +69,10 @@ def main(argv):
   for move in moves:
      new_move = level.grid.indigenous.trajectory.moves.add()
      new_move.direction = move
-
-  logging.info(level)
   alternate_routes.GenerateInitialGrid(level)
   logging.info(level)
   while level.grid.indigenous.trajectory.moves:
         move_maker.MoveGridToNextState(level.grid)
-        logging.info(level.grid)
 
 
 if __name__ == '__main__':

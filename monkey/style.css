@@ -1,3 +1,14 @@
+:root {
+  --box-size-px: 50vw;
+  --ball-size-ratio: 0.1;
+  --cell-size: calc(var(--box-size-px) * var(--ball-size-ratio));
+  --ball-size: calc(var(--cell-size) - 1px);
+  --animation-duration: 1500ms;
+  --animation-delay: 500ms;
+  --ball-opacity: 80%;
+  --outer-box-border-thickness: 2vw;
+}
+
 #top {
   width: 50%;
   max-width: 200px;
@@ -34,6 +45,30 @@
   bottom: 0;
   right: 0;
   left: 0;
+}
+
+#outerContainer {
+  width: var(--box-size-px);
+  height: var(--box-size-px);
+  border-color: black;
+  border-style: solid;
+  border-width: var(--outer-box-border-thickness);
+  margin: auto;
+  padding: calc((var(--cell-size) / 2));
+  border-radius: calc((var(--ball-size) / 2) + var(--outer-box-border-thickness));
+}
+
+#innerContainer {
+  position: relative;
+  width: auto;
+  height: var(--box-size-px);
+}
+
+.bead {
+  transform: translate(-50%, 50%);
+  position: absolute;
+  border-radius: 50%;
+  opacity: var(--ball-opacity);
 }
 
 .banner {

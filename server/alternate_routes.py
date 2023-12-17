@@ -1,6 +1,7 @@
 
 from frontend.protos import level_pb2
 from server import errors
+import collections
 from collections.abc import Sequence
 import random
 import copy
@@ -9,11 +10,11 @@ from server import move_maker
 from typing import Callable, Generator, Optional
 
 
+_COLORS = set(key for key in webcolors.CSS3_NAMES_TO_HEX.keys())
+
+
 def GetRandomColor() -> Generator[str, None, None]:
-    colors = set()
-    for key in webcolors.CSS3_NAMES_TO_HEX.keys():
-        colors.add(key)
-    yield colors.pop()
+    yield _COLORS.pop()
 
 
 def CheckIndigenousHasMoves(level: level_pb2.Level) -> None:
@@ -36,34 +37,26 @@ def GetAllPeopleWithPotision(
     return people
 
 
-def GetFilterFunction(move: level_pb2.MoveDirection) -> Callable[[level_pb2.MoveDirection], bool]:
-
-    def func(move_candidate: level_pb2.MoveDirection) -> bool:
-        return move_candidate == move
-
-    return func
-
-
 def GetOffset(size: int, forward_moves: int, backward_moves: int) -> int:
     return random.randrange(backward_moves, size - forward_moves)
 
 
 def GetInitialPosition(grid, person) -> None:
-
+    # TODO: Make each position, at each move, unique
     person.position.x_offset = GetOffset(
         grid.width,
-        len([filter(GetFilterFunction(
-            level_pb2.MoveDirection.MOVE_DIRECTION_LEFT), person.trajectory.moves)]),
-        len([filter(GetFilterFunction(
-            level_pb2.MoveDirection.MOVE_DIRECTION_RIGHT), person.trajectory.moves)]),
+        sum(1 for move in person.trajectory.moves if move.direction ==
+            level_pb2.MoveDirection.MOVE_DIRECTION_RIGHT),
+        sum(1 for move in person.trajectory.moves if move.direction ==
+            level_pb2.MoveDirection.MOVE_DIRECTION_LEFT)
     )
 
     person.position.y_offset = GetOffset(
         grid.height,
-        len([filter(GetFilterFunction(
-            level_pb2.MoveDirection.MOVE_DIRECTION_DOWN), person.trajectory.moves)]),
-        len([filter(GetFilterFunction(
-            level_pb2.MoveDirection.MOVE_DIRECTION_UP), person.trajectory.moves)]),
+        sum(1 for move in person.trajectory.moves if move.direction ==
+            level_pb2.MoveDirection.MOVE_DIRECTION_UP),
+        sum(1 for move in person.trajectory.moves if move.direction ==
+            level_pb2.MoveDirection.MOVE_DIRECTION_DOWN)
     )
 
 
@@ -87,11 +80,12 @@ def GenerateInitialState(
         generate_random_moves: bool = False):
     person.color = next(GetRandomColor())
     existing_trajectories = []
-    for existin_person in move_maker.GetAllPeople(level.grid):
-        existing_trajectories.append(existin_person.trajectory)
+    for existing_person in move_maker.GetAllPeople(level.grid):
+        existing_trajectories.append(existing_person.trajectory)
     # Skip generating random moves if the person already has some.
     if generate_random_moves and not person.trajectory.moves:
-        GenerateRandomMoves(person, existing_trajectories, level.allowed_moves, level.moves)
+        GenerateRandomMoves(person, existing_trajectories,
+                            level.allowed_moves, level.moves)
     GetInitialPosition(level.grid, person)
 
 
@@ -101,7 +95,6 @@ def AddAliens(level: level_pb2.Level) -> None:
     Args:
       level: The config where number of aliens and moves
         can be foudn.
-      grid: Contains the 
     """
     CheckIndigenousHasMoves(level)
     for _ in range(level.num_aliens):
