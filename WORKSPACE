@@ -14,18 +14,22 @@ http_archive(
 
 http_archive(
     name = "rules_python",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.1.0/rules_python-0.1.0.tar.gz",
-    sha256 = "b6d46438523a3ec0f3cead544190ee13223a52f6a6765a29eae7b7cc24cc83a0",
+    sha256 = "e85ae30de33625a63eca7fc40a94fea845e641888e52f32b6beea91e8b1b2793",
+    strip_prefix = "rules_python-0.27.1",
+    url = "https://github.com/bazelbuild/rules_python/releases/download/0.27.1/rules_python-0.27.1.tar.gz",
 )
 
-load("@rules_python//python:pip.bzl", "pip_install")
+load("@rules_python//python:repositories.bzl", "py_repositories")
+py_repositories()
+load("@rules_python//python:pip.bzl", "pip_parse")
 
-# Create a central repo that knows about the dependencies needed for
-# requirements.txt.
-pip_install(
-   name = "my_deps",
-   requirements = "//:requirements.txt",
+pip_parse(
+    name = "my_deps",
+    requirements_lock = "//:requirements_lock.txt",
 )
+
+load("@my_deps//:requirements.bzl", "install_deps")
+install_deps()
 
 http_archive(
     name = "aspect_rules_ts",

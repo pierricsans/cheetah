@@ -17,7 +17,8 @@ def getInitialLevel(request):
 
 def getFilledLevel(request):
     level = json_format.Parse(request.GET.get('level'), level_pb2.Level())
-    alternate_routes.GenerateInitialGrid(level)
+    grid = alternate_routes.Grid(level)
+    grid.GenerateInitialGrid()
     return http.HttpResponse(json_format.MessageToJson(level))
 
 

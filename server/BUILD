@@ -15,6 +15,7 @@ py_library(
     deps = [
         ":move_maker",
         "//frontend/protos:level_py_pb2",
+        requirement("attrs"),
         requirement("webcolors"),
         requirement("absl-py"),
         ":errors",

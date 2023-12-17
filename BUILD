@@ -1,22 +1,29 @@
 load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
 load("@buildifier_prebuilt//:rules.bzl", "buildifier")
+load("@rules_python//python:pip.bzl", "compile_pip_requirements")
 
-gazelle_binary(
-    name = "gazelle_bin",
-    languages = ["@bazel_skylib_gazelle_plugin//bzl"],
+compile_pip_requirements(
+    name = "requirements",
+    requirements_in = "requirements.txt",
+    requirements_txt = "requirements_lock.txt",
 )
 
-load("@npm__at_types_node__15.12.2__links//:defs.bzl", npm_link_types_node = "npm_link_imported_package")
+# gazelle_binary(
+#     name = "gazelle_bin",
+#     languages = ["@bazel_skylib_gazelle_plugin//bzl"],
+# )
 
-npm_link_types_node(name = "node_modules")
-load("@axios//:defs.bzl", npm_link_types_node = "npm_link_imported_package")
+# load("@npm__at_types_node__15.12.2__links//:defs.bzl", npm_link_types_node = "npm_link_imported_package")
 
-npm_link_types_node(name = "node_modules")
+# npm_link_types_node(name = "node_modules")
+# load("@axios//:defs.bzl", npm_link_types_node = "npm_link_imported_package")
 
-gazelle(
-    name = "gazelle",
-    gazelle = "gazelle_bin",
-)
+# npm_link_types_node(name = "node_modules")
+
+# gazelle(
+#     name = "gazelle",
+#     gazelle = "gazelle_bin",
+# )
 
 buildifier(
     name = "buildifier",
