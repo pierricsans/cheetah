@@ -3,8 +3,6 @@
   --ball-size-ratio: 0.1;
   --cell-size: calc(var(--box-size-px) * var(--ball-size-ratio));
   --ball-size: calc(var(--cell-size) - 1px);
-  --animation-duration: 1500ms;
-  --animation-delay: 500ms;
   --ball-opacity: 80%;
   --outer-box-border-thickness: 2vw;
 }

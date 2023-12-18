@@ -24,8 +24,25 @@ def GetAllPeopleWithPotision(
     return people
 
 
-def GetOffset(size: int, forward_moves: int, backward_moves: int) -> int:
-    return random.randrange(backward_moves, size - forward_moves)
+def GetOffset(
+        size: int,
+        moves: Sequence[level_pb2.Move],
+        forwards: level_pb2.MoveDirection,
+        backwards: level_pb2.MoveDirection) -> int:
+    current_position = 0
+    backwards_most = 0
+    forwards_most = 0
+    for move in moves:
+        if move.direction == forwards:
+            current_position += 1            
+            forwards_most = max(current_position, forwards_most)
+            backwards_most = min(current_position, backwards_most)
+        elif move.direction == backwards:
+            current_position -= 1            
+            forwards_most = max(current_position, forwards_most)
+            backwards_most = min(current_position, backwards_most)
+    value = random.randrange(abs(backwards_most), (size - max(0, forwards_most)) + 1)
+    return value
 
 
 class Grid():
@@ -67,8 +84,8 @@ class Grid():
     def GetColors(self):
         return set([
             f'hsl({i * _GOLDEN_ANGLE + 60}, 100%, 60%)'
-              for i in range(self.level.num_aliens + 5)
-            ])
+            for i in range(self.level.num_aliens + 5)
+        ])
 
     def GenerateRandomTrajectory(
             self,
@@ -82,21 +99,26 @@ class Grid():
             self.GenerateRandomTrajectory(person)
 
     def GenerateInitialPosition(self, person) -> None:
-        # TODO: Make each position, at each move, unique
         person.position.x_offset = GetOffset(
             self.grid.width,
-            sum(1 for move in person.trajectory.moves if move.direction ==
-                level_pb2.MoveDirection.MOVE_DIRECTION_RIGHT),
-            sum(1 for move in person.trajectory.moves if move.direction ==
-                level_pb2.MoveDirection.MOVE_DIRECTION_LEFT)
+            [
+                move for move in person.trajectory.moves
+                if (move.direction == level_pb2.MoveDirection.MOVE_DIRECTION_RIGHT
+                or move.direction == level_pb2.MoveDirection.MOVE_DIRECTION_LEFT)
+            ],
+            backwards=level_pb2.MoveDirection.MOVE_DIRECTION_LEFT,
+            forwards=level_pb2.MoveDirection.MOVE_DIRECTION_RIGHT,
         )
 
         person.position.y_offset = GetOffset(
             self.grid.height,
-            sum(1 for move in person.trajectory.moves if move.direction ==
-                level_pb2.MoveDirection.MOVE_DIRECTION_UP),
-            sum(1 for move in person.trajectory.moves if move.direction ==
-                level_pb2.MoveDirection.MOVE_DIRECTION_DOWN)
+            [
+                move for move in person.trajectory.moves
+                if (move.direction == level_pb2.MoveDirection.MOVE_DIRECTION_UP
+                or move.direction == level_pb2.MoveDirection.MOVE_DIRECTION_DOWN)
+            ],
+            backwards=level_pb2.MoveDirection.MOVE_DIRECTION_DOWN,
+            forwards=level_pb2.MoveDirection.MOVE_DIRECTION_UP,
         )
         if not self.RegisterPositions(person):
             print('unlucky-position')

@@ -12,10 +12,10 @@ import jinja2
 _NAME = flags.DEFINE_string("name", None, "Your name.")
 
 DUMMY_LEVEL = """
-size: 5
+size: 15
 rank: 0
-moves: 3
-num_aliens: 5
+moves: 5
+num_aliens: 18
 allowed_moves {
   direction: MOVE_DIRECTION_UP
 }
