@@ -214,42 +214,65 @@ class Bead {
         this.animationOffset = 1 / this.person.trajectory?.moves?.length!;
         this.beadElement.style.bottom = (this.movementIncrement * this.person.position?.yOffset!).toString() + '%';
         this.beadElement.style.left = (this.movementIncrement * this.person.position?.xOffset!).toString() + '%';
-        this.GenerateFadeInAnimation().play();
-        this.GenerateMainAnimation().play();
+        this.animateElement(100, 400);
         this.inactiveBead = new InactiveBead(this.parentGrid, this.person);
     }
 
-    GetInactiveBead() {
+    GetInactiveBead(): InactiveBead {
         return this.inactiveBead!;
     }
 
     RegisterClick(event: Event) {
         switch (this.person.type) {
             case PersonType.INDIGENOUS:
-                alert('YES');
+                this.parentGrid.Win();
                 break;
             case PersonType.ALIEN:
-                alert('NO');
+                this.parentGrid.RegisterWrongGuess();
                 break;
         }
     }
 
-    GenerateFadeInAnimation(): Animation {
+    GenerateFadeInAnimation(duration: number): Animation {
+        var bottom = this.movementIncrement * this.person.position?.yOffset!;
+        var left = this.movementIncrement * this.person.position?.xOffset!;
         const keyframes = new KeyframeEffect(
             this.beadElement,
             [{
                 height: "0px",
-                width: "0px"
+                width: "0px",
+                bottom: bottom.toString() + '%',
+                left: left.toString() + '%',
             },
             {
                 height: "var(--ball-size)",
-                width: "var(--ball-size)"
+                width: "var(--ball-size)",
+                bottom: bottom.toString() + '%',
+                left: left.toString() + '%',
             }], {
-            duration: 1000,
+            duration: duration,
             fill: "forwards",
             easing: "ease-in-out"
-        }
-        );
+        });
+        const animation = new Animation(keyframes, document.timeline);
+        return animation;
+    }
+
+    GenerateFadeOutAnimation(duration: number): Animation {
+        const keyframes = new KeyframeEffect(
+            this.beadElement,
+            [{
+                height: "var(--ball-size)",
+                width: "var(--ball-size)",
+            },
+            {
+                height: "0px",
+                width: "0px"
+            }], {
+            duration: duration,
+            fill: "forwards",
+            easing: "ease-in-out"
+        });
         const animation = new Animation(keyframes, document.timeline);
         return animation;
     }
@@ -258,7 +281,7 @@ class Bead {
         return this.beadElement;
     }
 
-    GenerateMainAnimation(): Animation {
+    GenerateMainAnimation(duration: number): Animation {
         var bottom = this.movementIncrement * this.person.position?.yOffset!;
         var left = this.movementIncrement * this.person.position?.xOffset!;
         var animationOffset = 0;
@@ -295,13 +318,30 @@ class Bead {
         }
         const keyframes = new KeyframeEffect(this.beadElement, frames,
             {
-                duration: 1000,
+                duration: duration,
                 fill: "forwards",
-                delay: 1000
+                delay: 100
             });
         const animation = new Animation(keyframes, document.timeline);
         return animation;
     }
+
+    animateElement(fadeDuration: number, mainAnimationDuration: number) {
+        const fadeIn: Animation = this.GenerateFadeInAnimation(fadeDuration);
+        const mainAnimation: Animation = this.GenerateMainAnimation(mainAnimationDuration);
+        const fadeOutAnimation: Animation = this.GenerateFadeOutAnimation(fadeDuration);
+        fadeIn.play();
+        fadeIn.onfinish = (event: Event) => {
+          mainAnimation.play();
+        }
+        mainAnimation.onfinish = (event: Event) => {
+          fadeOutAnimation.play();
+        }
+        fadeOutAnimation.onfinish = (event: Event) => {
+            this.animateElement(fadeDuration * 1.2, mainAnimationDuration * 1.2);
+        }
+      }
+
 }
 
 class InactiveBead extends Bead {
@@ -315,18 +355,72 @@ class InactiveBead extends Bead {
         this.beadElement.classList.add('inactiveBead');
         this.beadElement.style.backgroundColor = this.person.color!;
         this.beadElement.addEventListener("click", event => this.RegisterClick(event))
-        this.GenerateFadeInAnimation().play();
+        this.GenerateFadeInAnimation(50).play();
     }
 
 }
 
+class CountDown {
+    private outerContainer: HTMLElement = document.createElement("div");
+    private innerContainer: HTMLElement = document.createElement("div");
+    private timeRemainingContainer: HTMLElement = document.createElement("div");
+    private animation: Animation;
+    private score = 1000;
+    constructor() {
+        this.outerContainer.setAttribute("id", "countdown");
+        this.innerContainer.setAttribute("id", "countdownInnerContainer");
+        this.outerContainer.appendChild(this.innerContainer);
+        this.timeRemainingContainer.setAttribute("id", "timeRemainingContainer");
+        this.innerContainer.appendChild(this.timeRemainingContainer);
+        this.animation = this.GenerateFadeInAnimation();
+    }
+
+    GenerateFadeInAnimation(): Animation {
+        const keyframes = new KeyframeEffect(
+            this.timeRemainingContainer,
+            [{
+                width: "100%",
+            },
+            {
+                width: "0%",
+            }], {
+            duration: 20000,
+            fill: "forwards",
+        });
+        const animation = new Animation(keyframes, document.timeline);
+        return animation;
+    }
+
+    GetAsElement(): HTMLElement {
+        return this.outerContainer;
+    }
+
+    Stop() {
+        this.animation.finish();
+    }
+
+    Pause() {
+        this.animation.pause();
+    }
+
+    Resume() {
+        this.animation.play();
+    }
+
+    Start() {
+        this.animation.play();
+    }
+}
+
 class GridInst {
     grid: Grid;
+    private countdown: CountDown = new CountDown();
     private innerContainer: HTMLElement = document.createElement("div");
     private outerContainer: HTMLElement = document.createElement("div");
     private overallContainer: HTMLElement = document.createElement("div");
+    private inactiveBeadsContainer: HTMLElement = document.createElement("div");
     private app: MainContentElement;
-    private unactiveBeads: Array<InactiveBead> = [];
+    private inactiveBeads: Array<InactiveBead> = [];
 
     constructor(app: MainContentElement) {
         this.grid = LEVEL.grid!;
@@ -343,21 +437,36 @@ class GridInst {
         for (const alien of this.grid.aliens) {
             const bead = new Bead(this, alien);
             this.innerContainer.appendChild(bead.GetAsElement());
-            this.unactiveBeads.push(bead.GetInactiveBead());
+            this.inactiveBeads.push(bead.GetInactiveBead());
         }
         const bead = new Bead(this, this.grid.indigenous!);
         this.innerContainer.appendChild(bead.GetAsElement());
         this.outerContainer.appendChild(this.innerContainer);
         this.overallContainer.appendChild(this.outerContainer);
-        this.unactiveBeads.push(bead.GetInactiveBead());
+        this.overallContainer.appendChild(this.inactiveBeadsContainer);
+        this.inactiveBeads.push(bead.GetInactiveBead());
         this.AppendInactiveBeads();
+        this.AppendCountDown();
+        this.countdown.Start();
     }
 
     AppendInactiveBeads() {
-        shuffleArray(this.unactiveBeads);
-        for (const bead of this.unactiveBeads) {
-            this.overallContainer.appendChild(bead.GetAsElement());
+        shuffleArray(this.inactiveBeads);
+        for (const bead of this.inactiveBeads) {
+            this.inactiveBeadsContainer.appendChild(bead.GetAsElement());
         }
+    }
+
+    AppendCountDown() {
+        this.overallContainer.appendChild(this.countdown.GetAsElement());
+    }
+
+    Win() {
+        this.countdown.Pause();
+    }
+
+    RegisterWrongGuess() {
+        this.countdown.Stop();
     }
 }
 

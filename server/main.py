@@ -14,8 +14,8 @@ _NAME = flags.DEFINE_string("name", None, "Your name.")
 DUMMY_LEVEL = """
 size: 5
 rank: 0
-moves: 1
-num_aliens: 2
+moves: 5
+num_aliens: 5
 allowed_moves {
   direction: MOVE_DIRECTION_UP
 }
