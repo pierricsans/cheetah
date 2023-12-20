@@ -2,19 +2,18 @@
 from frontend.protos import level_pb2
 from google.protobuf import json_format
 from google.protobuf import text_format
+from server import routes
 from server import move_maker
 from server import alternate_routes
-from absl import app
-from absl import flags
-from absl import logging
 import jinja2
+import flask
 
-_NAME = flags.DEFINE_string("name", None, "Your name.")
+
 
 DUMMY_LEVEL = """
 size: 5
 rank: 0
-moves: 5
+moves: 4
 num_aliens: 5
 allowed_moves {
   direction: MOVE_DIRECTION_UP
@@ -58,6 +57,12 @@ def GetInitialLevel() -> level_pb2.Level:
    return json_format.MessageToJson(level)
    
 
+def create_app(config_filename="server.conf.BaseConfig"):
+    app = flask.Flask(__name__)
+    app.config.from_object(config_filename)
+    app.register_blueprint(routes.routes)
+    return app
+
 
 def main(argv):
   del argv  # Unused.
@@ -67,14 +72,3 @@ def main(argv):
      level_pb2.MoveDirection.MOVE_DIRECTION_RIGHT,
      level_pb2.MoveDirection.MOVE_DIRECTION_DOWN
   ]
-  for move in moves:
-     new_move = level.grid.indigenous.trajectory.moves.add()
-     new_move.direction = move
-  alternate_routes.GenerateInitialGrid(level)
-  logging.info(level)
-  while level.grid.indigenous.trajectory.moves:
-        move_maker.MoveGridToNextState(level.grid)
-
-
-if __name__ == '__main__':
-  app.run(main)

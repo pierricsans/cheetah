@@ -46,6 +46,7 @@ webpack_bundle(
     ],
     entry_point = ":main",
     visibility = [
-      "//monkey:__pkg__",
+        "//monkey:__pkg__",
+        "//server:__pkg__",
     ]
 )

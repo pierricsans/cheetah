@@ -1,6 +1,6 @@
 :root {
   --box-size-px: 50vw;
-  --ball-size-ratio: 0.2;
+  --ball-size-ratio: 0.15;
   --cell-size: calc(var(--box-size-px) * var(--ball-size-ratio));
   --ball-size: calc(var(--cell-size) - 1px);
   --ball-opacity: 80%;
@@ -38,10 +38,10 @@
   display: inline-block;
   border-color: black;
   border-style: solid;
-  margin: 1vw;
-  width: 10vw;
-  height: 10vw;
-  font-size: 10vw;
+  margin: 2px;
+  width: 80px;
+  height: 80px;
+  font-size: 80px;
   font-family: 'Material Symbols Outlined';
   line-height: 1;
 }
@@ -106,15 +106,15 @@
 
 .banner {
   width: 100%;
-  max-width: 700px;
+  max-width: 400px;
   background-color: bisque;
   margin: auto;
-  font-size: 4vw;
+  font-size: 30px;
   text-align: center;
   border-radius: 30px;
   height: 10vh;
   margin: 1vh 1vw;
-  border: 1vw;
+  border: 1px;
 }
 
 .emptyOption {

@@ -365,7 +365,7 @@ class CountDown {
     private innerContainer: HTMLElement = document.createElement("div");
     private timeRemainingContainer: HTMLElement = document.createElement("div");
     private animation: Animation;
-    private score = 1000;
+    private score = 10000;
     constructor() {
         this.outerContainer.setAttribute("id", "countdown");
         this.innerContainer.setAttribute("id", "countdownInnerContainer");
@@ -409,6 +409,12 @@ class CountDown {
 
     Start() {
         this.animation.play();
+    }
+
+    GetPoints(): number {
+        const width = this.timeRemainingContainer.offsetWidth;
+        const contWidth = this.innerContainer.offsetWidth;
+        return Math.floor(width / contWidth * this.score);
     }
 }
 
@@ -463,11 +469,13 @@ class GridInst {
 
     Win() {
         this.countdown.Pause();
+        window.alert('You have ' + this.countdown.GetPoints() + ' points');
     }
 
     RegisterWrongGuess() {
         this.countdown.Stop();
     }
+
 }
 
 class WhereIsMyDotApp {

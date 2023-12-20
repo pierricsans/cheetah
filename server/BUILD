@@ -22,13 +22,42 @@ py_library(
     ],
 )
 
+py_library(
+    name = "conf",
+    srcs = ["conf.py"],
+)
+
 py_binary(
+    name = "wsgi",
+    srcs = ["wsgi.py"],
+    deps = [
+        ":conf",
+        ":main",
+    ]
+)
+
+py_library(
+    name = "routes",
+    srcs = ["routes.py"],
+    data = [
+        ":alternate_routes",
+        "//frontend:bundle",
+        "style.css",
+    ],
+    deps = [
+        requirement("flask"),
+    ]
+)
+
+py_library(
     name = "main",
     srcs = ["main.py"],
     data = ["//server/templates:table.html"],
     visibility = ["//monkey:__pkg__"],
     deps = [
         ":alternate_routes",
+        ":routes",
+        requirement("flask"),
         requirement("jinja2"),
     ],
 )
