@@ -45,6 +45,7 @@ webpack_bundle(
         ":main",
     ],
     entry_point = ":main",
+    webpack_config = "webpack_config.js",
     visibility = [
         "//monkey:__pkg__",
         "//server:__pkg__",

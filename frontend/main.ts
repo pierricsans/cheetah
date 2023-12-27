@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { Grid, Level, Move, MoveDirection, Person, PersonType } from './protos/level_pb.js';
+import { Grid, Level, Move, MoveDirection, Person, PersonType, Position, Trajectory } from './protos/level_pb.js';
 
 var LEVEL: Level = new Level();
 
@@ -11,6 +11,33 @@ const ICONS: Map<MoveDirection, string> = new Map([
     [MoveDirection.UNSPECIFIED, "question_mark"],
 ]);
 
+type PositionObject = {
+    x: number,
+    y: number
+}
+
+function retrySameLevel() {
+    LEVEL = getLevel(nextLevel);
+    const app = new WhereIsMyDotApp();
+    app.Init();
+}
+
+function restartFromScratch() {
+    nextLevel = 1;
+    totalScore = 0
+    LEVEL = getLevel(nextLevel);
+    const app = new WhereIsMyDotApp();
+    app.Init();
+}
+
+function triggerNextLevel(points: number) {
+    totalScore += points;
+    nextLevel += 1;
+    LEVEL = getLevel(nextLevel);
+    const app = new WhereIsMyDotApp();
+    app.Init();
+}
+
 function shuffleArray(array: Array<any>) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -20,18 +47,48 @@ function shuffleArray(array: Array<any>) {
     }
 }
 
+function GetOffset(
+    length: number,
+    moves: Array<MoveDirection>,
+    backward: MoveDirection,
+    forward: MoveDirection): number {
+    var currentPosition = 0;
+    var backwardsMost = 0;
+    var forwardsMost = 0;
+    for (const move of moves) {
+        switch (move) {
+            case forward:
+                currentPosition += 1;
+                forwardsMost = Math.max(currentPosition, forwardsMost);
+                backwardsMost = Math.min(currentPosition, backwardsMost);
+                break;
+            case backward:
+                currentPosition -= 1;
+                forwardsMost = Math.max(currentPosition, forwardsMost);
+                backwardsMost = Math.min(currentPosition, backwardsMost);
+                break;
+        }
+    }
+    const max = length - Math.max(0, forwardsMost) + 1;
+    const min = Math.abs(backwardsMost);
+    const value = Math.floor(Math.random() * (max - min) + min);
+    return value;
+}
+
 class Option {
     text: string;
     move: Move;
     option: HTMLElement = document.createElement("p");
     optionContainer: MainContentElement;
-
+    ListenerFunction = (event: Event) => this.AddSelectedOption(event);
+ 
     constructor(move: Move, optionContainer: MainContentElement) {
         this.move = move;
         this.text = MoveDirection[move?.direction!];
         this.optionContainer = optionContainer;
         this.prepareElement(this.option);
-        this.option.addEventListener('click', event => this.AddSelectedOption(event));
+        this.option.addEventListener('click', this.ListenerFunction);
+        this.option.addEventListener('keydown', this.ListenerFunction);
     }
 
     GetOptionAsElement(): HTMLElement {
@@ -40,31 +97,58 @@ class Option {
 
     GenerateSelectedOptionAsElement(): HTMLElement {
         const selectedOption = document.createElement("p");
-        this.prepareElement(selectedOption);
+        this.prepareElement(selectedOption, false);
         return selectedOption;
     }
 
-    private prepareElement(element: HTMLElement) {
+    private prepareElement(element: HTMLElement, isSelectable: boolean = true) {
         element.classList.add('option');
+        if (isSelectable) {
+            element.classList.add('selectable');
+        } else {
+            element.classList.add('notSelectable');
+        }
         element.setAttribute("alt", this.text);
+        element.setAttribute("tabindex", "0");
         element.textContent = ICONS.get(this.move?.direction!)!;
     }
 
-    private AddSelectedOption(ev: MouseEvent) {
-        this.optionContainer.AddSelectedOption(this);
+    private AddSelectedOption(event: Event) {
+        if (event.type === "click") {
+            this.optionContainer.AddSelectedOption(this);
+        } else {
+            console.log(event);
+        }
+    }
+
+    MakeSelectable() {
+        this.option.classList.add("selectable");
+        this.option.classList.remove("notSelectable");
+        this.option.addEventListener("click", this.ListenerFunction);
+        this.option.addEventListener("keydown", this.ListenerFunction);
+    }
+
+    MakeUnselectable() {
+        this.option.classList.remove("selectable");
+        this.option.classList.add("notSelectable");
+        this.option.removeEventListener("click", this.ListenerFunction);
+        this.option.removeEventListener("keydown", this.ListenerFunction);
+    }
+
+    IsSelectable(): boolean {
+        return this.option.classList.contains("selectable");
     }
 
 }
 
 class ValidationElement {
     private validateContainer = document.createElement("div");
-    private validateButton = document.createElement("button");
     private parentSelectorElement: MainContentElement;
 
     constructor(parentSelectorElement: MainContentElement) {
-        this.validateContainer.classList.add("buttonNotReady");
-        this.validateButton.textContent = "Not ready";
-        this.validateContainer.appendChild(this.validateButton);
+        this.validateContainer.classList.add("notSelectable");
+        this.validateContainer.setAttribute("id", "validateButtonContainer");
+        this.validateContainer.classList.add("bottomBar")
         this.parentSelectorElement = parentSelectorElement
     }
 
@@ -73,30 +157,14 @@ class ValidationElement {
     }
 
     EnableValidateButton() {
-        this.validateContainer.classList.add("buttonReady");
-        this.validateContainer.classList.remove("buttonNotReady");
-        this.validateContainer.firstChild!.textContent = "Ready";
         this.validateContainer.addEventListener("click", event => this.Validate(event));
+        this.validateContainer.classList.add("selectable");
+        this.validateContainer.classList.remove("notSelectable");
     }
 
     Validate(event: Event) {
-        const parentSelectorElement = this.parentSelectorElement;
-        axios.get('fillLevel', {
-            params: {
-                level: LEVEL.toJsonString(),
-            }
-        }).then(function (response) {
-            LEVEL = new Level();
-            LEVEL.fromJson(response.data);
-            parentSelectorElement.Validate();
-        })
-            .catch(function (error) {
-                // handle error
-                console.log(error);
-            })
-            .finally(function () {
-                console.log("All good");
-            });
+        this.parentSelectorElement.FillLevel();
+        this.parentSelectorElement.Validate();
     }
 
     Hide() {
@@ -111,7 +179,14 @@ class MainContentElement {
     private optionsContainer: HTMLElement = document.createElement("div");
     private validateElement: ValidationElement;
     private parentWhereIsMyDotApp: WhereIsMyDotApp;
-    private grid?: GridInst;
+    private options: Array<Option> = new Array<Option>();
+    grid?: GridInst;
+    private colors: Array<string>;
+    private allTrajectories: Array<Trajectory> = new Array<Trajectory>();
+    private allPositions: Map<number, Array<Position>> = new Map<number, Array<Position>>();
+    private currentLevelDisplay: HTMLElement = document.createElement("div");
+    private totalScoreDisplay: HTMLElement = document.createElement("div");
+    private currentScoreDisplay: HTMLElement = document.createElement("div");
 
     constructor(parentWhereIsMyDotApp: WhereIsMyDotApp) {
         this.init();
@@ -119,13 +194,221 @@ class MainContentElement {
         this.GenerateSelectorElement();
         this.GenerateSelectionElement();
         this.validateElement = new ValidationElement(this);
-        this.selector.appendChild(this.validateElement.GetAsElement());
+        this.container.appendChild(this.validateElement.GetAsElement());
         this.parentWhereIsMyDotApp = parentWhereIsMyDotApp;
+        this.colors = this.GenerateColors();
+        this.appendCurrentLevelDisplay();
+        this.appendTotalScoreDisplay();
+        this.appendCurrentScoreDisplay();
     }
 
     GetAsElement(): HTMLElement {
         return this.container;
     }
+
+    private GenerateColors(): Array<string> {
+        const colors = Array<string>();
+        colors.push("#001219");  // Rich black
+        colors.push("#005F73");  // Midnight green
+        colors.push("#0A9396");  // Dark Cyan
+        colors.push("#94D2BD");  // Tiffany Blue
+        colors.push("#E9D8A6");  // Vanilla
+        colors.push("#EE9B00");  // Gamboge
+        colors.push("#CA6702");  // Alloy orange
+        colors.push("#BB3E03");  // Rust
+        colors.push("#AE2012");  // Rufous
+        colors.push("#9B2226");  // Auburn
+        shuffleArray(colors);
+        return colors;
+    }
+
+    GetNextColor(): string {
+        const color = this.colors.pop();
+        if (color === undefined) {
+            console.log('No more colors');
+            return ''
+        } else {
+            return color;
+        }
+    }
+
+
+    FillLevel() {
+        const grid: Grid = LEVEL.grid!;
+        grid.name = LEVEL.name
+        grid.height = LEVEL.size
+        grid.width = LEVEL.size
+        this.GenerateInitialState(grid.indigenous!)
+        this.AddAliens();
+    }
+
+    private GenerateInitialState(person: Person, generateMoves: boolean = false) {
+        person.color = this.GetNextColor()
+        if (generateMoves) {
+            this.GenerateMoves(person);
+        } else {
+            this.allTrajectories.push(person.trajectory!);
+        }
+        this.GenerateInitialPosition(person);
+    }
+
+    private appendCurrentLevelDisplay() {
+        this.currentLevelDisplay.setAttribute("id", "currentLevel");
+        this.currentLevelDisplay.textContent = nextLevel.toString();
+        this.container.appendChild(this.currentLevelDisplay);
+    }
+
+    private appendTotalScoreDisplay() {
+        this.totalScoreDisplay.setAttribute("id", "totalScore");
+        this.totalScoreDisplay.textContent = totalScore.toString();
+        this.container.appendChild(this.totalScoreDisplay);
+    }
+
+    private appendCurrentScoreDisplay() {
+        this.currentScoreDisplay.setAttribute("id", "currentScore");
+        this.currentScoreDisplay.textContent = "0";
+        this.container.appendChild(this.currentScoreDisplay);
+    }
+
+    refreshCurrentScoreDisplay(score: number) {
+        this.currentScoreDisplay.textContent = score.toString();
+    }
+
+    private GenerateInitialPosition(person: Person) {
+        const y_moves = new Array<MoveDirection>();
+        const x_moves = new Array<MoveDirection>();
+        if (person.trajectory === undefined) {
+            person.trajectory = new Trajectory();
+        }
+        for (const move of person.trajectory?.moves!) {
+            switch (move.direction) {
+                case MoveDirection.RIGHT:
+                    x_moves.push(move.direction);
+                    break;
+                case MoveDirection.LEFT:
+                    x_moves.push(move.direction);
+                    break;
+                case MoveDirection.UP:
+                    y_moves.push(move.direction);
+                    break;
+                case MoveDirection.DOWN:
+                    y_moves.push(move.direction);
+                    break;
+            }
+        }
+        if (person.position === undefined) {
+            person.position = new Position();
+        }
+        person.position.xOffset = GetOffset(
+            LEVEL.grid?.width!,
+            x_moves,
+            MoveDirection.LEFT,
+            MoveDirection.RIGHT
+        )
+        person.position.yOffset = GetOffset(
+            LEVEL.grid?.width!,
+            y_moves,
+            MoveDirection.DOWN,
+            MoveDirection.UP
+        )
+        if (!this.registerPosition(person)) {
+            delete person.position;
+            console.log("unlucky-position");
+            this.GenerateInitialPosition(person);
+        };
+    }
+
+    private registerPosition(person: Person): boolean {
+        const initialPosition = person.position!;
+        if (!this.allPositions.has(0)) {
+            this.allPositions.set(0, new Array());
+        }
+        for (const registeredPosition of this.allPositions.get(0)!) {
+            if (initialPosition.equals(registeredPosition)) {
+                return false;
+            }
+        }
+        this.allPositions.get(0)?.push(initialPosition);
+        var nextMove: number = 1;
+        var currentPosition: Position = initialPosition;
+        for (const move of person.trajectory?.moves!) {
+            const position: Position = new Position();
+            switch (move.direction) {
+                case MoveDirection.UP:
+                    position.xOffset = currentPosition.xOffset;
+                    position.yOffset = currentPosition.yOffset! + 1;
+                    break;
+                case MoveDirection.DOWN:
+                    position.xOffset = currentPosition.xOffset;
+                    position.yOffset = currentPosition.yOffset! - 1;
+                    break;
+                case MoveDirection.RIGHT:
+                    position.xOffset = currentPosition.xOffset! + 1;
+                    position.yOffset = currentPosition.yOffset;
+                    break;
+                case MoveDirection.LEFT:
+                    position.xOffset = currentPosition.xOffset! - 1;
+                    position.yOffset = currentPosition.yOffset;
+                    break;
+                default:
+                    console.log("Unknown direction: " + move.direction);
+            }
+            if (!this.allPositions.has(nextMove)) {
+                this.allPositions.set(nextMove, new Array());
+            }
+            for (const registeredPosition of this.allPositions.get(nextMove)!) {
+                if (registeredPosition.equals(position)) {
+                    return false;
+                }
+            }
+            this.allPositions.get(nextMove)?.push(position);
+            nextMove += 1;
+            currentPosition = position;
+        }
+        return true;
+    }
+
+    private GenerateMoves(person: Person) {
+        if (person.trajectory === undefined) {
+            person.trajectory = new Trajectory();
+        }
+        for (var i = 0; i < LEVEL.moves!; i++) {
+            const randint = Math.floor(Math.random() * LEVEL.allowedMoves.length);
+            const randMove = LEVEL.allowedMoves[randint ];
+            const move = new Move().fromJsonString(randMove.toJsonString());
+            person.trajectory?.moves.push(move);
+        }
+        for (const trajectory of this.allTrajectories) {
+            if (trajectory.equals(person.trajectory)) {
+                if (person.trajectory !== undefined) {
+                    person.trajectory.moves = [];
+                }
+                this.GenerateMoves(person);
+                return;
+            }
+        }
+        this.allTrajectories.push(person.trajectory);
+    }
+
+    private CheckIndigenousHasMoves() {
+        if (LEVEL.grid?.indigenous === undefined) {
+            console.log("No indigenous found");
+        }
+        if (LEVEL.grid?.indigenous?.trajectory?.moves?.length! !== LEVEL.moves!) {
+            console.log("Required moves: " + LEVEL.moves! + " vs actual: " + LEVEL.grid?.indigenous?.trajectory?.moves?.length!);
+        }
+    }
+
+    private AddAliens() {
+        this.CheckIndigenousHasMoves();
+        for (var i = 0; i < LEVEL.numAliens!; i++) {
+            const alien = new Person();
+            LEVEL.grid?.aliens.push(alien);
+            alien.type = PersonType.ALIEN;
+            this.GenerateInitialState(alien, true);
+        }
+    }
+
 
     private init() {
         this.container.setAttribute("id", "selectorContainer");
@@ -141,6 +424,7 @@ class MainContentElement {
         this.optionsContainer.setAttribute("id", "optionsContainer")
         for (const move of LEVEL.allowedMoves) {
             const option = new Option(move, this);
+            this.options.push(option);
             this.optionsContainer.appendChild(option.GetOptionAsElement());
         }
         this.selector.appendChild(this.optionsContainer);
@@ -149,19 +433,49 @@ class MainContentElement {
     private GenerateSelectionElement() {
         this.selection.setAttribute("id", "selection");
         this.container.appendChild(this.selection);
+        var isSelectable = true;
         for (var i = 0; i < LEVEL.moves!; i++) {
             const emptyOption = document.createElement("span");
-            emptyOption.classList.add("emptyOption");
+            emptyOption.classList.add("selectedOption");
+            if (isSelectable) {
+                emptyOption.classList.add("nextSelectable");
+                isSelectable = false;
+            } else {
+                emptyOption.classList.add("notSelectable");
+            }
             this.selection.appendChild(emptyOption);
         }
     }
 
     AddSelectedOption(option: Option) {
-        const elements = this.selection.getElementsByClassName("emptyOption");
-        const elementToReplace = elements[0]
-        elementToReplace.replaceWith(option.GenerateSelectedOptionAsElement());
+        const selectable = this.selection.getElementsByClassName("nextSelectable")[0];
+        selectable.classList.add("selected");
+        selectable.classList.remove("nextSelectable");
+        selectable.textContent = ICONS.get(option.move?.direction!)!;
+        const nextSelectable = this.selection.getElementsByClassName("notSelectable")[0];
+        if (nextSelectable !== undefined) {
+            nextSelectable.classList.add("nextSelectable");
+            nextSelectable.classList.remove("notSelectable")
+        }
+        option.MakeUnselectable();
+        var atLeastOneSelectable = false;
+        for (const option of this.options) {
+            if (option.IsSelectable()) {
+                atLeastOneSelectable = true;
+            }
+        }
+        if (!atLeastOneSelectable) {
+            for (const option of this.options) {
+                option.MakeSelectable();
+            }
+        }
         LEVEL.grid?.indigenous?.trajectory?.moves.push(option.move);
         if (LEVEL.grid?.indigenous?.trajectory?.moves?.length! === LEVEL.moves) {
+            for (const option of this.options) {
+                if (option.IsSelectable()) {
+                    option.MakeUnselectable();
+                }
+            }
             this.validateElement.EnableValidateButton();
         }
     }
@@ -196,6 +510,9 @@ class Bead {
     movementIncrement: number;
     private animationOffset: number;
     private inactiveBead: InactiveBead | null = null;
+    private fadeIn: Animation = new Animation();
+    private mainAnimation: Animation = new Animation();
+    private fadeOut: Animation = new Animation();
 
     constructor(grid: GridInst, person: Person) {
         this.parentGrid = grid;
@@ -214,8 +531,8 @@ class Bead {
         this.animationOffset = 1 / this.person.trajectory?.moves?.length!;
         this.beadElement.style.bottom = (this.movementIncrement * this.person.position?.yOffset!).toString() + '%';
         this.beadElement.style.left = (this.movementIncrement * this.person.position?.xOffset!).toString() + '%';
-        this.animateElement(100, 400);
-        this.inactiveBead = new InactiveBead(this.parentGrid, this.person);
+        this.animateElement(100, 100 * this.person.trajectory?.moves?.length!);
+        this.inactiveBead = new InactiveBead(this.parentGrid, this.person, this);
     }
 
     GetInactiveBead(): InactiveBead {
@@ -225,12 +542,24 @@ class Bead {
     RegisterClick(event: Event) {
         switch (this.person.type) {
             case PersonType.INDIGENOUS:
-                this.parentGrid.Win();
+                this.RegisterWin();
                 break;
             case PersonType.ALIEN:
-                this.parentGrid.RegisterWrongGuess();
+                this.RegisterWrong();
                 break;
         }
+    }
+
+    RegisterWin() {
+        this.parentGrid.Win();
+    }
+
+    RegisterWrong() {
+        this.beadElement.style.display = "none";
+        if (this.inactiveBead !== null) {
+            this.inactiveBead.beadElement.style.display = "none";
+        }
+        this.parentGrid.RegisterWrongGuess();
     }
 
     GenerateFadeInAnimation(duration: number): Animation {
@@ -310,7 +639,7 @@ class Bead {
                     console.log('unknown code: ' + move.direction);
             }
             frames.push({
-                offset: animationOffset,
+                offset: Math.min(animationOffset, 1),
                 bottom: bottom.toString() + '%',
                 left: left.toString() + '%',
                 easing: 'ease-in-out'
@@ -327,27 +656,54 @@ class Bead {
     }
 
     animateElement(fadeDuration: number, mainAnimationDuration: number) {
-        const fadeIn: Animation = this.GenerateFadeInAnimation(fadeDuration);
-        const mainAnimation: Animation = this.GenerateMainAnimation(mainAnimationDuration);
-        const fadeOutAnimation: Animation = this.GenerateFadeOutAnimation(fadeDuration);
-        fadeIn.play();
-        fadeIn.onfinish = (event: Event) => {
-          mainAnimation.play();
+        console.log("main animation duration: " + mainAnimationDuration);
+        this.fadeIn = this.GenerateFadeInAnimation(fadeDuration);
+        this.mainAnimation = this.GenerateMainAnimation(mainAnimationDuration);
+        this.fadeOut = this.GenerateFadeOutAnimation(fadeDuration);
+        this.fadeIn.play();
+        this.fadeIn.onfinish = (event: Event) => {
+            this.mainAnimation.play();
         }
-        mainAnimation.onfinish = (event: Event) => {
-          fadeOutAnimation.play();
+        this.mainAnimation.onfinish = (event: Event) => {
+            this.fadeOut.play();
         }
-        fadeOutAnimation.onfinish = (event: Event) => {
+        this.fadeOut.onfinish = (event: Event) => {
             this.animateElement(fadeDuration * 1.2, mainAnimationDuration * 1.2);
         }
-      }
+    }
+
+    Win() {
+        switch (this.person.type) {
+            case PersonType.INDIGENOUS:
+                this.beadElement.style.opacity = "100%";
+                if (this.inactiveBead !== null) {
+                    this.inactiveBead.GetAsElement().style.opacity = "100%";
+                }
+                break;
+            case PersonType.ALIEN:
+                this.beadElement.style.opacity = "20%"
+                if (this.inactiveBead !== null) {
+                    this.inactiveBead.GetAsElement().style.opacity = "20%";
+                }
+                break;
+        }
+        this.EndGame();
+    }
+
+    EndGame() {
+        this.fadeIn.onfinish = null;
+        this.mainAnimation.onfinish = null;
+        this.fadeOut.onfinish = null;
+    }
 
 }
 
 class InactiveBead extends Bead {
+    parentBead: Bead;
 
-    constructor(grid: GridInst, person: Person) {
+    constructor(grid: GridInst, person: Person, parentBead: Bead) {
         super(grid, person);
+        this.parentBead = parentBead;
     }
 
     Init() {
@@ -358,36 +714,71 @@ class InactiveBead extends Bead {
         this.GenerateFadeInAnimation(50).play();
     }
 
+    RegisterWrong() {
+        this.beadElement.style.display = "none";
+        this.parentBead.beadElement.style.display = "none";
+        this.parentGrid.RegisterWrongGuess();
+    }
+
 }
 
 class CountDown {
     private outerContainer: HTMLElement = document.createElement("div");
-    private innerContainer: HTMLElement = document.createElement("div");
+    private startAgain: HTMLElement = document.createElement("span");
+    private retry: HTMLElement = document.createElement("span");
+    private nextLevel: HTMLElement = document.createElement("span");
     private timeRemainingContainer: HTMLElement = document.createElement("div");
     private animation: Animation;
-    private score = 10000;
-    constructor() {
+    private startingScore = 1000;
+    private totalDuration = 20000;
+    private score = this.startingScore;
+    private startTime: number = 0;
+    private parentGrid: GridInst;
+    private timerId: ReturnType<typeof setInterval> | undefined = undefined;
+
+    constructor(grid: GridInst) {
+        this.parentGrid = grid;
         this.outerContainer.setAttribute("id", "countdown");
-        this.innerContainer.setAttribute("id", "countdownInnerContainer");
-        this.outerContainer.appendChild(this.innerContainer);
+        this.outerContainer.classList.add("bottomBar");
         this.timeRemainingContainer.setAttribute("id", "timeRemainingContainer");
-        this.innerContainer.appendChild(this.timeRemainingContainer);
-        this.animation = this.GenerateFadeInAnimation();
+        this.outerContainer.appendChild(this.timeRemainingContainer);
+        this.startAgain.classList.add("levelAction");
+        this.startAgain.classList.add("validAction");
+        this.startAgain.textContent = "skip_previous";
+        this.startAgain.setAttribute("alt", "Restart");
+        this.startAgain.setAttribute("id", "Restart");
+        this.retry.classList.add("levelAction");
+        this.retry.classList.add("validAction");
+        this.retry.textContent = "forward_media";
+        this.retry.setAttribute("alt", "Retry");
+        this.retry.setAttribute("id", "Retry");
+        this.nextLevel.classList.add("levelAction");
+        this.nextLevel.classList.add("validAction");
+        this.nextLevel.textContent = "skip_next";
+        this.nextLevel.setAttribute("alt", "Next");
+        this.nextLevel.setAttribute("id", "Next");
+        this.outerContainer.appendChild(this.startAgain);
+        this.outerContainer.appendChild(this.retry);
+        this.outerContainer.appendChild(this.nextLevel);
+        this.animation = this.GenerateCountdownAnimation(this.totalDuration);
     }
 
-    GenerateFadeInAnimation(): Animation {
+    GenerateCountdownAnimation(duration: number, width: string = "100%"): Animation {
         const keyframes = new KeyframeEffect(
             this.timeRemainingContainer,
             [{
-                width: "100%",
+                width: width,
             },
             {
                 width: "0%",
             }], {
-            duration: 20000,
+            duration: duration,
             fill: "forwards",
         });
         const animation = new Animation(keyframes, document.timeline);
+        animation.onfinish = (event: Event) => {
+            this.Lose();
+        }
         return animation;
     }
 
@@ -395,12 +786,34 @@ class CountDown {
         return this.outerContainer;
     }
 
+    Lose() {
+        this.parentGrid.Lose();
+    }
+
     Stop() {
         this.animation.finish();
+        clearInterval(this.timerId);
+        this.startAgain.addEventListener("click", restartFromScratch);
+        this.startAgain.classList.add("selectable");
     }
 
     Pause() {
         this.animation.pause();
+        clearInterval(this.timerId);
+        if (this.nextLevel.classList.contains('validAction')) {
+            this.nextLevel.addEventListener("click", (event) => this.triggerNextLevel(event));
+            this.nextLevel.classList.add("selectable");
+        }
+        if (this.retry.classList.contains('validAction')) {
+            this.retry.addEventListener("click", retrySameLevel);
+            this.retry.classList.add("selectable");
+        }
+        this.startAgain.addEventListener("click", restartFromScratch);
+        this.startAgain.classList.add("selectable");
+    }
+
+    triggerNextLevel(event: Event)  {
+        triggerNextLevel(this.score);
     }
 
     Resume() {
@@ -408,24 +821,42 @@ class CountDown {
     }
 
     Start() {
+        this.startTime = Date.now();
         this.animation.play();
+        this.timerId = setInterval(() => this.ShowCurrentScore(), 5);
     }
 
-    GetPoints(): number {
-        const width = this.timeRemainingContainer.offsetWidth;
-        const contWidth = this.innerContainer.offsetWidth;
-        return Math.floor(width / contWidth * this.score);
+    ShowCurrentScore() {
+        const ratio = this.timeRemainingContainer.offsetWidth / this.outerContainer.offsetWidth;
+        if (ratio < 0.8) {
+            this.nextLevel.classList.add("invalidAction");
+            this.nextLevel.classList.remove("validAction");
+        }
+        if (ratio < 0.5) {
+            this.retry.classList.add("invalidAction");
+            this.retry.classList.remove("validAction");
+        }
+        this.score = Math.floor(ratio * this.startingScore)
+        this.parentGrid.app.refreshCurrentScoreDisplay(this.score);
+    }
+
+    RegisterWrongGuess() {
+        this.totalDuration = this.totalDuration - (Date.now() - this.startTime);
+        this.animation = this.GenerateCountdownAnimation(this.totalDuration, this.timeRemainingContainer.offsetWidth - 50 + "px");
+        this.startTime = Date.now();
+        this.animation.play();
     }
 }
 
 class GridInst {
     grid: Grid;
-    private countdown: CountDown = new CountDown();
+    countdown: CountDown = new CountDown(this);
+    app: MainContentElement;
     private innerContainer: HTMLElement = document.createElement("div");
     private outerContainer: HTMLElement = document.createElement("div");
     private overallContainer: HTMLElement = document.createElement("div");
     private inactiveBeadsContainer: HTMLElement = document.createElement("div");
-    private app: MainContentElement;
+    private beads: Array<Bead> = [];
     private inactiveBeads: Array<InactiveBead> = [];
 
     constructor(app: MainContentElement) {
@@ -442,10 +873,12 @@ class GridInst {
         this.innerContainer.setAttribute("id", "innerContainer");
         for (const alien of this.grid.aliens) {
             const bead = new Bead(this, alien);
+            this.beads.push(bead);
             this.innerContainer.appendChild(bead.GetAsElement());
             this.inactiveBeads.push(bead.GetInactiveBead());
         }
         const bead = new Bead(this, this.grid.indigenous!);
+        this.beads.push(bead);
         this.innerContainer.appendChild(bead.GetAsElement());
         this.outerContainer.appendChild(this.innerContainer);
         this.overallContainer.appendChild(this.outerContainer);
@@ -469,19 +902,29 @@ class GridInst {
 
     Win() {
         this.countdown.Pause();
-        window.alert('You have ' + this.countdown.GetPoints() + ' points');
+        for (const bead of this.beads) {
+            bead.Win();
+        }
+    }
+
+    Lose() {
+        for (const bead of this.beads) {
+            console.log("loose");
+        }
+        for (const bead of this.beads) {
+            bead.EndGame();
+        }
+        this.countdown.Stop();
     }
 
     RegisterWrongGuess() {
-        this.countdown.Stop();
+        this.countdown.RegisterWrongGuess();
     }
 
 }
 
 class WhereIsMyDotApp {
     private readonly container: HTMLElement = document.body;
-    private readonly header: HTMLElement = document.createElement("div");
-    private readonly footer: HTMLElement = document.createElement('div');
     private contentElement: MainContentElement;
 
     constructor() {
@@ -489,52 +932,85 @@ class WhereIsMyDotApp {
     }
 
     Init() {
-        this.appendHeader();
+        this.cleanup();
         this.appendSelectorElement();
-        this.appendFooter();
     }
 
     private appendSelectorElement() {
         this.container.appendChild(this.contentElement.GetAsElement())
     }
 
-    private appendHeader() {
-        this.header.classList.add('banner');
-        this.header.setAttribute('id', 'header');
-        this.header.textContent = "Where is my dot?";
-        this.container.appendChild(this.header);
+    private cleanup() {
+        const elements = this.container.children;
+        while (this.container.firstChild) {
+            this.container.removeChild(this.container.lastChild!);
+        }
     }
 
-    private appendFooter() {
-        this.footer.classList.add('banner');
-        this.footer.setAttribute('id', 'footer');
-        this.footer.textContent = "2023";
-        this.container.appendChild(this.footer);
-    }
-
-}
-
-function getInitialLevel() {
-    axios({
-        method: 'get',
-        url: 'getInitialLevel'
-    }).then(function (response) {
-        // handle success
-        LEVEL.fromJson(response.data);
-        const app = new WhereIsMyDotApp();
-        app.Init();
-    })
-        .catch(function (error) {
-            // handle error
-            console.log(error);
-        })
-        .finally(function () {
-            console.log("All good");
-        });
 }
 
 function Init() {
-    getInitialLevel();
+    LEVEL = getLevel(nextLevel);
+    const app = new WhereIsMyDotApp();
+    app.Init();
 }
+
+function getLevel(levelNumber: number): Level {
+    const level = new Level();
+    var settings = undefined;
+    if (LEVEL_SETTINGS.has(levelNumber)) {
+        settings = LEVEL_SETTINGS.get(levelNumber);
+    } else {
+        settings = {
+            size: levelNumber,
+            moves: levelNumber,
+            numAliens: levelNumber,
+        }
+    }
+    level.size = settings?.size;
+    document.documentElement.style.setProperty('--box-size-num-moves', level.size!.toString());
+    level.moves = settings?.moves;
+    level.numAliens = settings?.numAliens;
+    level.allowedMoves.push(new Move({ "direction": MoveDirection.UP }));
+    level.allowedMoves.push(new Move({ "direction": MoveDirection.DOWN }));
+    level.allowedMoves.push(new Move({ "direction": MoveDirection.RIGHT }));
+    level.allowedMoves.push(new Move({ "direction": MoveDirection.LEFT }));
+    document.documentElement.style.setProperty('--moves-num', level.allowedMoves!.length.toString());
+    level.grid = new Grid({
+        "indigenous": new Person({
+            "trajectory": new Trajectory(),
+            "type": PersonType.INDIGENOUS
+        })
+    });
+    return level;
+}
+
+var nextLevel: number = 1;
+var totalScore: number = 0;
+
+const LEVEL_SETTINGS = new Map(
+    [
+        [1, {
+            size: 5,
+            moves: 1,
+            numAliens: 1
+        }],
+        [2, {
+            size: 5,
+            moves: 2,
+            numAliens: 2
+        }],
+        [3, {
+            size: 5,
+            moves: 3,
+            numAliens: 3
+        }],
+        [4, {
+            size: 5,
+            moves: 4,
+            numAliens: 4
+        }],
+    ]
+);
 
 Init();

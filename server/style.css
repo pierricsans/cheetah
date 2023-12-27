@@ -1,19 +1,80 @@
 :root {
-  --box-size-px: 50vw;
+  --box-size-cqw: 80cqw;
+  --move-num: 8;
+  --box-size-num-moves: 5;
   --ball-size-ratio: 0.15;
-  --cell-size: calc(var(--box-size-px) * var(--ball-size-ratio));
+  --cell-size: calc(var(--box-size-cqw) / var(--box-size-num-moves));
   --ball-size: calc(var(--cell-size) - 1px);
-  --ball-opacity: 80%;
+  --ball-opacity: 90%;
   --outer-box-border-thickness: 2vw;
+  --body-background: #F7F9F9;
+  --app-background: #353A47;
+  --primary-color: #E6AF2E;
+  --secondary-color: #CF5C36;
+  --tertiary-color: #8390FA;
 }
 
-#countdown {
-  border-color: brown;
-  border-style: solid;
-  margin: 2vw;
-  width: auto;
-  border-radius: 30px;
-  height: 8vh;
+body {
+  background-color: var(--body-background);
+  font-family: "Orbitron", sans-serif;
+  color: var(--body-background);
+  margin: 0;
+  user-select: none;
+}
+
+.selectable {
+  animation-name: grow;
+  animation-duration: 500ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  border-color: var(--primary-color);
+  background-color: var(--primary-color);
+  color: var(--app-background);
+  cursor: pointer;
+}
+
+.notSelectable {
+  border-color: var(--secondary-color);
+  background-color: var(--secondary-color);
+  color: var(--app-background);
+}
+
+.notSelectable:hover {
+  cursor: default;
+}
+
+.selected {
+  border-color: var(--body-background);
+  background-color: var(--body-background);
+  color: var(--app-background);
+}
+
+.nextSelectable {
+  animation-name: bounce;
+  animation-duration: 1000ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+  border-color: var(--body-background);
+  background-color: var(--body-background);
+  color: var(--app-background);
+}
+
+@keyframes grow {
+  from {
+    transform: scale(1, 1);
+  }
+
+  to {
+    transform: scale(105%, 105%);
+  }
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 
+  40% {transform: translateY(-10%);} 
+  60% {transform: translateY(-5%);} 
 }
 
 #countdownInnerContainer {
@@ -21,11 +82,10 @@
 }
 
 #timeRemainingContainer {
-  background-color: white;
-  height: 6vh;
-  margin: 1vh 1vw;
+  background-color: var(--body-background);
+  height: 7cqh;
   width: 100%;
-  border-radius: 30px;
+  border-radius: 10px;
 }
 
 #top {
@@ -34,59 +94,168 @@
   display: block;
 }
 
-.option {
-  display: inline-block;
-  border-color: black;
+@container app-content (min-width: 100px) {
+  .option {
+    display: inline-block;
+    border-style: solid;
+    border-width: 3px;
+    margin: 2px;
+    width: calc(var(--box-size-cqw) / var(--move-num));
+    aspect-ratio: 1 /1;
+    font-size: calc(var(--box-size-cqw) / var(--move-num));
+    font-family: "Material Symbols Outlined";
+    line-height: 1;
+    border-radius: 50%;
+  }
+
+  .selectedOption {
+    display: inline-block;
+    border-style: solid;
+    border-width: 3px;
+    margin: 2px;
+    width: calc(var(--box-size-cqw) / var(--box-size-num-moves));
+    aspect-ratio: 1 /1;
+    font-size: calc(var(--box-size-cqw) / var(--box-size-num-moves));
+    font-family: "Material Symbols Outlined";
+    line-height: 1;
+    border-radius: 50%;
+    min-width: 20px;
+  }
+
+  .emptyOption {
+    display: inline-block;
+    border-color: var(--body-background);
+    border-style: solid;
+    margin: 2px;
+    width: calc(var(--box-size-cqw) / var(--box-size-num-moves));
+    aspect-ratio: 1 /1;
+    font-size: calc(var(--box-size-cqw) / var(--box-size-num-moves));
+    font-family: "Material Symbols Outlined";
+    line-height: 1;
+    border-radius: 50%;
+  }
+
+  #selector {
+    bottom: 50%;
+    position: absolute;
+    width: 100%;
+    transform: translate(-50%, -50%);
+    left: 50%;
+  }
+
+  #outerContainer {
+    width: var(--box-size-cqw);
+    aspect-ratio: 1 /1;
+    border-color: var(--primary-color);
+    border-style: solid;
+    border-width: 3px;
+    margin: 10px auto;
+    padding: calc((var(--cell-size) / 2));
+    border-radius: calc((var(--ball-size) / 2) + var(--outer-box-border-thickness));
+  }
+
+  #optionsContainer {
+    bottom: 50%;
+    position: absolute;
+    transform: translate(0, 50%);
+    width: 100%;
+  }
+
+  .bottomBar {
+    bottom: 5cqw;
+    left: 10cqw;
+    position: absolute;
+    width: 80cqw;
+    border-radius: 10px;
+    height: 7cqh;
+  }
+
+  #currentLevel {
+    position: fixed;
+    top: 0;
+    margin: 6px;
+    width: 15cqw;
+    border-color: var(--body-background);
+    border-style: solid;
+    border-radius: 10px;
+  }
+
+  #totalScore {
+    position: fixed;
+    top: 0;
+    left: calc(15cqw + 6px);
+    margin: 6px;
+    width: 20cqw;
+    border-color: var(--body-background);
+    border-style: solid;
+    border-radius: 10px;
+  }
+
+  #currentScore {
+    position: fixed;
+    top: 0;
+    left: calc(35cqw + 2 * 6px);
+    margin: 6px;
+    width: 20cqw;
+    border-color: var(--body-background);
+    border-style: solid;
+    border-radius: 10px;
+  }
+}
+
+.levelAction {
   border-style: solid;
-  margin: 2px;
-  width: 80px;
-  height: 80px;
-  font-size: 80px;
-  font-family: 'Material Symbols Outlined';
-  line-height: 1;
+  border-width: 3px;
+  position: absolute;
+  bottom: 1px;
+  font-family: "Material Symbols Outlined";
+  border-radius: 50%;
+  font-size: 5cqh;
+  width: 6cqh;
+  min-width: 20px;
+  aspect-ratio: 1 /1;
+  /* height: 5cqh; */
 }
 
-.option:hover {
-  cursor: pointer;
+.validAction {
+  color: var(--app-background);
 }
 
-.buttonReady {
-  background-color: green;
+.invalidAction {
+  color: var(--app-background);
+  border-color: var(--secondary-color);
+  background-color: var(--secondary-color);
 }
 
-.buttonNotReady {
-  background-color: grey;
+#Restart {
+  left: 1px;
 }
 
-#header {
-  height: 10vh;
+#Retry {
+  left: 40cqw;
+}
+
+#Next {
+  left: 64cqw;
+}
+
+#selection {
+  margin-top: 10cqh;
 }
 
 #selectorContainer {
-  height: 74vh;
-}
-
-#footer {
-  bottom: 0;
-  right: 0;
-  left: 0;
-}
-
-#outerContainer {
-  width: var(--box-size-px);
-  height: var(--box-size-px);
-  border-color: black;
-  border-style: solid;
-  border-width: var(--outer-box-border-thickness);
+  height: 100%;
+  container-type: inline-size;
+  container-name: app-content;
+  position: fixed;
   margin: auto;
-  padding: calc((var(--cell-size) / 2));
-  border-radius: calc((var(--ball-size) / 2) + var(--outer-box-border-thickness));
+  left: 50%;
+  transform: translate(-50%, 0);
 }
 
 #innerContainer {
   position: relative;
-  width: auto;
-  height: var(--box-size-px);
+  height: 100%
 }
 
 .activeBead {
@@ -99,31 +268,24 @@
   border-radius: 50%;
 }
 
+.bead:hover {
+  cursor: pointer;
+}
+
 .inactiveBead {
   display: inline-block;
-  margin: 2vw;
+  margin: 2px;
 }
 
 .banner {
   width: 100%;
   max-width: 400px;
-  background-color: bisque;
+  background-color: var(--app-background);
   margin: auto;
   font-size: 30px;
   text-align: center;
-  border-radius: 30px;
-  height: 10vh;
-  margin: 1vh 1vw;
+  height: 5vh;
   border: 1px;
-}
-
-.emptyOption {
-  display: inline-block;
-  width: 15vw;
-  border-bottom: 1vw;
-  border-bottom-style: solid;
-  border-bottom-color: black;
-  margin: 2vw;
 }
 
 .answerBox {
@@ -131,7 +293,7 @@
   min-width: 3Opx;
   min-height: 10px;
   border-bottom: 5px;
-  border-bottom-color: black;
+  border-bottom-color: var(--body-background);
   border-bottom-style: solid;
   margin: 10px;
 }

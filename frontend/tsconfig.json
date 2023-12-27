@@ -5,7 +5,7 @@
     "module": "NodeNext",
     "strict": true,
     "moduleResolution": "NodeNext",
-    "lib": ["es2016", "dom", "es5"],
+    "lib": ["es2016", "dom", "es5", "dom.iterable"],
     "sourceMap": true,
     "declarationMap": true,
     "paths": {

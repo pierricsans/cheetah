@@ -129,9 +129,8 @@ class Grid():
         values = tuple([move.direction for move in person.trajectory.moves])
         if values in self.registered_trajectories:
             return False
-        else:
-            self.registered_trajectories.add(values)
-            return True
+        self.registered_trajectories.add(values)
+        return True
 
     def RegisterPositions(self, person) -> bool:
         initial_position = Position(
