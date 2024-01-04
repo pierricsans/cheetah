@@ -233,6 +233,7 @@ export class ActiveBead extends Bead {
         this.fadeIn = this.GenerateFadeInAnimation(fadeDuration);
         this.mainAnimation = this.GenerateMainAnimation(mainAnimationDuration);
         this.fadeOut = this.GenerateFadeOutAnimation(fadeDuration);
+        var playbackRate = 1;
         this.fadeIn.addEventListener("finish", (event) => {
             this.fadeIn.commitStyles();
             this.fadeIn.cancel();
@@ -246,6 +247,10 @@ export class ActiveBead extends Bead {
         this.fadeOut.addEventListener("finish", (event) => {
             this.fadeOut.commitStyles();
             this.fadeOut.cancel();
+            playbackRate = playbackRate * RATE_OF_ANIMATION_SLOWDOWN;
+            this.fadeIn.updatePlaybackRate(playbackRate);
+            this.mainAnimation.updatePlaybackRate(playbackRate);
+            this.fadeOut.updatePlaybackRate(playbackRate);
             this.fadeIn.play();
         });
         this.fadeIn.play();
