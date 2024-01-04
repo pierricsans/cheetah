@@ -50,10 +50,10 @@ export class Selector {
 
   protected GenerateOptions() {
     for (const move of this.journey.allowedMoves) {
-      const option = new ExplicitOption(move, this);
-      option.init();
+      const option = new ExplicitOption(move);
       this.options.push(option);
       this.optionsContainer.appendChild(option.GetAsElement());
+      this.WaitAndRegisterUserSelection(option);
     }
     this.main.appendChild(this.optionsContainer);
   }
@@ -61,20 +61,23 @@ export class Selector {
   // Handles the user selection event:
   //   - Registers selection to the App
   //   - Makes this and/or option selectable or not
-  AddOptionToSelection(option: Option) {
-    this.app.AddSelectedOption(option);
-    option.MakeUnselectable();
-    var atLeastOneSelectable = false;
-    for (const option of this.options) {
-        if (option.IsSelectable()) {
-            atLeastOneSelectable = true;
-        }
-    }
-    if (!atLeastOneSelectable) {
-        for (const option of this.options) {
-            option.MakeSelectable();
-        }
-    }
+  protected WaitAndRegisterUserSelection(option: Option) {
+    const promise: Promise<void> = option.initAndWaitForUserSelection()
+    .then(() => {
+      this.app.AddSelectedOption(option);
+      option.MakeUnselectable();
+      var atLeastOneSelectable = false;
+      for (const option of this.options) {
+          if (option.IsSelectable()) {
+              atLeastOneSelectable = true;
+          }
+      }
+      if (!atLeastOneSelectable) {
+          for (const option of this.options) {
+              option.MakeSelectable();
+          }
+      }
+    })
   }
 
   // Makes all options unselectable.
@@ -93,15 +96,19 @@ export class Selector {
 export class RandomSelector extends Selector {
 
   protected GenerateOptions() {
-    const option = new RandomOption(this.journey.allowedMoves, this);
-    option.init();
+    const option = new RandomOption(this.journey.allowedMoves);
     this.optionsContainer.appendChild(option.GetAsElement());
     this.main.appendChild(this.optionsContainer);
     this.options.push(option);
+    this.WaitAndRegisterUserSelection(option);
   }
 
-  AddOptionToSelection(option: Option) {
-    this.app.AddSelectedOption(option);
+  protected WaitAndRegisterUserSelection(option: Option) {
+    const promise: Promise<void> = option.initAndWaitForUserSelection()
+    .then(() => {
+      this.app.AddSelectedOption(option);
+      this.WaitAndRegisterUserSelection(option);
+    })
   }
 }
 
@@ -109,51 +116,33 @@ export class Option implements OptionTemplate {
   move: Move = new Move();
   protected text: string = '';
   protected element: HTMLElement = document.createElement("p");
-  protected container: Selector;
-  protected ListenerFunction = (event: Event) => this.HandleSelectionEvent(event);
 
-  constructor(container: Selector) {
-    this.container = container;
+  constructor() {
+    this.element.classList.add('option');
+    this.element.classList.add('selectable');
+    this.element.setAttribute("tabindex", "0");
   }
   
-  init() {
-    this.prepareElement(this.element);
-    this.element.addEventListener('mousedown', this.ListenerFunction);
+  initAndWaitForUserSelection() {
+    return new Promise<void>((resolve) => {
+      this.element.addEventListener('mousedown', (event: Event) => {
+        resolve();
+      });
+    }); 
   }
 
   GetAsElement(): HTMLElement {
     return this.element;
   }
 
-  protected prepareElement(
-    element: HTMLElement,
-    isSelectable: boolean = true) {
-    element.classList.add('option');
-    if (isSelectable) {
-      element.classList.add('selectable');
-    } else {
-      element.classList.add('notSelectable');
-    }
-    element.setAttribute("alt", this.text);
-    element.setAttribute("tabindex", "0");
-    element.textContent = Icons.get(this.move?.direction!)!;
-  }
-
-  protected HandleSelectionEvent(event: Event) {
-    console.log("click on selector");
-    this.container.AddOptionToSelection(this);
-  }
-
   MakeSelectable() {
     this.element.classList.add("selectable");
     this.element.classList.remove("notSelectable");
-    this.element.addEventListener("click", this.ListenerFunction);
   }
 
   MakeUnselectable() {
     this.element.classList.remove("selectable");
     this.element.classList.add("notSelectable");
-    this.element.removeEventListener("click", this.ListenerFunction);
   }
 
   IsSelectable(): boolean {
@@ -165,37 +154,23 @@ export class Option implements OptionTemplate {
 export class ExplicitOption extends Option {
   element: HTMLElement = document.createElement("p");
 
-  constructor(move: Move, optionContainer: Selector) {
-    super(optionContainer);
+  constructor(move: Move) {
+    super();
     this.move = move;
     this.text = MoveDirection[move?.direction!];
+    this.element.setAttribute("alt", this.text);
+    this.element.textContent = Icons.get(this.move?.direction!)!;
   }
+
 }
 
 class RandomOption extends Option {
   moves: Array<Move>;
   private timerId: ReturnType<typeof setInterval> | undefined = undefined;
 
-  constructor(moves: Array<Move>, optionContainer: Selector) {
-    super(optionContainer);
+  constructor(moves: Array<Move>) {
+    super();
     this.moves = moves;
-  }
-
-  init() {
-    this.prepareElement(this.element);
-    this.element.addEventListener('mousedown', this.ListenerFunction);
-  }
-
-  protected prepareElement(
-    element: HTMLElement,
-    isSelectable: boolean = true) {
-    element.classList.add('option');
-    if (isSelectable) {
-      element.classList.add('selectable');
-    } else {
-      element.classList.add('notSelectable');
-    }
-    element.setAttribute("tabindex", "0");
     this.timerId = setInterval(this.updateText, 100, this.moves, this);
   }
   
@@ -214,7 +189,6 @@ class RandomOption extends Option {
   MakeUnselectable() {
     this.element.classList.remove("selectable");
     this.element.classList.add("notSelectable");
-    this.element.removeEventListener("click", this.ListenerFunction);
     this.move = new Move();
     this.element.textContent = '';
     this.element.removeAttribute("alt");
