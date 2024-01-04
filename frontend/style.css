@@ -3,7 +3,7 @@
   --move-num: 8;
   --box-size-num-moves: 5;
   --cell-size: calc(var(--box-size-cqw) / var(--box-size-num-moves));
-  --ball-size: calc(var(--cell-size) * 0.5 - 1px);
+  --ball-size: calc(var(--cell-size) - 1px);
   --ball-opacity: 90%;
   --outer-box-border-thickness: 2vw;
   --body-background: #E9C46A;
@@ -317,6 +317,7 @@ body {
   opacity: var(--ball-opacity);
   border-radius: 50%;
   font-family: 'Material Symbols Outlined';
+  font-size: var(--ball-size);
 }
 
 .bead:hover {
