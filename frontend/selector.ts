@@ -115,10 +115,10 @@ export class Option implements OptionTemplate {
   constructor(container: Selector) {
     this.container = container;
   }
-
+  
   init() {
     this.prepareElement(this.element);
-    this.element.addEventListener('click', this.ListenerFunction);
+    this.element.addEventListener('mousedown', this.ListenerFunction);
   }
 
   GetAsElement(): HTMLElement {
@@ -140,6 +140,7 @@ export class Option implements OptionTemplate {
   }
 
   protected HandleSelectionEvent(event: Event) {
+    console.log("click on selector");
     this.container.AddOptionToSelection(this);
   }
 
@@ -182,7 +183,7 @@ class RandomOption extends Option {
 
   init() {
     this.prepareElement(this.element);
-    this.element.addEventListener('click', this.ListenerFunction);
+    this.element.addEventListener('mousedown', this.ListenerFunction);
   }
 
   protected prepareElement(
