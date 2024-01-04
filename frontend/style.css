@@ -2,16 +2,15 @@
   --box-size-cqw: 80cqw;
   --move-num: 8;
   --box-size-num-moves: 5;
-  --ball-size-ratio: 0.15;
   --cell-size: calc(var(--box-size-cqw) / var(--box-size-num-moves));
-  --ball-size: calc(var(--cell-size) - 1px);
+  --ball-size: calc(var(--cell-size) * 0.5 - 1px);
   --ball-opacity: 90%;
   --outer-box-border-thickness: 2vw;
-  --body-background: #F7F9F9;
-  --app-background: #353A47;
-  --primary-color: #E6AF2E;
-  --secondary-color: #CF5C36;
-  --tertiary-color: #8390FA;
+  --body-background: #E9C46A;
+  --app-background: #264653;
+  --primary-color: #2A9D8F;
+  --secondary-color: #E76F51;
+  --tertiary-color: #F4A261;
 }
 
 body {
@@ -72,13 +71,31 @@ body {
 }
 
 @keyframes bounce {
-  0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 
-  40% {transform: translateY(-10%);} 
-  60% {transform: translateY(-5%);} 
+
+  0%,
+  20%,
+  50%,
+  80%,
+  100% {
+    transform: translateY(0);
+  }
+
+  40% {
+    transform: translateY(-10%);
+  }
+
+  60% {
+    transform: translateY(-5%);
+  }
 }
 
 #countdownInnerContainer {
   width: 98%;
+}
+
+#countdown {
+  display: flex;
+  justify-content: space-between;
 }
 
 #timeRemainingContainer {
@@ -86,6 +103,7 @@ body {
   height: 7cqh;
   width: 100%;
   border-radius: 10px;
+  position: absolute;
 }
 
 #top {
@@ -119,7 +137,6 @@ body {
     font-family: "Material Symbols Outlined";
     line-height: 1;
     border-radius: 50%;
-    min-width: 20px;
   }
 
   .emptyOption {
@@ -203,22 +220,41 @@ body {
   }
 }
 
-.levelAction {
-  border-style: solid;
-  border-width: 3px;
-  position: absolute;
-  bottom: 1px;
+#starCounter {
+  font-family: "Orbitron", sans-serif;
+  margin-left: 5cqw;
+}
+
+.journeyBoardHeader {
   font-family: "Material Symbols Outlined";
-  border-radius: 50%;
-  font-size: 5cqh;
-  width: 6cqh;
+}
+
+.filledStar {
+  color: var(--body-background);
+}
+
+.emptyStar {
+  color: var(--secondary-color);
+}
+
+.levelBoard-score {
+  font-family: "Material Symbols Outlined";
+}
+
+.levelBoard-number {
+  margin: 3cqh 3cqw;
+}
+
+.levelAction {
+  font-family: "Material Symbols Outlined";
+  font-size: 6cqh;
   min-width: 20px;
   aspect-ratio: 1 /1;
-  /* height: 5cqh; */
 }
 
 .validAction {
   color: var(--app-background);
+  z-index: 10;
 }
 
 .invalidAction {
@@ -228,15 +264,21 @@ body {
 }
 
 #Restart {
-  left: 1px;
+  position: absolute;
+  left: 45cqw;
+  bottom: 20cqh;
 }
 
 #Retry {
-  left: 40cqw;
+  left: 25cqw;
+  position: absolute;
+  margin-top: 5cqh;
 }
 
 #Next {
-  left: 64cqw;
+  left: 65cqw;
+  position: absolute;
+  margin-top: 5cqh;
 }
 
 #selection {
@@ -245,12 +287,20 @@ body {
 
 #selectorContainer {
   height: 100%;
+  max-height: 800px;
   container-type: inline-size;
   container-name: app-content;
   position: fixed;
   margin: auto;
   left: 50%;
-  transform: translate(-50%, 0);
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  max-width: 400px;
+  background-color: var(--app-background);
+  font-size: 30px;
+  text-align: center;
+  border: 1px;
 }
 
 #innerContainer {
@@ -266,6 +316,7 @@ body {
 .bead {
   opacity: var(--ball-opacity);
   border-radius: 50%;
+  font-family: 'Material Symbols Outlined';
 }
 
 .bead:hover {
@@ -275,17 +326,12 @@ body {
 .inactiveBead {
   display: inline-block;
   margin: 2px;
+  font-size: 15cqw;
 }
 
-.banner {
-  width: 100%;
-  max-width: 400px;
-  background-color: var(--app-background);
-  margin: auto;
-  font-size: 30px;
-  text-align: center;
-  height: 5vh;
-  border: 1px;
+#inactiveBeadsContainer {
+  display: flex;
+  justify-content: space-around;
 }
 
 .answerBox {

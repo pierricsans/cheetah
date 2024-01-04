@@ -1,72 +1,42 @@
-import axios from 'axios';
-import { Grid, Level, Move, MoveDirection, Person, PersonType, Position, Trajectory } from './protos/level_pb.js';
-
-var LEVEL: Level = new Level();
-
-const ICONS: Map<MoveDirection, string> = new Map([
-    [MoveDirection.LEFT, "arrow_back"],
-    [MoveDirection.RIGHT, "arrow_forward"],
-    [MoveDirection.DOWN, "arrow_downward"],
-    [MoveDirection.UP, "arrow_upward"],
-    [MoveDirection.UNSPECIFIED, "question_mark"],
-]);
-
-type PositionObject = {
-    x: number,
-    y: number
-}
-
-function retrySameLevel() {
-    LEVEL = getLevel(nextLevel);
-    const app = new WhereIsMyDotApp();
-    app.Init();
-}
-
-function restartFromScratch() {
-    nextLevel = 1;
-    totalScore = 0
-    LEVEL = getLevel(nextLevel);
-    const app = new WhereIsMyDotApp();
-    app.Init();
-}
-
-function triggerNextLevel(points: number) {
-    totalScore += points;
-    nextLevel += 1;
-    LEVEL = getLevel(nextLevel);
-    const app = new WhereIsMyDotApp();
-    app.Init();
-}
-
-function shuffleArray(array: Array<any>) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        const temp = array[i];
-        array[i] = array[j];
-        array[j] = temp;
-    }
-}
+import { App, shuffleArray } from './app.js';
+import { setTheme } from './theme.js';
+import { GridInst } from './grid.js';
+import { Icons, Option, RandomSelector, Selector } from './selector.js';
+import { Game, Grid, Journey, Level, Move, MoveDirection, Person, PersonType, Position, Theme, Trajectory } from './protos/level_pb.js';
+import { ScoreBoard } from './scoreboard.js';
 
 function GetOffset(
     length: number,
     moves: Array<MoveDirection>,
-    backward: MoveDirection,
-    forward: MoveDirection): number {
+    backwardMoves: Array<MoveDirection>,
+    forwardMoves: Array<MoveDirection>,
+    doubleBackWardMoves: Array<MoveDirection>,
+    doubleForwardMoves: Array<MoveDirection>,): number {
     var currentPosition = 0;
     var backwardsMost = 0;
     var forwardsMost = 0;
     for (const move of moves) {
-        switch (move) {
-            case forward:
-                currentPosition += 1;
-                forwardsMost = Math.max(currentPosition, forwardsMost);
-                backwardsMost = Math.min(currentPosition, backwardsMost);
-                break;
-            case backward:
-                currentPosition -= 1;
-                forwardsMost = Math.max(currentPosition, forwardsMost);
-                backwardsMost = Math.min(currentPosition, backwardsMost);
-                break;
+        if (forwardMoves.includes(move)) {
+            currentPosition += 1;
+            forwardsMost = Math.max(currentPosition, forwardsMost);
+            backwardsMost = Math.min(currentPosition, backwardsMost);
+        }
+        if (backwardMoves.includes(move)) {
+            currentPosition -= 1;
+            forwardsMost = Math.max(currentPosition, forwardsMost);
+            backwardsMost = Math.min(currentPosition, backwardsMost);
+
+        }
+        if (doubleForwardMoves.includes(move)) {
+            currentPosition += 2;
+            forwardsMost = Math.max(currentPosition, forwardsMost);
+            backwardsMost = Math.min(currentPosition, backwardsMost);
+        }
+        if (doubleBackWardMoves.includes(move)) {
+            currentPosition -= 2;
+            forwardsMost = Math.max(currentPosition, forwardsMost);
+            backwardsMost = Math.min(currentPosition, backwardsMost);
+
         }
     }
     const max = length - Math.max(0, forwardsMost) + 1;
@@ -75,77 +45,11 @@ function GetOffset(
     return value;
 }
 
-class Option {
-    text: string;
-    move: Move;
-    option: HTMLElement = document.createElement("p");
-    optionContainer: MainContentElement;
-    ListenerFunction = (event: Event) => this.AddSelectedOption(event);
- 
-    constructor(move: Move, optionContainer: MainContentElement) {
-        this.move = move;
-        this.text = MoveDirection[move?.direction!];
-        this.optionContainer = optionContainer;
-        this.prepareElement(this.option);
-        this.option.addEventListener('click', this.ListenerFunction);
-        this.option.addEventListener('keydown', this.ListenerFunction);
-    }
-
-    GetOptionAsElement(): HTMLElement {
-        return this.option;
-    }
-
-    GenerateSelectedOptionAsElement(): HTMLElement {
-        const selectedOption = document.createElement("p");
-        this.prepareElement(selectedOption, false);
-        return selectedOption;
-    }
-
-    private prepareElement(element: HTMLElement, isSelectable: boolean = true) {
-        element.classList.add('option');
-        if (isSelectable) {
-            element.classList.add('selectable');
-        } else {
-            element.classList.add('notSelectable');
-        }
-        element.setAttribute("alt", this.text);
-        element.setAttribute("tabindex", "0");
-        element.textContent = ICONS.get(this.move?.direction!)!;
-    }
-
-    private AddSelectedOption(event: Event) {
-        if (event.type === "click") {
-            this.optionContainer.AddSelectedOption(this);
-        } else {
-            console.log(event);
-        }
-    }
-
-    MakeSelectable() {
-        this.option.classList.add("selectable");
-        this.option.classList.remove("notSelectable");
-        this.option.addEventListener("click", this.ListenerFunction);
-        this.option.addEventListener("keydown", this.ListenerFunction);
-    }
-
-    MakeUnselectable() {
-        this.option.classList.remove("selectable");
-        this.option.classList.add("notSelectable");
-        this.option.removeEventListener("click", this.ListenerFunction);
-        this.option.removeEventListener("keydown", this.ListenerFunction);
-    }
-
-    IsSelectable(): boolean {
-        return this.option.classList.contains("selectable");
-    }
-
-}
-
 class ValidationElement {
     private validateContainer = document.createElement("div");
-    private parentSelectorElement: MainContentElement;
+    private parentSelectorElement: TapTheDot;
 
-    constructor(parentSelectorElement: MainContentElement) {
+    constructor(parentSelectorElement: TapTheDot) {
         this.validateContainer.classList.add("notSelectable");
         this.validateContainer.setAttribute("id", "validateButtonContainer");
         this.validateContainer.classList.add("bottomBar")
@@ -172,58 +76,73 @@ class ValidationElement {
     }
 }
 
-class MainContentElement {
+export class TapTheDot implements App {
+    game: Game;
+    journey: Journey;
+    level: Level;
+    scoreboard: ScoreBoard;
+    private readonly outContainer: HTMLElement = document.body;
     private container: HTMLElement = document.createElement("div");
-    private selector: HTMLElement = document.createElement("div");
+    private selector: Selector;
     private selection: HTMLElement = document.createElement("div");
-    private optionsContainer: HTMLElement = document.createElement("div");
     private validateElement: ValidationElement;
-    private parentWhereIsMyDotApp: WhereIsMyDotApp;
-    private options: Array<Option> = new Array<Option>();
     grid?: GridInst;
-    private colors: Array<string>;
     private allTrajectories: Array<Trajectory> = new Array<Trajectory>();
     private allPositions: Map<number, Array<Position>> = new Map<number, Array<Position>>();
-    private currentLevelDisplay: HTMLElement = document.createElement("div");
-    private totalScoreDisplay: HTMLElement = document.createElement("div");
     private currentScoreDisplay: HTMLElement = document.createElement("div");
 
-    constructor(parentWhereIsMyDotApp: WhereIsMyDotApp) {
-        this.init();
-        this.GenerateOptions();
-        this.GenerateSelectorElement();
+    constructor(game: Game) {
+        this.game = game;
+        this.journey = new Journey().fromJsonString(getJourney(game).toJsonString());
+        this.level = new Level().fromJsonString(getLevel(this.journey, this.journey.nextLevel || 1).toJsonString());
+        this.validateElement = new ValidationElement(this);
+        this.scoreboard = new ScoreBoard(this.game, this);
+        this.selector = new Selector(this.journey, this.level, this);
+    }
+
+    Init() {
+        this.cleanup();
+        this.StoreGameAsLocalStorage();
+        this.selection.hidden = false;
+        this.journey = new Journey().fromJsonString(getJourney(this.game).toJsonString());
+        this.level = new Level().fromJsonString(getLevel(this.journey, this.journey.nextLevel || 1).toJsonString());
+        this.container.setAttribute("id", "selectorContainer");
+        this.container.classList.add("banner");
+        if (this.level.movesAreRandomlyGenerated) {
+            this.selector = new RandomSelector(this.journey, this.level, this);
+        } else {
+            this.selector = new Selector(this.journey, this.level, this);
+        }
+        this.AppendSelector();
         this.GenerateSelectionElement();
         this.validateElement = new ValidationElement(this);
         this.container.appendChild(this.validateElement.GetAsElement());
-        this.parentWhereIsMyDotApp = parentWhereIsMyDotApp;
-        this.colors = this.GenerateColors();
-        this.appendCurrentLevelDisplay();
-        this.appendTotalScoreDisplay();
-        this.appendCurrentScoreDisplay();
+        setTheme(this.journey);
+        this.GenerateColors();
+        this.scoreboard = new ScoreBoard(this.game, this);
+        this.container.appendChild(this.scoreboard.GetAsElement());
+        this.appendContainer();
     }
 
-    GetAsElement(): HTMLElement {
-        return this.container;
+    private GenerateColors() {
+        shuffleArray(this.journey.symbols);
     }
 
-    private GenerateColors(): Array<string> {
-        const colors = Array<string>();
-        colors.push("#001219");  // Rich black
-        colors.push("#005F73");  // Midnight green
-        colors.push("#0A9396");  // Dark Cyan
-        colors.push("#94D2BD");  // Tiffany Blue
-        colors.push("#E9D8A6");  // Vanilla
-        colors.push("#EE9B00");  // Gamboge
-        colors.push("#CA6702");  // Alloy orange
-        colors.push("#BB3E03");  // Rust
-        colors.push("#AE2012");  // Rufous
-        colors.push("#9B2226");  // Auburn
-        shuffleArray(colors);
-        return colors;
+    private StoreGameAsLocalStorage() {
+        localStorage.setItem("game", this.game.toJsonString());
+    }
+
+    UpdateAndShowScoreBoard() {
+        this.selection.hidden = true;
+        this.grid?.Hide();
+        getLevel(getJourney(this.game), this.journey.nextLevel || 1).score = this.level.score;
+        this.StoreGameAsLocalStorage();
+        this.scoreboard.Update();
+        this.scoreboard.Show();
     }
 
     GetNextColor(): string {
-        const color = this.colors.pop();
+        const color = this.journey.symbols.pop();
         if (color === undefined) {
             console.log('No more colors');
             return ''
@@ -234,10 +153,9 @@ class MainContentElement {
 
 
     FillLevel() {
-        const grid: Grid = LEVEL.grid!;
-        grid.name = LEVEL.name
-        grid.height = LEVEL.size
-        grid.width = LEVEL.size
+        const grid: Grid = this.level.grid!;
+        grid.height = this.level.size
+        grid.width = this.level.size
         this.GenerateInitialState(grid.indigenous!)
         this.AddAliens();
     }
@@ -252,24 +170,6 @@ class MainContentElement {
         this.GenerateInitialPosition(person);
     }
 
-    private appendCurrentLevelDisplay() {
-        this.currentLevelDisplay.setAttribute("id", "currentLevel");
-        this.currentLevelDisplay.textContent = nextLevel.toString();
-        this.container.appendChild(this.currentLevelDisplay);
-    }
-
-    private appendTotalScoreDisplay() {
-        this.totalScoreDisplay.setAttribute("id", "totalScore");
-        this.totalScoreDisplay.textContent = totalScore.toString();
-        this.container.appendChild(this.totalScoreDisplay);
-    }
-
-    private appendCurrentScoreDisplay() {
-        this.currentScoreDisplay.setAttribute("id", "currentScore");
-        this.currentScoreDisplay.textContent = "0";
-        this.container.appendChild(this.currentScoreDisplay);
-    }
-
     refreshCurrentScoreDisplay(score: number) {
         this.currentScoreDisplay.textContent = score.toString();
     }
@@ -282,34 +182,91 @@ class MainContentElement {
         }
         for (const move of person.trajectory?.moves!) {
             switch (move.direction) {
-                case MoveDirection.RIGHT:
-                    x_moves.push(move.direction);
-                    break;
-                case MoveDirection.LEFT:
-                    x_moves.push(move.direction);
-                    break;
-                case MoveDirection.UP:
+                case MoveDirection.NORTH:
                     y_moves.push(move.direction);
                     break;
-                case MoveDirection.DOWN:
+                case MoveDirection.SOUTH:
                     y_moves.push(move.direction);
                     break;
+                case MoveDirection.WEST:
+                    x_moves.push(move.direction);
+                    break;
+                case MoveDirection.EAST:
+                    x_moves.push(move.direction);
+                    break;
+                case MoveDirection.SOUTH_EAST:
+                    y_moves.push(move.direction);
+                    x_moves.push(move.direction);
+                    break;
+                case MoveDirection.SOUTH_WEST:
+                    y_moves.push(move.direction);
+                    x_moves.push(move.direction);
+                    break;
+                case MoveDirection.NORTH_EAST:
+                    y_moves.push(move.direction);
+                    x_moves.push(move.direction);
+                    break;
+                case MoveDirection.NORTH_WEST:
+                    y_moves.push(move.direction);
+                    x_moves.push(move.direction);
+                    break;
+                case MoveDirection.DOUBLE_NORTH:
+                    y_moves.push(move.direction);
+                    break;
+                case MoveDirection.DOUBLE_SOUTH:
+                    y_moves.push(move.direction);
+                    break;
+                case MoveDirection.DOUBLE_WEST:
+                    x_moves.push(move.direction);
+                    break;
+                case MoveDirection.DOUBLE_EAST:
+                    x_moves.push(move.direction);
+                    break;
+
             }
         }
         if (person.position === undefined) {
             person.position = new Position();
         }
         person.position.xOffset = GetOffset(
-            LEVEL.grid?.width!,
+            this.level.grid?.width!,
             x_moves,
-            MoveDirection.LEFT,
-            MoveDirection.RIGHT
+            [
+                MoveDirection.WEST,
+                MoveDirection.NORTH_WEST,
+                MoveDirection.SOUTH_WEST,
+            ],
+            [
+                MoveDirection.EAST,
+                MoveDirection.NORTH_EAST,
+                MoveDirection.SOUTH_EAST,
+            ],
+            [
+                MoveDirection.DOUBLE_WEST,
+            ],
+            [
+                MoveDirection.DOUBLE_EAST,
+            ]
         )
         person.position.yOffset = GetOffset(
-            LEVEL.grid?.width!,
+            this.level.grid?.width!,
             y_moves,
-            MoveDirection.DOWN,
-            MoveDirection.UP
+            [
+                MoveDirection.SOUTH, 
+                MoveDirection.SOUTH_EAST, 
+                MoveDirection.SOUTH_WEST,
+            ],
+            [
+                MoveDirection.NORTH, 
+                MoveDirection.NORTH_EAST, 
+                MoveDirection.NORTH_WEST,
+            ],
+            [
+                MoveDirection.DOUBLE_SOUTH,
+            ],
+            [
+                MoveDirection.DOUBLE_NORTH,
+            ]
         )
         if (!this.registerPosition(person)) {
             delete person.position;
@@ -334,24 +291,56 @@ class MainContentElement {
         for (const move of person.trajectory?.moves!) {
             const position: Position = new Position();
             switch (move.direction) {
-                case MoveDirection.UP:
+                case MoveDirection.NORTH:
                     position.xOffset = currentPosition.xOffset;
                     position.yOffset = currentPosition.yOffset! + 1;
                     break;
-                case MoveDirection.DOWN:
+                case MoveDirection.SOUTH:
                     position.xOffset = currentPosition.xOffset;
                     position.yOffset = currentPosition.yOffset! - 1;
                     break;
-                case MoveDirection.RIGHT:
+                case MoveDirection.EAST:
                     position.xOffset = currentPosition.xOffset! + 1;
                     position.yOffset = currentPosition.yOffset;
                     break;
-                case MoveDirection.LEFT:
+                case MoveDirection.WEST:
                     position.xOffset = currentPosition.xOffset! - 1;
                     position.yOffset = currentPosition.yOffset;
                     break;
+                case MoveDirection.SOUTH_EAST:
+                    position.xOffset = currentPosition.xOffset! + 1;
+                    position.yOffset = currentPosition.yOffset! - 1;
+                    break;
+                case MoveDirection.SOUTH_WEST:
+                    position.xOffset = currentPosition.xOffset! - 1;
+                    position.yOffset = currentPosition.yOffset! - 1;
+                    break;
+                case MoveDirection.NORTH_EAST:
+                    position.xOffset = currentPosition.xOffset! + 1;
+                    position.yOffset = currentPosition.yOffset! + 1;
+                    break;
+                case MoveDirection.NORTH_WEST:
+                    position.xOffset = currentPosition.xOffset! - 1;
+                    position.yOffset = currentPosition.yOffset! + 1;
+                    break;
+                case MoveDirection.DOUBLE_NORTH:
+                    position.xOffset = currentPosition.xOffset;
+                    position.yOffset = currentPosition.yOffset! + 2;
+                    break;
+                case MoveDirection.DOUBLE_SOUTH:
+                    position.xOffset = currentPosition.xOffset;
+                    position.yOffset = currentPosition.yOffset! - 2;
+                    break;
+                case MoveDirection.DOUBLE_EAST:
+                    position.xOffset = currentPosition.xOffset! + 2;
+                    position.yOffset = currentPosition.yOffset;
+                    break;
+                case MoveDirection.DOUBLE_WEST:
+                    position.xOffset = currentPosition.xOffset! - 2;
+                    position.yOffset = currentPosition.yOffset;
+                    break;
                 default:
-                    console.log("Unknown direction: " + move.direction);
+                    throw Error('Unknown MoveDirection: ' + move.direction)
             }
             if (!this.allPositions.has(nextMove)) {
                 this.allPositions.set(nextMove, new Array());
@@ -372,9 +361,9 @@ class MainContentElement {
         if (person.trajectory === undefined) {
             person.trajectory = new Trajectory();
         }
-        for (var i = 0; i < LEVEL.moves!; i++) {
-            const randint = Math.floor(Math.random() * LEVEL.allowedMoves.length);
-            const randMove = LEVEL.allowedMoves[randint ];
+        for (var i = 0; i < this.level.numMoves!; i++) {
+            const randint = Math.floor(Math.random() * this.journey.allowedMoves.length);
+            const randMove = this.journey.allowedMoves[randint];
             const move = new Move().fromJsonString(randMove.toJsonString());
             person.trajectory?.moves.push(move);
         }
@@ -391,50 +380,33 @@ class MainContentElement {
     }
 
     private CheckIndigenousHasMoves() {
-        if (LEVEL.grid?.indigenous === undefined) {
+        if (this.level.grid?.indigenous === undefined) {
             console.log("No indigenous found");
         }
-        if (LEVEL.grid?.indigenous?.trajectory?.moves?.length! !== LEVEL.moves!) {
-            console.log("Required moves: " + LEVEL.moves! + " vs actual: " + LEVEL.grid?.indigenous?.trajectory?.moves?.length!);
+        if (this.level.grid?.indigenous?.trajectory?.moves?.length! !== this.level.numMoves!) {
+            console.log("Required moves: " + this.level.numMoves! + " vs actual: " + this.level.grid?.indigenous?.trajectory?.moves?.length!);
         }
     }
 
     private AddAliens() {
         this.CheckIndigenousHasMoves();
-        for (var i = 0; i < LEVEL.numAliens!; i++) {
+        for (var i = 0; i < this.level.numAliens!; i++) {
             const alien = new Person();
-            LEVEL.grid?.aliens.push(alien);
+            this.level.grid?.aliens.push(alien);
             alien.type = PersonType.ALIEN;
             this.GenerateInitialState(alien, true);
         }
     }
 
-
-    private init() {
-        this.container.setAttribute("id", "selectorContainer");
-        this.container.classList.add("banner");
-    }
-
-    private GenerateSelectorElement() {
-        this.selector.setAttribute("id", "selector");
-        this.container.appendChild(this.selector);
-    }
-
-    private GenerateOptions() {
-        this.optionsContainer.setAttribute("id", "optionsContainer")
-        for (const move of LEVEL.allowedMoves) {
-            const option = new Option(move, this);
-            this.options.push(option);
-            this.optionsContainer.appendChild(option.GetOptionAsElement());
-        }
-        this.selector.appendChild(this.optionsContainer);
+    private AppendSelector() {
+        this.container.appendChild(this.selector.GetAsElement());
     }
 
     private GenerateSelectionElement() {
         this.selection.setAttribute("id", "selection");
         this.container.appendChild(this.selection);
         var isSelectable = true;
-        for (var i = 0; i < LEVEL.moves!; i++) {
+        for (var i = 0; i < this.level.numMoves!; i++) {
             const emptyOption = document.createElement("span");
             emptyOption.classList.add("selectedOption");
             if (isSelectable) {
@@ -451,44 +423,24 @@ class MainContentElement {
         const selectable = this.selection.getElementsByClassName("nextSelectable")[0];
         selectable.classList.add("selected");
         selectable.classList.remove("nextSelectable");
-        selectable.textContent = ICONS.get(option.move?.direction!)!;
+        selectable.textContent = Icons.get(option.move?.direction!)!;
         const nextSelectable = this.selection.getElementsByClassName("notSelectable")[0];
         if (nextSelectable !== undefined) {
             nextSelectable.classList.add("nextSelectable");
             nextSelectable.classList.remove("notSelectable")
         }
-        option.MakeUnselectable();
-        var atLeastOneSelectable = false;
-        for (const option of this.options) {
-            if (option.IsSelectable()) {
-                atLeastOneSelectable = true;
-            }
-        }
-        if (!atLeastOneSelectable) {
-            for (const option of this.options) {
-                option.MakeSelectable();
-            }
-        }
-        LEVEL.grid?.indigenous?.trajectory?.moves.push(option.move);
-        if (LEVEL.grid?.indigenous?.trajectory?.moves?.length! === LEVEL.moves) {
-            for (const option of this.options) {
-                if (option.IsSelectable()) {
-                    option.MakeUnselectable();
-                }
-            }
+        this.level.grid?.indigenous?.trajectory?.moves.push(option.move);
+        if (this.level.grid?.indigenous?.trajectory?.moves?.length! === this.level.numMoves) {
+            this.selector.MakeAllOptionsUnselectable();
             this.validateElement.EnableValidateButton();
         }
     }
 
-    // Object LEVEL has been filled in with moves and initial positions.
+    // Object this.level has been filled in with moves and initial positions.
     Validate() {
-        this.HideSelector();
+        this.selector.Hide();
         this.HideValidateElement();
         this.BuildGrid();
-    }
-
-    HideSelector() {
-        this.selector.hidden = true;
     }
 
     HideValidateElement() {
@@ -496,521 +448,487 @@ class MainContentElement {
     }
 
     BuildGrid() {
-        this.grid = new GridInst(this)
+        this.grid = new GridInst(this.journey, this.level, this)
         this.grid.Build();
         this.container.appendChild(this.grid.GetAsElement());
     }
 
-}
-
-class Bead {
-    beadElement: HTMLElement = document.createElement("span");
-    parentGrid: GridInst;
-    person: Person;
-    movementIncrement: number;
-    private animationOffset: number;
-    private inactiveBead: InactiveBead | null = null;
-    private fadeIn: Animation = new Animation();
-    private mainAnimation: Animation = new Animation();
-    private fadeOut: Animation = new Animation();
-
-    constructor(grid: GridInst, person: Person) {
-        this.parentGrid = grid;
-        this.person = person;
-        this.movementIncrement = 0;
-        this.animationOffset = 0;
-        this.movementIncrement = 100 / this.parentGrid.grid.width!;
-        this.Init();
-    }
-
-    Init() {
-        this.beadElement.classList.add('bead');
-        this.beadElement.classList.add('activeBead');
-        this.beadElement.style.backgroundColor = this.person.color!;
-        this.beadElement.addEventListener("click", event => this.RegisterClick(event))
-        this.animationOffset = 1 / this.person.trajectory?.moves?.length!;
-        this.beadElement.style.bottom = (this.movementIncrement * this.person.position?.yOffset!).toString() + '%';
-        this.beadElement.style.left = (this.movementIncrement * this.person.position?.xOffset!).toString() + '%';
-        this.animateElement(100, 100 * this.person.trajectory?.moves?.length!);
-        this.inactiveBead = new InactiveBead(this.parentGrid, this.person, this);
-    }
-
-    GetInactiveBead(): InactiveBead {
-        return this.inactiveBead!;
-    }
-
-    RegisterClick(event: Event) {
-        switch (this.person.type) {
-            case PersonType.INDIGENOUS:
-                this.RegisterWin();
-                break;
-            case PersonType.ALIEN:
-                this.RegisterWrong();
-                break;
-        }
-    }
-
-    RegisterWin() {
-        this.parentGrid.Win();
-    }
-
-    RegisterWrong() {
-        this.beadElement.style.display = "none";
-        if (this.inactiveBead !== null) {
-            this.inactiveBead.beadElement.style.display = "none";
-        }
-        this.parentGrid.RegisterWrongGuess();
-    }
-
-    GenerateFadeInAnimation(duration: number): Animation {
-        var bottom = this.movementIncrement * this.person.position?.yOffset!;
-        var left = this.movementIncrement * this.person.position?.xOffset!;
-        const keyframes = new KeyframeEffect(
-            this.beadElement,
-            [{
-                height: "0px",
-                width: "0px",
-                bottom: bottom.toString() + '%',
-                left: left.toString() + '%',
-            },
-            {
-                height: "var(--ball-size)",
-                width: "var(--ball-size)",
-                bottom: bottom.toString() + '%',
-                left: left.toString() + '%',
-            }], {
-            duration: duration,
-            fill: "forwards",
-            easing: "ease-in-out"
-        });
-        const animation = new Animation(keyframes, document.timeline);
-        return animation;
-    }
-
-    GenerateFadeOutAnimation(duration: number): Animation {
-        const keyframes = new KeyframeEffect(
-            this.beadElement,
-            [{
-                height: "var(--ball-size)",
-                width: "var(--ball-size)",
-            },
-            {
-                height: "0px",
-                width: "0px"
-            }], {
-            duration: duration,
-            fill: "forwards",
-            easing: "ease-in-out"
-        });
-        const animation = new Animation(keyframes, document.timeline);
-        return animation;
-    }
-
-    GetAsElement(): HTMLElement {
-        return this.beadElement;
-    }
-
-    GenerateMainAnimation(duration: number): Animation {
-        var bottom = this.movementIncrement * this.person.position?.yOffset!;
-        var left = this.movementIncrement * this.person.position?.xOffset!;
-        var animationOffset = 0;
-        const frames = [{
-            offset: animationOffset,
-            bottom: bottom.toString() + '%',
-            left: left.toString() + '%',
-            easing: 'ease-in-out'
-        }];
-        for (const move of this.person.trajectory?.moves!) {
-            animationOffset = animationOffset + this.animationOffset;
-            switch (move.direction!) {
-                case MoveDirection.UP:
-                    bottom = bottom + this.movementIncrement;
-                    break;
-                case MoveDirection.DOWN:
-                    bottom = bottom - this.movementIncrement;
-                    break;
-                case MoveDirection.LEFT:
-                    left = left - this.movementIncrement
-                    break;
-                case MoveDirection.RIGHT:
-                    left = left + this.movementIncrement;
-                    break;
-                default:
-                    console.log('unknown code: ' + move.direction);
-            }
-            frames.push({
-                offset: Math.min(animationOffset, 1),
-                bottom: bottom.toString() + '%',
-                left: left.toString() + '%',
-                easing: 'ease-in-out'
-            })
-        }
-        const keyframes = new KeyframeEffect(this.beadElement, frames,
-            {
-                duration: duration,
-                fill: "forwards",
-                delay: 100
-            });
-        const animation = new Animation(keyframes, document.timeline);
-        return animation;
-    }
-
-    animateElement(fadeDuration: number, mainAnimationDuration: number) {
-        console.log("main animation duration: " + mainAnimationDuration);
-        this.fadeIn = this.GenerateFadeInAnimation(fadeDuration);
-        this.mainAnimation = this.GenerateMainAnimation(mainAnimationDuration);
-        this.fadeOut = this.GenerateFadeOutAnimation(fadeDuration);
-        this.fadeIn.play();
-        this.fadeIn.onfinish = (event: Event) => {
-            this.mainAnimation.play();
-        }
-        this.mainAnimation.onfinish = (event: Event) => {
-            this.fadeOut.play();
-        }
-        this.fadeOut.onfinish = (event: Event) => {
-            this.animateElement(fadeDuration * 1.2, mainAnimationDuration * 1.2);
-        }
-    }
-
-    Win() {
-        switch (this.person.type) {
-            case PersonType.INDIGENOUS:
-                this.beadElement.style.opacity = "100%";
-                if (this.inactiveBead !== null) {
-                    this.inactiveBead.GetAsElement().style.opacity = "100%";
-                }
-                break;
-            case PersonType.ALIEN:
-                this.beadElement.style.opacity = "20%"
-                if (this.inactiveBead !== null) {
-                    this.inactiveBead.GetAsElement().style.opacity = "20%";
-                }
-                break;
-        }
-        this.EndGame();
-    }
-
-    EndGame() {
-        this.fadeIn.onfinish = null;
-        this.mainAnimation.onfinish = null;
-        this.fadeOut.onfinish = null;
-    }
-
-}
-
-class InactiveBead extends Bead {
-    parentBead: Bead;
-
-    constructor(grid: GridInst, person: Person, parentBead: Bead) {
-        super(grid, person);
-        this.parentBead = parentBead;
-    }
-
-    Init() {
-        this.beadElement.classList.add("bead");
-        this.beadElement.classList.add('inactiveBead');
-        this.beadElement.style.backgroundColor = this.person.color!;
-        this.beadElement.addEventListener("click", event => this.RegisterClick(event))
-        this.GenerateFadeInAnimation(50).play();
-    }
-
-    RegisterWrong() {
-        this.beadElement.style.display = "none";
-        this.parentBead.beadElement.style.display = "none";
-        this.parentGrid.RegisterWrongGuess();
-    }
-
-}
-
-class CountDown {
-    private outerContainer: HTMLElement = document.createElement("div");
-    private startAgain: HTMLElement = document.createElement("span");
-    private retry: HTMLElement = document.createElement("span");
-    private nextLevel: HTMLElement = document.createElement("span");
-    private timeRemainingContainer: HTMLElement = document.createElement("div");
-    private animation: Animation;
-    private startingScore = 1000;
-    private totalDuration = 20000;
-    private score = this.startingScore;
-    private startTime: number = 0;
-    private parentGrid: GridInst;
-    private timerId: ReturnType<typeof setInterval> | undefined = undefined;
-
-    constructor(grid: GridInst) {
-        this.parentGrid = grid;
-        this.outerContainer.setAttribute("id", "countdown");
-        this.outerContainer.classList.add("bottomBar");
-        this.timeRemainingContainer.setAttribute("id", "timeRemainingContainer");
-        this.outerContainer.appendChild(this.timeRemainingContainer);
-        this.startAgain.classList.add("levelAction");
-        this.startAgain.classList.add("validAction");
-        this.startAgain.textContent = "skip_previous";
-        this.startAgain.setAttribute("alt", "Restart");
-        this.startAgain.setAttribute("id", "Restart");
-        this.retry.classList.add("levelAction");
-        this.retry.classList.add("validAction");
-        this.retry.textContent = "forward_media";
-        this.retry.setAttribute("alt", "Retry");
-        this.retry.setAttribute("id", "Retry");
-        this.nextLevel.classList.add("levelAction");
-        this.nextLevel.classList.add("validAction");
-        this.nextLevel.textContent = "skip_next";
-        this.nextLevel.setAttribute("alt", "Next");
-        this.nextLevel.setAttribute("id", "Next");
-        this.outerContainer.appendChild(this.startAgain);
-        this.outerContainer.appendChild(this.retry);
-        this.outerContainer.appendChild(this.nextLevel);
-        this.animation = this.GenerateCountdownAnimation(this.totalDuration);
-    }
-
-    GenerateCountdownAnimation(duration: number, width: string = "100%"): Animation {
-        const keyframes = new KeyframeEffect(
-            this.timeRemainingContainer,
-            [{
-                width: width,
-            },
-            {
-                width: "0%",
-            }], {
-            duration: duration,
-            fill: "forwards",
-        });
-        const animation = new Animation(keyframes, document.timeline);
-        animation.onfinish = (event: Event) => {
-            this.Lose();
-        }
-        return animation;
-    }
-
-    GetAsElement(): HTMLElement {
-        return this.outerContainer;
-    }
-
-    Lose() {
-        this.parentGrid.Lose();
-    }
-
-    Stop() {
-        this.animation.finish();
-        clearInterval(this.timerId);
-        this.startAgain.addEventListener("click", restartFromScratch);
-        this.startAgain.classList.add("selectable");
-    }
-
-    Pause() {
-        this.animation.pause();
-        clearInterval(this.timerId);
-        if (this.nextLevel.classList.contains('validAction')) {
-            this.nextLevel.addEventListener("click", (event) => this.triggerNextLevel(event));
-            this.nextLevel.classList.add("selectable");
-        }
-        if (this.retry.classList.contains('validAction')) {
-            this.retry.addEventListener("click", retrySameLevel);
-            this.retry.classList.add("selectable");
-        }
-        this.startAgain.addEventListener("click", restartFromScratch);
-        this.startAgain.classList.add("selectable");
-    }
-
-    triggerNextLevel(event: Event)  {
-        triggerNextLevel(this.score);
-    }
-
-    Resume() {
-        this.animation.play();
-    }
-
-    Start() {
-        this.startTime = Date.now();
-        this.animation.play();
-        this.timerId = setInterval(() => this.ShowCurrentScore(), 5);
-    }
-
-    ShowCurrentScore() {
-        const ratio = this.timeRemainingContainer.offsetWidth / this.outerContainer.offsetWidth;
-        if (ratio < 0.8) {
-            this.nextLevel.classList.add("invalidAction");
-            this.nextLevel.classList.remove("validAction");
-        }
-        if (ratio < 0.5) {
-            this.retry.classList.add("invalidAction");
-            this.retry.classList.remove("validAction");
-        }
-        this.score = Math.floor(ratio * this.startingScore)
-        this.parentGrid.app.refreshCurrentScoreDisplay(this.score);
-    }
-
-    RegisterWrongGuess() {
-        this.totalDuration = this.totalDuration - (Date.now() - this.startTime);
-        this.animation = this.GenerateCountdownAnimation(this.totalDuration, this.timeRemainingContainer.offsetWidth - 50 + "px");
-        this.startTime = Date.now();
-        this.animation.play();
-    }
-}
-
-class GridInst {
-    grid: Grid;
-    countdown: CountDown = new CountDown(this);
-    app: MainContentElement;
-    private innerContainer: HTMLElement = document.createElement("div");
-    private outerContainer: HTMLElement = document.createElement("div");
-    private overallContainer: HTMLElement = document.createElement("div");
-    private inactiveBeadsContainer: HTMLElement = document.createElement("div");
-    private beads: Array<Bead> = [];
-    private inactiveBeads: Array<InactiveBead> = [];
-
-    constructor(app: MainContentElement) {
-        this.grid = LEVEL.grid!;
-        this.app = app;
-    }
-
-    GetAsElement(): HTMLElement {
-        return this.overallContainer;
-    }
-
-    Build() {
-        this.outerContainer.setAttribute("id", "outerContainer");
-        this.innerContainer.setAttribute("id", "innerContainer");
-        for (const alien of this.grid.aliens) {
-            const bead = new Bead(this, alien);
-            this.beads.push(bead);
-            this.innerContainer.appendChild(bead.GetAsElement());
-            this.inactiveBeads.push(bead.GetInactiveBead());
-        }
-        const bead = new Bead(this, this.grid.indigenous!);
-        this.beads.push(bead);
-        this.innerContainer.appendChild(bead.GetAsElement());
-        this.outerContainer.appendChild(this.innerContainer);
-        this.overallContainer.appendChild(this.outerContainer);
-        this.overallContainer.appendChild(this.inactiveBeadsContainer);
-        this.inactiveBeads.push(bead.GetInactiveBead());
-        this.AppendInactiveBeads();
-        this.AppendCountDown();
-        this.countdown.Start();
-    }
-
-    AppendInactiveBeads() {
-        shuffleArray(this.inactiveBeads);
-        for (const bead of this.inactiveBeads) {
-            this.inactiveBeadsContainer.appendChild(bead.GetAsElement());
-        }
-    }
-
-    AppendCountDown() {
-        this.overallContainer.appendChild(this.countdown.GetAsElement());
-    }
-
-    Win() {
-        this.countdown.Pause();
-        for (const bead of this.beads) {
-            bead.Win();
-        }
-    }
-
-    Lose() {
-        for (const bead of this.beads) {
-            console.log("loose");
-        }
-        for (const bead of this.beads) {
-            bead.EndGame();
-        }
-        this.countdown.Stop();
-    }
-
-    RegisterWrongGuess() {
-        this.countdown.RegisterWrongGuess();
-    }
-
-}
-
-class WhereIsMyDotApp {
-    private readonly container: HTMLElement = document.body;
-    private contentElement: MainContentElement;
-
-    constructor() {
-        this.contentElement = new MainContentElement(this)
-    }
-
-    Init() {
-        this.cleanup();
-        this.appendSelectorElement();
-    }
-
-    private appendSelectorElement() {
-        this.container.appendChild(this.contentElement.GetAsElement())
+    private appendContainer() {
+        this.outContainer.appendChild(this.container)
     }
 
     private cleanup() {
-        const elements = this.container.children;
-        while (this.container.firstChild) {
-            this.container.removeChild(this.container.lastChild!);
+        this.allTrajectories = new Array<Trajectory>();
+        this.allPositions = new Map<number, Array<Position>>();
+        while (this.outContainer.hasChildNodes()) {
+            clear(this.outContainer.firstChild!);
         }
     }
 
+    restartJourneyFromScratch(event: Event) {
+        // Scracth all scores from current journey
+        for (const journey of this.game.journeys) {
+            if (journey.number !== this.game.nextJourney) {
+                continue;
+            }
+            this.resetJourney(journey);
+        }
+        this.Init();
+    }
+
+    restartGameFromScratch(event: Event) {
+        // Scracth all scores from current journey
+        for (const journey of this.game.journeys) {
+            this.resetJourney(journey);
+        }
+        this.game.nextJourney = 1;
+        this.Init();
+    }
+
+    private resetJourney(journey: Journey) {
+        for (const level of journey.levels) {
+            level.score = undefined;
+        }
+        journey.nextLevel = 1;
+    }
+
+    triggerNextLevel(event: Event) {
+        var gameJourney: Journey = new Journey();
+        for (const journey of this.game.journeys) {
+            if (journey.number === this.journey.number) {
+                gameJourney = journey;
+            }
+        }
+        if (!gameJourney.nextLevel) {
+            gameJourney.nextLevel = 1;
+        }
+        if (gameJourney.nextLevel === gameJourney.levels.length) {
+            this.game.nextJourney! += 1;
+            this.Init();
+            return;
+        }
+        gameJourney.nextLevel += 1;
+        this.Init();
+    }
 }
 
 function Init() {
-    LEVEL = getLevel(nextLevel);
-    const app = new WhereIsMyDotApp();
+    const game: Game = getGame();
+    const app = new TapTheDot(game);
     app.Init();
 }
 
-function getLevel(levelNumber: number): Level {
-    const level = new Level();
-    var settings = undefined;
-    if (LEVEL_SETTINGS.has(levelNumber)) {
-        settings = LEVEL_SETTINGS.get(levelNumber);
-    } else {
-        settings = {
-            size: levelNumber,
-            moves: levelNumber,
-            numAliens: levelNumber,
+function getGame(): Game {
+    const storedGameStr = localStorage.getItem("game");
+    if (!storedGameStr) {
+        return GAME;
+    }
+    const storedGame = new Game().fromJsonString(storedGameStr);
+    var nextJourney = storedGame.nextJourney;
+    if (!nextJourney) {
+        nextJourney = 1;
+    }
+    GAME.nextJourney = nextJourney;
+    for (var i = 0; i < nextJourney; i++) {
+        const storedJourney = storedGame.journeys.at(i);
+        const journey = GAME.journeys.at(i);
+        if (storedJourney && journey) {
+            if (!storedJourney.nextLevel) {
+                storedJourney.nextLevel = 1;
+            }
+            journey.nextLevel = storedJourney.nextLevel;
+            for (var j = 0; j < GAME.journeys[i].levels.length; j++) {
+                const storedLevel = storedJourney.levels.at(j);
+                const level = journey.levels.at(j);
+                if (storedLevel && storedLevel.score && level) {
+                    level.score = storedLevel.score
+                }
+            } 
         }
     }
-    level.size = settings?.size;
-    document.documentElement.style.setProperty('--box-size-num-moves', level.size!.toString());
-    level.moves = settings?.moves;
-    level.numAliens = settings?.numAliens;
-    level.allowedMoves.push(new Move({ "direction": MoveDirection.UP }));
-    level.allowedMoves.push(new Move({ "direction": MoveDirection.DOWN }));
-    level.allowedMoves.push(new Move({ "direction": MoveDirection.RIGHT }));
-    level.allowedMoves.push(new Move({ "direction": MoveDirection.LEFT }));
-    document.documentElement.style.setProperty('--moves-num', level.allowedMoves!.length.toString());
-    level.grid = new Grid({
-        "indigenous": new Person({
+    return GAME;
+}
+
+export function getJourney(game: Game): Journey {
+    var fallbackJourney: Journey = new Journey();
+    for (const journey of game.journeys) {
+        if (journey.number === game.nextJourney) {
+            return journey;
+        }
+        if (fallbackJourney === undefined) {
+            fallbackJourney = journey;
+        }
+    }
+    return fallbackJourney;
+}
+
+export function getLevel(journey: Journey, levelNumber: number): Level {
+    for (const level of journey.levels) {
+        if (level.number === levelNumber) {
+            return level;
+        }
+    }
+    throw new Error('Journey is completed');
+}
+
+function getDefaultGrid(): Grid {
+    return new Grid({
+        indigenous: new Person({
             "trajectory": new Trajectory(),
             "type": PersonType.INDIGENOUS
         })
-    });
-    return level;
+    })
 }
 
-var nextLevel: number = 1;
-var totalScore: number = 0;
+function clear(node: Node) {
+    while (node.hasChildNodes()) {
+        clear(node.firstChild!);
+    }
+    node.parentNode?.removeChild(node);
+}
 
-const LEVEL_SETTINGS = new Map(
-    [
-        [1, {
-            size: 5,
-            moves: 1,
-            numAliens: 1
-        }],
-        [2, {
-            size: 5,
-            moves: 2,
-            numAliens: 2
-        }],
-        [3, {
-            size: 5,
-            moves: 3,
-            numAliens: 3
-        }],
-        [4, {
-            size: 5,
-            moves: 4,
-            numAliens: 4
-        }],
-    ]
-);
+const GAME: Game = new Game({
+    journeys: [
+        new Journey({
+            number: 1,
+            theme: Theme.BEACH,
+            allowedMoves: [
+                new Move({ "direction": MoveDirection.NORTH }),
+                new Move({ "direction": MoveDirection.SOUTH }),
+                new Move({ "direction": MoveDirection.WEST }),
+                new Move({ "direction": MoveDirection.EAST }),
+            ],
+            levels: [
+                new Level({
+                    number: 1,
+                    size: 5,
+                    numMoves: 3,
+                    numAliens: 3,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 460,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 2,
+                    size: 5,
+                    numMoves: 3,
+                    numAliens: 3,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 440,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 3,
+                    size: 5,
+                    numMoves: 3,
+                    numAliens: 3,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 420,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 4,
+                    size: 5,
+                    numMoves: 3,
+                    numAliens: 3,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 400,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 5,
+                    size: 5,
+                    numMoves: 3,
+                    numAliens: 3,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 380,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 6,
+                    size: 5,
+                    numMoves: 3,
+                    numAliens: 3,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 360,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 7,
+                    size: 5,
+                    numMoves: 3,
+                    numAliens: 3,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 340,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 8,
+                    size: 5,
+                    numMoves: 3,
+                    numAliens: 3,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 320,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 9,
+                    size: 5,
+                    numMoves: 3,
+                    numAliens: 3,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+            ],
+            symbols: [
+                'waves', 'pool', 'surfing', 'beach_access', 'sailing',
+                'castle', 'sunny', 'icecream', 'phishing', 'scuba_diving',
+                'eyeglasses',
+            ],
+            minimumStarNumber: 30,
+            nextLevel: 1,
+        }),
+        new Journey({
+            number: 2,
+            theme: Theme.MOUNTAIN,
+            allowedMoves: [
+                new Move({ "direction": MoveDirection.NORTH }),
+                new Move({ "direction": MoveDirection.SOUTH }),
+                new Move({ "direction": MoveDirection.WEST }),
+                new Move({ "direction": MoveDirection.EAST }),
+                new Move({ "direction": MoveDirection.NORTH_EAST }),
+                new Move({ "direction": MoveDirection.NORTH_WEST }),
+                new Move({ "direction": MoveDirection.SOUTH_EAST }),
+                new Move({ "direction": MoveDirection.SOUTH_WEST }),
+            ],
+            levels: [
+                new Level({
+                    number: 1,
+                    size: 5,
+                    numMoves: 4,
+                    numAliens: 4,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 500,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 2,
+                    size: 5,
+                    numMoves: 4,
+                    numAliens: 4,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 500,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 3,
+                    size: 5,
+                    numMoves: 4,
+                    numAliens: 4,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 400,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 4,
+                    size: 5,
+                    numMoves: 4,
+                    numAliens: 4,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 5,
+                    size: 5,
+                    numMoves: 4,
+                    numAliens: 4,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 6,
+                    size: 5,
+                    numMoves: 4,
+                    numAliens: 4,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 7,
+                    size: 5,
+                    numMoves: 4,
+                    numAliens: 4,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 8,
+                    size: 5,
+                    numMoves: 4,
+                    numAliens: 4,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 9,
+                    size: 5,
+                    numMoves: 4,
+                    numAliens: 4,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+            ],
+            symbols: [
+                'landscape', 'downhill_skiing', 'snowmobile', 'ac_unit',
+                'cloudy_snowing', 'snowing_heavy', 'sledding', 'snowshoeing',
+                'cabin', 'cyclone', 'mode_dual'
+            ],
+            minimumStarNumber: 30,
+            nextLevel: 1,
+        }),
+        new Journey({
+            number: 3,
+            theme: Theme.SPACE,
+            allowedMoves: [
+                new Move({ "direction": MoveDirection.NORTH }),
+                new Move({ "direction": MoveDirection.SOUTH }),
+                new Move({ "direction": MoveDirection.WEST }),
+                new Move({ "direction": MoveDirection.EAST }),
+                new Move({ "direction": MoveDirection.NORTH_EAST }),
+                new Move({ "direction": MoveDirection.NORTH_WEST }),
+                new Move({ "direction": MoveDirection.SOUTH_EAST }),
+                new Move({ "direction": MoveDirection.SOUTH_WEST }),
+                new Move({ "direction": MoveDirection.DOUBLE_NORTH }),
+                new Move({ "direction": MoveDirection.DOUBLE_SOUTH }),
+                new Move({ "direction": MoveDirection.DOUBLE_WEST }),
+                new Move({ "direction": MoveDirection.DOUBLE_EAST }),
+            ],
+            levels: [
+                new Level({
+                    number: 1,
+                    size: 10,
+                    numMoves: 5,
+                    numAliens: 5,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 500,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 2,
+                    size: 10,
+                    numMoves: 5,
+                    numAliens: 5,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 500,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 3,
+                    size: 10,
+                    numMoves: 5,
+                    numAliens: 5,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 400,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 4,
+                    size: 10,
+                    numMoves: 5,
+                    numAliens: 5,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 5,
+                    size: 10,
+                    numMoves: 5,
+                    numAliens: 5,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 6,
+                    size: 10,
+                    numMoves: 5,
+                    numAliens: 5,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 7,
+                    size: 10,
+                    numMoves: 5,
+                    numAliens: 5,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 8,
+                    size: 10,
+                    numMoves: 5,
+                    numAliens: 5,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+                new Level({
+                    number: 9,
+                    size: 10,
+                    numMoves: 5,
+                    numAliens: 5,
+                    grid: getDefaultGrid(),
+                    movesAreRandomlyGenerated: true,
+                    timePerMoveMs: 300,
+                    trajectoryIterationsAllowed: 5,
+                }),
+            ],
+            symbols: [
+                'rocket_launch', 'public', 'sunny', 'nightlight',
+                'star', 'satellite_alt'
+            ],
+            minimumStarNumber: 40,
+            nextLevel: 1,
+        }),
+    ],
+    nextJourney: 1,
+})
 
 Init();

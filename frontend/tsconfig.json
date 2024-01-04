@@ -1,20 +1,29 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "target": "ES2015",
+    "target": "ES2018",
     "module": "NodeNext",
     "strict": true,
     "moduleResolution": "NodeNext",
-    "lib": ["es2016", "dom", "es5", "dom.iterable"],
+    "lib": ["es2018", "dom", "es5", "dom.iterable"],
     "sourceMap": true,
     "declarationMap": true,
+    "rootDirs": [
+      //".",
+      "bazel-bin",
+    ],
     "paths": {
       "nodemodules/*": [
         "../node_modules/*"
       ],
-      "frontend/*": ["../bazel-bin/frontend/*"],
     },
     "declaration": true,
     "allowJs": true,
-  }
+  },
+  "exclude": [
+      "bazel-cheetah",
+      "bazel-out",
+      "bazel-testlogs",
+      "node_modules",
+  ]
 }

@@ -1,26 +1,50 @@
 syntax = "proto2";
 
+message Game {
+  repeated Journey journeys = 1;
+  optional int32 next_journey = 2;
+
+}
+
 message Journey {
-  optional string name = 1;
-  repeated Level levels = 2;
+  optional int32 number  = 1;
+  optional Theme theme = 2;
+  repeated Move allowed_moves = 3;
+  repeated Level levels = 4;
+  repeated string symbols = 5;
+  optional int32 minimum_star_number = 6;
+  optional int32 next_level = 7;
 }
 
 message Level {
-  optional string name = 1;
+  optional int32 number = 1;
   // This is the rank of the level. A journey should have levels with
   // unique and sequential ranks.
   optional int32 size = 2;
-  optional int32 rank = 3; 
   // How many moves the users is going to have to input
-  optional int32 moves = 4;
+  optional int32 num_moves = 3;
   // How many non-self pawns will be present in the grid. 
   // If the value is 1, then the grid will contain two pawns:
   // self and 1 intruder.
-  optional int32 num_aliens = 5;
+  optional int32 num_aliens = 4;
   // The moves that are valid for this level
-  repeated Move allowed_moves = 6;
   // The name of the grid that this level uses.
-  optional Grid grid = 7;
+  optional Grid grid = 5;
+
+  // Whether the indigenous moves are randomly generated
+  // (ie not chosen by the user).
+  optional bool moves_are_randomly_generated = 6;
+
+  // Number of milliseconds per move.
+  // The total trajectory duration will be time_per_move_ms * moves.
+  optional int32 time_per_move_ms = 7;
+
+  // Number of trajectory iterations allowed
+  // before the level will fail.
+  optional int32 trajectory_iterations_allowed = 8;
+
+  // Score obtained by the user. Unset if level not completed.
+  optional int32 score = 9;
 }
 
 message Grid {
@@ -58,14 +82,29 @@ message Move {
 
 enum MoveDirection {
   MOVE_DIRECTION_UNSPECIFIED = 0;
-  MOVE_DIRECTION_UP = 1;
-  MOVE_DIRECTION_DOWN = 2;
-  MOVE_DIRECTION_LEFT = 3;
-  MOVE_DIRECTION_RIGHT = 4;
+  MOVE_DIRECTION_NORTH = 1;
+  MOVE_DIRECTION_SOUTH = 2;
+  MOVE_DIRECTION_WEST = 3;
+  MOVE_DIRECTION_EAST = 4;
+  MOVE_DIRECTION_SOUTH_EAST = 5;
+  MOVE_DIRECTION_SOUTH_WEST = 6;
+  MOVE_DIRECTION_NORTH_EAST = 7;
+  MOVE_DIRECTION_NORTH_WEST = 8;
+  MOVE_DIRECTION_DOUBLE_NORTH = 9;
+  MOVE_DIRECTION_DOUBLE_SOUTH = 10;
+  MOVE_DIRECTION_DOUBLE_WEST = 11;
+  MOVE_DIRECTION_DOUBLE_EAST = 12;
 }
 
 enum PersonType {
   PERSON_TYPE_UNSPECIFIED = 0;
   PERSON_TYPE_INDIGENOUS = 1;
   PERSON_TYPE_ALIEN = 2;
+}
+
+enum Theme {
+  THEME_UNSPECIFIED = 0;
+  THEME_BEACH = 1;
+  THEME_MOUNTAIN = 2;
+  THEME_SPACE = 3;
 }

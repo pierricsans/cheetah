@@ -10,12 +10,113 @@ ts_config(
     visibility = [":__subpackages__"],
 )
 
-# Type-checks, and emits output to
-# bazel-bin/frontend/simple/foo.js
-# bazel-bin/frontend/simple/foo.d.ts
+ts_project(
+    name = "theme",
+    srcs = ["theme.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
+        "//frontend/protos:level_ts_proto",
+        "//frontend:node_modules/@bufbuild/protobuf",
+    ]
+)
+
+ts_project(
+    name = "bead",
+    srcs = ["bead.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
+        ":app",
+        ":constants",
+        "//frontend/protos:level_ts_proto",
+        "//frontend:node_modules/@bufbuild/protobuf",
+    ]
+)
+
+ts_project(
+    name = "selector",
+    srcs = ["selector.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
+        ":app",
+        "//frontend/protos:level_ts_proto",
+        "//frontend:node_modules/@bufbuild/protobuf",
+    ]
+)
+
+ts_project(
+    name = "constants",
+    srcs = ["constants.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+)
+
+ts_project(
+    name = "countdown",
+    srcs = ["countdown.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
+        ":app",
+        ":constants",
+        "//frontend/protos:level_ts_proto",
+        "//frontend:node_modules/@bufbuild/protobuf",
+    ]
+)
+
+ts_project(
+    name = "scoreboard",
+    srcs = ["scoreboard.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
+        ":app",
+        ":constants",
+        "//frontend/protos:level_ts_proto",
+        "//frontend:node_modules/@bufbuild/protobuf",
+    ]
+)
+
+ts_project(
+    name = "app",
+    srcs = ["app.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
+        "//frontend/protos:level_ts_proto",
+        "//frontend:node_modules/@bufbuild/protobuf",
+    ]
+)
+
+ts_project(
+    name = "grid",
+    srcs = ["grid.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
+        ":bead",
+        ":constants",
+        ":countdown",
+        "//frontend/protos:level_ts_proto",
+        "//frontend:node_modules/@bufbuild/protobuf",
+    ]
+)
+
 ts_project(
     name = "main",
-    srcs = ["main.ts"],
+    srcs = [
+        "main.ts",
+    ],
     declaration = True,
     transpiler = "tsc",
     tsconfig = "//frontend:tsconfig",
@@ -24,10 +125,15 @@ ts_project(
       "//frontend:__pkg__",
     ],
     deps = [
+        ":app",
+        ":countdown",
+        ":grid",
+        ":scoreboard",
+        ":selector",
+        ":theme",
         "//frontend/protos:level_ts_proto",
         "//frontend:node_modules/@bufbuild/protobuf",
         "//frontend:node_modules/@types/node",
-        "//frontend:node_modules/axios",
     ],
 )
 
@@ -49,5 +155,10 @@ webpack_bundle(
     visibility = [
         "//monkey:__pkg__",
         "//server:__pkg__",
+    ],
+    deps = [
+        "//frontend:node_modules/css-minimizer-webpack-plugin",
+        "//frontend:node_modules/mini-css-extract-plugin",
+        "//frontend:node_modules/terser-webpack-plugin",
     ]
 )

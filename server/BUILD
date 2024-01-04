@@ -22,6 +22,8 @@ py_library(
     ],
 )
 
+
+
 py_library(
     name="conf",
     srcs=["conf.py"],
@@ -42,7 +44,7 @@ py_library(
     data=[
         ":alternate_routes",
         "//frontend:bundle",
-        "style.css",
+        # "style.css",
     ],
     deps=[
         requirement("flask"),
