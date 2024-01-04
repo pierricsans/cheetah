@@ -43,7 +43,6 @@ ts_project(
     transpiler = "tsc",
     tsconfig = "//frontend:tsconfig",
     deps = [
-        ":app",
         "//frontend/protos:level_ts_proto",
         "//frontend:node_modules/@bufbuild/protobuf",
     ]
@@ -92,6 +91,7 @@ ts_project(
     transpiler = "tsc",
     tsconfig = "//frontend:tsconfig",
     deps = [
+        ":selector",
         "//frontend/protos:level_ts_proto",
         "//frontend:node_modules/@bufbuild/protobuf",
     ]

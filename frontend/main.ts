@@ -1,7 +1,7 @@
 import { App, shuffleArray } from './app.js';
 import { setTheme } from './theme.js';
 import { GridInst } from './grid.js';
-import { Icons, Option, RandomSelector, Selector } from './selector.js';
+import { Icons, Option, RandomOption, RandomSelector, Selector } from './selector.js';
 import { Game, Grid, Journey, Level, Move, MoveDirection, Person, PersonType, Position, Theme, Trajectory } from './protos/level_pb.js';
 import { ScoreBoard } from './scoreboard.js';
 
@@ -97,7 +97,7 @@ export class TapTheDot implements App {
         this.level = new Level().fromJsonString(getLevel(this.journey, this.journey.nextLevel || 1).toJsonString());
         this.validateElement = new ValidationElement(this);
         this.scoreboard = new ScoreBoard(this.game, this);
-        this.selector = new Selector(this.journey, this.level, this);
+        this.selector = new Selector(this.journey, this.level);
     }
 
     Init() {
@@ -109,10 +109,11 @@ export class TapTheDot implements App {
         this.container.setAttribute("id", "selectorContainer");
         this.container.classList.add("banner");
         if (this.level.movesAreRandomlyGenerated) {
-            this.selector = new RandomSelector(this.journey, this.level, this);
+            this.selector = new RandomSelector(this.journey, this.level);
         } else {
-            this.selector = new Selector(this.journey, this.level, this);
+            this.selector = new Selector(this.journey, this.level);
         }
+        this.WaitForUserSelection();
         this.AppendSelector();
         this.GenerateSelectionElement();
         this.validateElement = new ValidationElement(this);
@@ -419,8 +420,24 @@ export class TapTheDot implements App {
         }
     }
 
+    WaitForUserSelection() {
+        for (const promise of this.selector.WaitAndRegisterSelections()) {
+            promise.then((option: Option) => {
+                this.AddSelectedOption(option);
+            })
+            promise.catch(() => {
+                console.log("No more selection to make");
+            });
+        }
+    }
+
     AddSelectedOption(option: Option) {
         const selectable = this.selection.getElementsByClassName("nextSelectable")[0];
+        if (!selectable) {
+            // All moves in the trajectory have been filled.
+            // This can happen when 
+            return;
+        }
         selectable.classList.add("selected");
         selectable.classList.remove("nextSelectable");
         selectable.textContent = Icons.get(option.move?.direction!)!;
@@ -433,6 +450,12 @@ export class TapTheDot implements App {
         if (this.level.grid?.indigenous?.trajectory?.moves?.length! === this.level.numMoves) {
             this.selector.MakeAllOptionsUnselectable();
             this.validateElement.EnableValidateButton();
+        } else {
+            // For RandomOptions, we need to re generate a new Promise for the
+            // next user selection.
+            if (option instanceof RandomOption) {
+                this.WaitForUserSelection();
+            }
         }
     }
 

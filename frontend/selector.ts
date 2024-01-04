@@ -1,4 +1,3 @@
-import { App, OptionTemplate } from './app.js';
 import { Journey, Level, Move, MoveDirection } from './protos/level_pb.js';
 
 // Map between MoveDirection and Material Icon name.
@@ -26,13 +25,12 @@ export class Selector {
   protected level: Level;
   protected options: Array<Option> = new Array<Option>();
   protected optionsContainer: HTMLElement = document.createElement("div");
-  protected app: App;
   protected main: HTMLElement = document.createElement("div");
+  private acceptsFurtherSelections: boolean = true;
 
-  constructor(journey: Journey, level: Level, app: App) {
+  constructor(journey: Journey, level: Level) {
     this.journey = journey;
     this.level = level;
-    this.app = app;
     this.main.setAttribute("id", "selector");
     this.optionsContainer.setAttribute("id", "optionsContainer")
     this.GenerateOptions();
@@ -49,46 +47,55 @@ export class Selector {
   }
 
   protected GenerateOptions() {
+    this.main.appendChild(this.optionsContainer);
     for (const move of this.journey.allowedMoves) {
       const option = new ExplicitOption(move);
       this.options.push(option);
       this.optionsContainer.appendChild(option.GetAsElement());
-      this.WaitAndRegisterUserSelection(option);
     }
-    this.main.appendChild(this.optionsContainer);
   }
 
   // Handles the user selection event:
   //   - Registers selection to the App
   //   - Makes this and/or option selectable or not
-  protected WaitAndRegisterUserSelection(option: Option) {
-    const promise: Promise<void> = option.initAndWaitForUserSelection()
-    .then(() => {
-      this.app.AddSelectedOption(option);
-      option.MakeUnselectable();
-      var atLeastOneSelectable = false;
-      for (const option of this.options) {
-          if (option.IsSelectable()) {
-              atLeastOneSelectable = true;
+  WaitAndRegisterSelections(): Array<Promise<Option>> {
+    const promises: Array<Promise<Option>> = [];
+    for (const option of this.options) {
+      promises.push(new Promise<Option>((resolve, reject) => {
+        option.initAndWaitForUserSelection().then(() => {
+          if (this.acceptsFurtherSelections) {
+            option.MakeUnselectable();
+            var atLeastOneSelectable = false;
+            for (const option of this.options) {
+              if (option.IsSelectable()) {
+                atLeastOneSelectable = true;
+              }
+            }
+            if (!atLeastOneSelectable) {
+              for (const option of this.options) {
+                option.MakeSelectable();
+              }
+            }
+            resolve(option);
+          } else {
+            reject()
           }
-      }
-      if (!atLeastOneSelectable) {
-          for (const option of this.options) {
-              option.MakeSelectable();
-          }
-      }
-    })
+        });
+      }));
+    }
+    return promises;
   }
 
   // Makes all options unselectable.
   // Intended to be called once the entire trajectory has been decided.
   MakeAllOptionsUnselectable() {
+    this.acceptsFurtherSelections = false;
     for (const option of this.options) {
-        if (option.IsSelectable()) {
-            option.MakeUnselectable();
-        }
+      if (option.IsSelectable()) {
+        option.MakeUnselectable();
+      }
     }
-}
+  }
 }
 
 // Instead of the user clicking on several options, a RandomSelector is
@@ -100,19 +107,21 @@ export class RandomSelector extends Selector {
     this.optionsContainer.appendChild(option.GetAsElement());
     this.main.appendChild(this.optionsContainer);
     this.options.push(option);
-    this.WaitAndRegisterUserSelection(option);
   }
 
-  protected WaitAndRegisterUserSelection(option: Option) {
-    const promise: Promise<void> = option.initAndWaitForUserSelection()
-    .then(() => {
-      this.app.AddSelectedOption(option);
-      this.WaitAndRegisterUserSelection(option);
-    })
+  WaitAndRegisterSelections(): Array<Promise<Option>> {
+    return [
+      new Promise<Option>((resolve) => {
+        const option = this.options[0]!;
+        option.initAndWaitForUserSelection().then(() => {
+          resolve(option);
+        })
+      })];
   }
+
 }
 
-export class Option implements OptionTemplate {
+export class Option {
   move: Move = new Move();
   protected text: string = '';
   protected element: HTMLElement = document.createElement("p");
@@ -122,13 +131,13 @@ export class Option implements OptionTemplate {
     this.element.classList.add('selectable');
     this.element.setAttribute("tabindex", "0");
   }
-  
-  initAndWaitForUserSelection() {
+
+  initAndWaitForUserSelection(): Promise<void> {
     return new Promise<void>((resolve) => {
       this.element.addEventListener('mousedown', (event: Event) => {
         resolve();
       });
-    }); 
+    });
   }
 
   GetAsElement(): HTMLElement {
@@ -152,7 +161,6 @@ export class Option implements OptionTemplate {
 }
 
 export class ExplicitOption extends Option {
-  element: HTMLElement = document.createElement("p");
 
   constructor(move: Move) {
     super();
@@ -164,7 +172,7 @@ export class ExplicitOption extends Option {
 
 }
 
-class RandomOption extends Option {
+export class RandomOption extends Option {
   moves: Array<Move>;
   private timerId: ReturnType<typeof setInterval> | undefined = undefined;
 
@@ -173,10 +181,10 @@ class RandomOption extends Option {
     this.moves = moves;
     this.timerId = setInterval(this.updateText, 100, this.moves, this);
   }
-  
+
   updateText(moves: Array<Move>, option: RandomOption) {
     const nextMove = moves.shift();
-    if (nextMove !== undefined) {
+    if (nextMove) {
       option.move = nextMove;
       option.element.setAttribute("alt", MoveDirection[nextMove?.direction!]);
       option.element.textContent = Icons.get(nextMove.direction!)!;
@@ -195,4 +203,4 @@ class RandomOption extends Option {
     clearInterval(this.timerId);
   }
 
- }
+}
