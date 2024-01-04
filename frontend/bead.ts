@@ -233,23 +233,21 @@ export class ActiveBead extends Bead {
         this.fadeIn = this.GenerateFadeInAnimation(fadeDuration);
         this.mainAnimation = this.GenerateMainAnimation(mainAnimationDuration);
         this.fadeOut = this.GenerateFadeOutAnimation(fadeDuration);
-        // var rate = 1;
-        this.fadeOut.onfinish = (event: Event) => {
-            // rate =  rate * 0.5;
-            // fadeIn.playbackRate = rate;
-            // fadeOut.playbackRate = rate;
-            // fadeIn.play();
-            this.animateElement(fadeDuration * RATE_OF_ANIMATION_SLOWDOWN, mainAnimationDuration * RATE_OF_ANIMATION_SLOWDOWN);
-        }
-        this.mainAnimation.onfinish = (event: Event) => {
-            this.fadeOut.play();
-        }
-        this.fadeIn.onfinish = (event: Event) => {
+        this.fadeIn.addEventListener("finish", (event) => {
+            this.fadeIn.commitStyles();
+            this.fadeIn.cancel();
             this.mainAnimation.play();
-        }
-
-        // fadeIn.playbackRate = 1;
-        // fadeOut.playbackRate = 1;
+        });
+        this.mainAnimation.addEventListener("finish", (event) => {
+            this.mainAnimation.commitStyles();
+            this.mainAnimation.cancel();
+            this.fadeOut.play();
+        });
+        this.fadeOut.addEventListener("finish", (event) => {
+            this.fadeOut.commitStyles();
+            this.fadeOut.cancel();
+            this.fadeIn.play();
+        });
         this.fadeIn.play();
     }
 
