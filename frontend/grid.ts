@@ -1,5 +1,5 @@
-import { Bead, InactiveBead } from './bead.js';
-import { Journey, Grid, Level } from './protos/level_pb.js';
+import { ActiveBead } from './bead.js';
+import { Journey, Grid, Level, Person, PersonType } from './protos/level_pb.js';
 import { CountDown } from './countdown.js';
 import { App, GridTemplate, shuffleArray } from './app.js';
 import { DEFAULT_DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS, DEFAULT_FADE_IN_OUT_DURATION_MS, FALLBACK_COUNTDOWN_DURATION_MS, RATE_OF_ANIMATION_SLOWDOWN } from './constants.js';
@@ -14,8 +14,7 @@ export class GridInst implements GridTemplate {
   private outerContainer: HTMLElement = document.createElement("div");
   private overallContainer: HTMLElement = document.createElement("div");
   private inactiveBeadsContainer: HTMLElement = document.createElement("div");
-  private beads: Array<Bead> = [];
-  private inactiveBeads: Array<InactiveBead> = [];
+  private beads: Array<ActiveBead> = [];
 
   constructor(journey: Journey, level: Level, app: App) {
     this.journey = journey;
@@ -41,27 +40,40 @@ export class GridInst implements GridTemplate {
     this.outerContainer.setAttribute("id", "outerContainer");
     this.innerContainer.setAttribute("id", "innerContainer");
     for (const alien of this.grid.aliens) {
-      const bead = new Bead(this, alien);
-      this.beads.push(bead);
-      this.innerContainer.appendChild(bead.GetAsElement());
-      this.inactiveBeads.push(bead.GetInactiveBead());
+      this.AppendPerson(alien);
     }
-    const bead = new Bead(this, this.grid.indigenous!);
-    this.beads.push(bead);
-    this.innerContainer.appendChild(bead.GetAsElement());
+    if (!this.grid.indigenous) {
+      throw Error("No indigenous found in grid: " + this.grid);
+    }
+    this.AppendPerson(this.grid.indigenous);
     this.outerContainer.appendChild(this.innerContainer);
     this.overallContainer.appendChild(this.outerContainer);
     this.overallContainer.appendChild(this.inactiveBeadsContainer);
-    this.inactiveBeads.push(bead.GetInactiveBead());
     this.AppendInactiveBeads();
     this.countdown.Start();
   }
 
-  AppendInactiveBeads() {
-    shuffleArray(this.inactiveBeads);
+  private AppendPerson(person: Person) {
+    const bead = new ActiveBead(person, this.level);
+    this.beads.push(bead);
+    this.innerContainer.appendChild(bead.GetAsElement());
+  }
+
+  private AppendInactiveBeads() {
+    shuffleArray(this.beads);
     this.inactiveBeadsContainer.setAttribute("id", "inactiveBeadsContainer");
-    for (const bead of this.inactiveBeads) {
-      this.inactiveBeadsContainer.appendChild(bead.GetAsElement());
+    for (const bead of this.beads) {
+      const inactiveBead = bead.GetInactiveBead();
+      this.inactiveBeadsContainer.appendChild(inactiveBead.GetAsElement());
+      bead.initAndWaitForUserSelection().then((type: PersonType) => {
+        if (type === PersonType.INDIGENOUS) {
+          this.Win();
+        } else {
+          this.countdown.RegisterWrongGuess();
+          bead.Hide();
+          inactiveBead.Hide();
+        }
+      });
     }
   }
 
@@ -103,7 +115,4 @@ export class GridInst implements GridTemplate {
     this.countdown.Lose();
   }
 
-  RegisterWrongGuess() {
-    this.countdown.RegisterWrongGuess();
-  }
 }

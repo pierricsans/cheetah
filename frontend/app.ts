@@ -15,7 +15,6 @@ export interface App {
 export interface GridTemplate {
   grid: Grid;
   app: App;
-  RegisterWrongGuess(): void;
   Win(): void;
   Lose(): void
 }

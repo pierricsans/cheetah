@@ -1,14 +1,32 @@
-import { Person, MoveDirection, PersonType } from './protos/level_pb.js';
+import { Level, Person, MoveDirection, PersonType } from './protos/level_pb.js';
 import { GridTemplate } from './app.js';
 import { DEFAULT_DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS, DEFAULT_FADE_IN_OUT_DURATION_MS, RATE_OF_ANIMATION_SLOWDOWN } from './constants.js';
 
-export class Bead {
-    beadElement: HTMLElement = document.createElement("span");
-    parentGrid: GridTemplate;
-    person: Person;
-    movementIncrement: number;
-    private animationOffset: number;
+abstract class Bead {
+    protected element: HTMLElement = document.createElement("span");
+    protected readonly person: Person;
+    protected readonly level: Level;
+
+    constructor(person: Person, level: Level) {
+        this.person = person;
+        this.level = level;
+        this.element.classList.add('bead');
+        this.element.textContent = this.person.color!;
+    }
+
+    GetAsElement(): HTMLElement {
+        return this.element;
+    }
+
+    Hide() {
+        this.element.style.display = "none";
+    }
+}
+
+export class ActiveBead extends Bead {
+    private movementIncrement: number;
     private inactiveBead: InactiveBead | null = null;
+    private animationOffset: number;
     private fadeIn: Animation = new Animation();
     private mainAnimation: Animation = new Animation();
     private fadeOut: Animation = new Animation();
@@ -16,70 +34,48 @@ export class Bead {
     private mainAnimationFrames: Array<Keyframe> = new Array();
     private fadeOutFrames: Array<Keyframe> = new Array();
 
-    constructor(grid: GridTemplate, person: Person) {
-        this.parentGrid = grid;
-        this.person = person;
+    constructor(person: Person, level: Level) {
+        super(person, level);
         this.animationOffset = 0;
-        this.movementIncrement = 100 / this.parentGrid.grid.width!;
-        this.beadElement.classList.add('bead');
-        this.beadElement.textContent = this.person.color!;
-        this.beadElement.addEventListener("click", event => this.RegisterClick(event))
-        this.Init();
-    }
-
-    protected Init() {
-        this.beadElement.classList.add('activeBead');
+        this.movementIncrement = 100 / this.level.grid?.width!;
+        this.element.classList.add('activeBead');
         this.animationOffset = 1 / this.person.trajectory?.moves?.length!;
-        this.beadElement.style.bottom = (this.movementIncrement * this.person.position?.yOffset!).toString() + '%';
-        this.beadElement.style.left = (this.movementIncrement * this.person.position?.xOffset!).toString() + '%';
-        this.inactiveBead = new InactiveBead(this.parentGrid, this.person, this);
+        this.element.style.bottom = (this.movementIncrement * this.person.position?.yOffset!).toString() + '%';
+        this.element.style.left = (this.movementIncrement * this.person.position?.xOffset!).toString() + '%';
+        this.inactiveBead = new InactiveBead(this.person, this.level);
         this.fadeInFrames = this.generateFadeInFrames();
         this.mainAnimationFrames = this.generateMainAnimationFrames();
         this.fadeOutFrames = this.generateFadeOutFrames();
-        this.animateElement(DEFAULT_FADE_IN_OUT_DURATION_MS, (this.parentGrid.app.level.timePerMoveMs || 200) * this.person.trajectory?.moves?.length!);
+        this.animateElement(DEFAULT_FADE_IN_OUT_DURATION_MS, (this.level.timePerMoveMs || 200) * this.person.trajectory?.moves?.length!);
     }
 
     GetInactiveBead(): InactiveBead {
         return this.inactiveBead!;
     }
-
-    private RegisterClick(event: Event) {
-        switch (this.person.type) {
-            case PersonType.INDIGENOUS:
-                this.RegisterWin();
-                break;
-            case PersonType.ALIEN:
-                this.RegisterWrong();
-                break;
-        }
-    }
-
-    RegisterWin() {
-        this.parentGrid.Win();
-    }
-
-    protected RegisterWrong() {
-        this.beadElement.style.display = "none";
-        if (this.inactiveBead !== null) {
-            this.inactiveBead.beadElement.style.display = "none";
-        }
-        this.parentGrid.RegisterWrongGuess();
-    }
-
-    GetAsElement(): HTMLElement {
-        return this.beadElement;
-    }
+    
+    initAndWaitForUserSelection(): Promise<PersonType> {
+        return new Promise<PersonType>((resolve) => {
+            for (const element of [this.element, this.inactiveBead?.GetAsElement()]) {
+                if (!element) {
+                    throw Error("No element found " + element);
+                }
+                element.addEventListener('mousedown', (event: Event) => {
+                  resolve(this.person.type || PersonType.UNSPECIFIED);
+                });
+            }
+        });
+      }
 
     Win() {
         switch (this.person.type) {
             case PersonType.INDIGENOUS:
-                this.beadElement.style.opacity = "100%";
+                this.element.style.opacity = "100%";
                 if (this.inactiveBead !== null) {
                     this.inactiveBead.GetAsElement().style.opacity = "100%";
                 }
                 break;
             case PersonType.ALIEN:
-                this.beadElement.style.opacity = "20%"
+                this.element.style.opacity = "20%"
                 if (this.inactiveBead !== null) {
                     this.inactiveBead.GetAsElement().style.opacity = "20%";
                 }
@@ -115,7 +111,7 @@ export class Bead {
 
     private GenerateFadeInAnimation(duration: number): Animation {
         const keyframes = new KeyframeEffect(
-            this.beadElement,
+            this.element,
             this.fadeInFrames,
             {
                 duration: duration,
@@ -142,7 +138,7 @@ export class Bead {
 
     private GenerateFadeOutAnimation(duration: number): Animation {
         const keyframes = new KeyframeEffect(
-            this.beadElement,
+            this.element,
             this.fadeOutFrames,
             {
                 duration: duration,
@@ -223,7 +219,7 @@ export class Bead {
     }
 
     private GenerateMainAnimation(duration: number): Animation {
-        const keyframes = new KeyframeEffect(this.beadElement, this.mainAnimationFrames,
+        const keyframes = new KeyframeEffect(this.element, this.mainAnimationFrames,
             {
                 duration: duration,
                 fill: "forwards",
@@ -250,7 +246,6 @@ export class Bead {
         }
         this.fadeIn.onfinish = (event: Event) => {
             this.mainAnimation.play();
-            // this.fadeOut.play();
         }
 
         // fadeIn.playbackRate = 1;
@@ -260,22 +255,10 @@ export class Bead {
 
 }
 
-export class InactiveBead extends Bead {
-    parentBead: Bead;
-
-    constructor(grid: GridTemplate, person: Person, parentBead: Bead) {
-        super(grid, person);
-        this.parentBead = parentBead;
-    }
+class InactiveBead extends Bead {
 
     protected Init() {
-        this.beadElement.classList.add('inactiveBead');
-    }
-
-    protected RegisterWrong() {
-        this.beadElement.style.display = "none";
-        this.parentBead.beadElement.style.display = "none";
-        this.parentGrid.RegisterWrongGuess();
+        this.element.classList.add('inactiveBead');
     }
 
 }
