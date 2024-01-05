@@ -11,8 +11,8 @@ export class CountDown extends AppElement {
     super();
     this.element.setAttribute("id", "countdown");
     this.element.classList.add("bottomBar");
-    this.timeRemainingContainer.setAttribute("id", "timeRemainingContainer");
-    this.element.appendChild(this.timeRemainingContainer);
+    // this.timeRemainingContainer.setAttribute("id", "timeRemainingContainer");
+    // this.element.appendChild(this.timeRemainingContainer);
     for (var i = 0; i < this.numStars; i++) {
       const star = document.createElement("span");
       star.classList.add("levelAction");
@@ -25,6 +25,7 @@ export class CountDown extends AppElement {
 
   RemoveStar(): boolean {
     this.stars[this.numStars - 1].classList.remove("validAction");
+    this.stars[this.numStars - 1].classList.add("invalidAction");
     this.numStars -= 1;
     return this.numStars > 0;
   }

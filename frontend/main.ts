@@ -90,7 +90,7 @@ export class TapTheDot {
     Init() {
         this.cleanup();
         this.StoreGameAsLocalStorage();
-        this.selection.showPopover();
+        this.selection.hidden = false;
         this.journey = new Journey().fromJsonString(getJourney(this.game).toJsonString());
         this.level = new Level().fromJsonString(getLevel(this.journey, this.journey.nextLevel || 1).toJsonString());
         this.container.setAttribute("id", "selectorContainer");
@@ -122,7 +122,7 @@ export class TapTheDot {
     }
 
     UpdateAndShowScoreBoard() {
-        this.selection.Hide();
+        this.selection.hidden = true;
         this.grid.Hide();
         getLevel(getJourney(this.game), this.journey.nextLevel || 1).score = this.level.score;
         this.StoreGameAsLocalStorage();

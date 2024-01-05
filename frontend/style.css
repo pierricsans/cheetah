@@ -253,14 +253,11 @@ body {
 }
 
 .validAction {
-  color: var(--app-background);
-  z-index: 10;
+  color: var(--body-background);
 }
 
 .invalidAction {
-  color: var(--app-background);
-  border-color: var(--secondary-color);
-  background-color: var(--secondary-color);
+  color: var(--secondary-color);
 }
 
 #Restart {
