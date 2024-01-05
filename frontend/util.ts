@@ -6,3 +6,17 @@ export function shuffleArray(array: Array<any>) {
       array[j] = temp;
   }
 }
+
+export class AppElement {
+  protected element: HTMLDivElement = document.createElement("div");
+
+  Hide() {
+    this.element.hidden = true;
+  }
+  Show() {
+    this.element.hidden = false;
+  }
+  GetAsElement():HTMLDivElement {
+    return this.element;
+  }
+}
