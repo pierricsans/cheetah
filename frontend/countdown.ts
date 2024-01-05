@@ -1,13 +1,14 @@
 import { TOTAL_NUM_STARS } from './constants.js';
+import { AppElement } from './util.js';
 
-export class CountDown {
+export class CountDown extends AppElement {
   numStars: number = TOTAL_NUM_STARS;
-  private element: HTMLElement = document.createElement("div");
   private timeRemainingContainer: HTMLElement = document.createElement("div");
   private stars: Array<HTMLElement> = [];
 
 
   constructor() {
+    super();
     this.element.setAttribute("id", "countdown");
     this.element.classList.add("bottomBar");
     this.timeRemainingContainer.setAttribute("id", "timeRemainingContainer");
@@ -20,10 +21,6 @@ export class CountDown {
       this.element.appendChild(star);
       this.stars.push(star);
     }
-  }
-
-  GetAsElement(): HTMLElement {
-    return this.element;
   }
 
   RemoveStar(): boolean {

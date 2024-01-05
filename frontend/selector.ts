@@ -1,3 +1,4 @@
+import { AppElement } from './util.js';
 import { Journey, Level, Move, MoveDirection } from './protos/level_pb.js';
 
 // Map between MoveDirection and Material Icon name.
@@ -20,34 +21,24 @@ export const Icons: Map<MoveDirection, string> = new Map([
 // A selector is the part of the app where the user can input their
 // selection of movements. It generally includes one Option (see below)
 // for each direction (e.g. UP, DOWN, ...).
-export class Selector {
+export class Selector extends AppElement {
   protected journey: Journey;
   protected level: Level;
   protected options: Array<Option> = new Array<Option>();
   protected optionsContainer: HTMLElement = document.createElement("div");
-  protected main: HTMLElement = document.createElement("div");
   private acceptsFurtherSelections: boolean = true;
 
   constructor(journey: Journey, level: Level) {
+    super();
     this.journey = journey;
     this.level = level;
-    this.main.setAttribute("id", "selector");
+    this.element.setAttribute("id", "selector");
     this.optionsContainer.setAttribute("id", "optionsContainer")
     this.GenerateOptions();
   }
 
-  // Hides the entire selector.
-  // Intended to be called once the selection is done.
-  Hide() {
-    this.main.hidden = true;
-  }
-
-  GetAsElement(): HTMLElement {
-    return this.main;
-  }
-
   protected GenerateOptions() {
-    this.main.appendChild(this.optionsContainer);
+    this.element.appendChild(this.optionsContainer);
     for (const move of this.journey.allowedMoves) {
       const option = new ExplicitOption(move);
       this.options.push(option);
@@ -105,7 +96,7 @@ export class RandomSelector extends Selector {
   protected GenerateOptions() {
     const option = new RandomOption(this.journey.allowedMoves);
     this.optionsContainer.appendChild(option.GetAsElement());
-    this.main.appendChild(this.optionsContainer);
+    this.element.appendChild(this.optionsContainer);
     this.options.push(option);
   }
 
@@ -121,12 +112,12 @@ export class RandomSelector extends Selector {
 
 }
 
-export class Option {
+export class Option extends AppElement {
   move: Move = new Move();
   protected text: string = '';
-  protected element: HTMLElement = document.createElement("p");
 
   constructor() {
+    super();
     this.element.classList.add('option');
     this.element.classList.add('selectable');
     this.element.setAttribute("tabindex", "0");
@@ -138,10 +129,6 @@ export class Option {
         resolve();
       });
     });
-  }
-
-  GetAsElement(): HTMLElement {
-    return this.element;
   }
 
   MakeSelectable() {

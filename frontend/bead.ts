@@ -1,24 +1,17 @@
 import { Level, Person, MoveDirection, PersonType } from './protos/level_pb.js';
 import { DEFAULT_DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS, DEFAULT_FADE_IN_OUT_DURATION_MS, RATE_OF_ANIMATION_SLOWDOWN } from './constants.js';
+import { AppElement } from './util.js';
 
-abstract class Bead {
-    protected element: HTMLElement = document.createElement("span");
+abstract class Bead extends AppElement {
     protected readonly person: Person;
     protected readonly level: Level;
 
     constructor(person: Person, level: Level) {
+        super();
         this.person = person;
         this.level = level;
         this.element.classList.add('bead');
         this.element.textContent = this.person.color!;
-    }
-
-    GetAsElement(): HTMLElement {
-        return this.element;
-    }
-
-    Hide() {
-        this.element.style.display = "none";
     }
 }
 

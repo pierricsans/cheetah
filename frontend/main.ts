@@ -1,4 +1,4 @@
-import { shuffleArray } from './util.js';
+import { AppElement, shuffleArray } from './util.js';
 import { setTheme } from './theme.js';
 import { GridInst } from './grid.js';
 import { Icons, Option, RandomOption, RandomSelector, Selector } from './selector.js';
@@ -45,29 +45,20 @@ function GetOffset(
     return value;
 }
 
-class ValidationElement {
-    private validateContainer = document.createElement("div");
-
+class ValidationElement extends AppElement {
     constructor() {
-        this.validateContainer.classList.add("notSelectable");
-        this.validateContainer.setAttribute("id", "validateButtonContainer");
-        this.validateContainer.classList.add("bottomBar")
-    }
-
-    GetAsElement() {
-        return this.validateContainer;
+        super();
+        this.element.classList.add("notSelectable");
+        this.element.setAttribute("id", "validateButtonContainer");
+        this.element.classList.add("bottomBar")
     }
 
     enableButtonAndWaitForClick(): Promise<void> {
-        this.validateContainer.classList.add("selectable");
-        this.validateContainer.classList.remove("notSelectable");
+        this.element.classList.add("selectable");
+        this.element.classList.remove("notSelectable");
         return new Promise<void>((resolve) => {
-            this.validateContainer.addEventListener("click", event => resolve());
+            this.element.addEventListener("click", event => resolve());
         })
-    }
-
-    Hide() {
-        this.validateContainer.hidden = true;
     }
 }
 
@@ -99,7 +90,7 @@ export class TapTheDot {
     Init() {
         this.cleanup();
         this.StoreGameAsLocalStorage();
-        this.selection.hidden = false;
+        this.selection.showPopover();
         this.journey = new Journey().fromJsonString(getJourney(this.game).toJsonString());
         this.level = new Level().fromJsonString(getLevel(this.journey, this.journey.nextLevel || 1).toJsonString());
         this.container.setAttribute("id", "selectorContainer");
@@ -131,7 +122,7 @@ export class TapTheDot {
     }
 
     UpdateAndShowScoreBoard() {
-        this.selection.hidden = true;
+        this.selection.Hide();
         this.grid.Hide();
         getLevel(getJourney(this.game), this.journey.nextLevel || 1).score = this.level.score;
         this.StoreGameAsLocalStorage();

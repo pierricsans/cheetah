@@ -1,25 +1,21 @@
 import { Game, Journey, Level, NextLevelAction } from './protos/level_pb.js';
 import { TOTAL_NUM_STARS } from './constants.js';
+import { AppElement } from './util.js';
 
-export class ScoreBoard {
+export class ScoreBoard extends AppElement {
   nextLevelButton: HTMLElement = document.createElement("div");
   private game: Game;
-  private element: HTMLElement = document.createElement("div");
   private journeyBoards: Map<number, JourneyBoard> = new Map<number, JourneyBoard>();
   private restartJourneyButton: HTMLElement = document.createElement("div");
   private restartGameButton: HTMLElement = document.createElement("div");
 
   constructor(game: Game) {
+    super();
     this.game = game;
     this.build();
   }
 
-  GetAsElement(): HTMLElement {
-    return this.element;
-  }
-
-  Show() {
-    this.element.hidden = false;
+  Update() {
     if (this.game.nextJourney === undefined) {
       throw Error("game.nextJourney is undefined");
     }
@@ -27,19 +23,12 @@ export class ScoreBoard {
       throw Error("Journey not found: " + this.game.nextJourney);
     }
     this.journeyBoards.get(this.game.nextJourney)?.Show();
-  }
-
-  Hide() {
-    this.element.hidden = true;
-  }
-
-  Update() {
     this.journeyBoards.forEach((journeyBoard: JourneyBoard) => journeyBoard.Update())
   }
 
   private build() {
     this.element.setAttribute('id', 'scoreboard');
-    this.element.hidden = true;
+    this.Hide();
     for (const journey of this.game.journeys) {
       if (journey.number === undefined) {
         throw Error("Journey number not defined: " + journey);
@@ -79,34 +68,18 @@ export class ScoreBoard {
 
 }
 
-class JourneyBoard {
+class JourneyBoard extends AppElement {
   journey: Journey;
-  element: HTMLElement = document.createElement('div');
   levels: Map<number, LevelBoard> = new Map<number, LevelBoard>;
   header = document.createElement("div");
   star = document.createElement("span");
   scoreboard: ScoreBoard;
 
   constructor(journey: Journey, scoreboard: ScoreBoard) {
+    super();
     this.journey = journey;
     this.scoreboard = scoreboard;
-    this.build();
-  }
-
-  GetAsElement(): HTMLElement {
-    return this.element;
-  }
-
-  Hide() {
-    this.element.hidden = true;
-  }
-
-  Show() {
-    this.element.hidden = false;
-  }
-
-  private build() {
-    this.element.hidden = true;
+    this.Show();
     this.element.classList.add('journeyBoard');
     this.header.textContent = this.journey.symbols[0];
     this.header.classList.add('journeyBoardHeader');
@@ -143,13 +116,13 @@ class JourneyBoard {
   }
 }
 
-class LevelBoard {
+class LevelBoard extends AppElement {
   level: Level
-  element: HTMLElement = document.createElement("div");
   levelNumber: HTMLElement = document.createElement("span");
   levelScore: HTMLElement = document.createElement("span");
 
   constructor(level: Level) {
+    super();
     this.level = level;
     this.levelNumber.classList.add('levelBoard-number');
     this.levelNumber.textContent = this.level.number?.toString() || '';
@@ -159,11 +132,6 @@ class LevelBoard {
     this.element.appendChild(this.levelScore);
     this.Update();
   }
-
-  GetAsElement(): HTMLElement {
-    return this.element;
-  }
-
 
   Update() {
     const stars = this.levelScore.children;

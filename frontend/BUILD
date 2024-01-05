@@ -30,6 +30,7 @@ ts_project(
     tsconfig = "//frontend:tsconfig",
     deps = [
         ":constants",
+        ":util",
         "//frontend/protos:level_ts_proto",
         "//frontend:node_modules/@bufbuild/protobuf",
     ]
@@ -42,6 +43,7 @@ ts_project(
     transpiler = "tsc",
     tsconfig = "//frontend:tsconfig",
     deps = [
+        ":util",
         "//frontend/protos:level_ts_proto",
         "//frontend:node_modules/@bufbuild/protobuf",
     ]
@@ -63,6 +65,7 @@ ts_project(
     tsconfig = "//frontend:tsconfig",
     deps = [
         ":constants",
+        ":util",
         "//frontend/protos:level_ts_proto",
         "//frontend:node_modules/@bufbuild/protobuf",
     ]
@@ -76,6 +79,7 @@ ts_project(
     tsconfig = "//frontend:tsconfig",
     deps = [
         ":constants",
+        ":util",
         "//frontend/protos:level_ts_proto",
         "//frontend:node_modules/@bufbuild/protobuf",
     ]
