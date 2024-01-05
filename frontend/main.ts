@@ -1,4 +1,4 @@
-import { shuffleArray } from './app.js';
+import { shuffleArray } from './util.js';
 import { setTheme } from './theme.js';
 import { GridInst } from './grid.js';
 import { Icons, Option, RandomOption, RandomSelector, Selector } from './selector.js';
@@ -106,6 +106,7 @@ export class TapTheDot {
         this.selection.hidden = false;
         this.journey = new Journey().fromJsonString(getJourney(this.game).toJsonString());
         this.level = new Level().fromJsonString(getLevel(this.journey, this.journey.nextLevel || 1).toJsonString());
+
         this.container.setAttribute("id", "selectorContainer");
         this.container.classList.add("banner");
         if (this.level.movesAreRandomlyGenerated) {

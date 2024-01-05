@@ -82,8 +82,8 @@ ts_project(
 )
 
 ts_project(
-    name = "app",
-    srcs = ["app.ts"],
+    name = "util",
+    srcs = ["util.ts"],
     declaration = True,
     transpiler = "tsc",
     tsconfig = "//frontend:tsconfig",
@@ -96,7 +96,7 @@ ts_project(
     transpiler = "tsc",
     tsconfig = "//frontend:tsconfig",
     deps = [
-        ":app",
+        ":util",
         ":bead",
         ":countdown",
         "//frontend/protos:level_ts_proto",
@@ -117,7 +117,7 @@ ts_project(
       "//frontend:__pkg__",
     ],
     deps = [
-        ":app",
+        ":util",
         ":countdown",
         ":grid",
         ":scoreboard",

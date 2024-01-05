@@ -9,7 +9,7 @@ import {
   PersonType
 } from './protos/level_pb.js';
 import { CountDown } from './countdown.js';
-import { shuffleArray } from './app.js';
+import { shuffleArray } from './util.js';
 
 export class GridInst {
   grid: Grid;
