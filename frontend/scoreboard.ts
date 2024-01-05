@@ -1,5 +1,5 @@
 import { Game, Journey, Level } from './protos/level_pb.js';
-import { MAXIMUM_LEVEL_POINTS, TOTAL_NUM_STARS } from './constants.js';
+import { TOTAL_NUM_STARS } from './constants.js';
 import { App } from './app.js';
 
 export class ScoreBoard {
@@ -172,9 +172,8 @@ class LevelBoard {
         }
       return;
     }
-    const numStars = convertScoreToStars(this.level.score);
     for (var i = 0; i < TOTAL_NUM_STARS; i++) {
-      if (i < numStars) {
+      if (i < this.level.score) {
         stars[i].classList.add('filledStar');
         stars[i].classList.remove('emptyStar');
       } else {
@@ -194,7 +193,3 @@ class LevelBoard {
 
 }
 
-function convertScoreToStars(score: number): number {
-  const starNum = score / MAXIMUM_LEVEL_POINTS * TOTAL_NUM_STARS;
-  return Math.ceil(starNum);
-}

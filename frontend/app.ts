@@ -1,5 +1,4 @@
 import { Grid, Journey, Level } from './protos/level_pb.js';
-import { Option } from './selector.js';
 
 export interface App {
   journey: Journey;
@@ -10,13 +9,6 @@ export interface App {
   triggerNextLevel(event: Event): void;
   refreshCurrentScoreDisplay(score: number): void;
   UpdateAndShowScoreBoard(): void;
-}
-
-export interface GridTemplate {
-  grid: Grid;
-  app: App;
-  Win(): void;
-  Lose(): void
 }
 
 export function shuffleArray(array: Array<any>) {

@@ -1,10 +1,10 @@
 import { ActiveBead } from './bead.js';
 import { Journey, Grid, Level, Person, PersonType } from './protos/level_pb.js';
 import { CountDown } from './countdown.js';
-import { App, GridTemplate, shuffleArray } from './app.js';
+import { App, shuffleArray } from './app.js';
 import { DEFAULT_DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS, DEFAULT_FADE_IN_OUT_DURATION_MS, FALLBACK_COUNTDOWN_DURATION_MS, RATE_OF_ANIMATION_SLOWDOWN } from './constants.js';
 
-export class GridInst implements GridTemplate {
+export class GridInst {
   grid: Grid;
   journey: Journey;
   level: Level;
@@ -50,7 +50,6 @@ export class GridInst implements GridTemplate {
     this.overallContainer.appendChild(this.outerContainer);
     this.overallContainer.appendChild(this.inactiveBeadsContainer);
     this.AppendInactiveBeads();
-    this.countdown.Start();
   }
 
   private AppendPerson(person: Person) {
@@ -65,21 +64,46 @@ export class GridInst implements GridTemplate {
     for (const bead of this.beads) {
       const inactiveBead = bead.GetInactiveBead();
       this.inactiveBeadsContainer.appendChild(inactiveBead.GetAsElement());
-      bead.initAndWaitForUserSelection().then((type: PersonType) => {
-        if (type === PersonType.INDIGENOUS) {
-          this.Win();
-        } else {
-          this.countdown.RegisterWrongGuess();
-          bead.Hide();
-          inactiveBead.Hide();
-        }
-      });
     }
+    this.RemoveStars(DEFAULT_FADE_IN_OUT_DURATION_MS, (this.level.timePerMoveMs || 200) * this.level.numMoves!)
+  }
+
+  private RemoveStars(fadeDuration: number, mainAnimationDuration: number) {
+    this.startBeadAnimationsAndWait(fadeDuration, mainAnimationDuration).then(() => {
+      if (this.countdown.RemoveStar()) {
+        this.RemoveStars(fadeDuration * RATE_OF_ANIMATION_SLOWDOWN, mainAnimationDuration * RATE_OF_ANIMATION_SLOWDOWN);
+      } else {
+        this.Lose();
+      }
+    })
+  }
+
+  private startBeadAnimationsAndWait(
+    fadeDuration: number,
+    mainAnimationDuration: number): Promise<void> {
+    return new Promise<void>((resolve) => {
+      for (const bead of this.beads) {
+        const inactiveBead = bead.GetInactiveBead();
+        bead.initAndWaitForUserSelection(fadeDuration, mainAnimationDuration)
+          .then((type: PersonType) => {
+            if (type === PersonType.INDIGENOUS) {
+              this.Win();
+            } else {
+              this.countdown.RemoveStar();
+              bead.Hide();
+              inactiveBead.Hide();
+            }
+          })
+          .catch(() => {
+            resolve();
+          });
+      }
+    });
   }
 
   AppendCountDown(): CountDown {
     var duration: number = this.getCountdownDuration();
-    const countdown = new CountDown(this, duration);
+    const countdown = new CountDown();
     this.overallContainer.appendChild(countdown.GetAsElement());
     return countdown;
   }
@@ -102,17 +126,15 @@ export class GridInst implements GridTemplate {
   }
 
   Win() {
-    this.countdown.Win();
+    this.app.level.score = this.countdown.numStars;
+    this.app.UpdateAndShowScoreBoard();
     for (const bead of this.beads) {
       bead.Win();
     }
   }
 
   Lose() {
-    for (const bead of this.beads) {
-      bead.EndGame();
-    }
-    this.countdown.Lose();
+    this.app.level.score = undefined;
   }
 
 }

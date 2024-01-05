@@ -1,5 +1,4 @@
 import { Level, Person, MoveDirection, PersonType } from './protos/level_pb.js';
-import { GridTemplate } from './app.js';
 import { DEFAULT_DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS, DEFAULT_FADE_IN_OUT_DURATION_MS, RATE_OF_ANIMATION_SLOWDOWN } from './constants.js';
 
 abstract class Bead {
@@ -46,23 +45,26 @@ export class ActiveBead extends Bead {
         this.fadeInFrames = this.generateFadeInFrames();
         this.mainAnimationFrames = this.generateMainAnimationFrames();
         this.fadeOutFrames = this.generateFadeOutFrames();
-        this.animateElement(DEFAULT_FADE_IN_OUT_DURATION_MS, (this.level.timePerMoveMs || 200) * this.person.trajectory?.moves?.length!);
     }
-
+    
     GetInactiveBead(): InactiveBead {
         return this.inactiveBead!;
     }
     
-    initAndWaitForUserSelection(): Promise<PersonType> {
-        return new Promise<PersonType>((resolve) => {
+    initAndWaitForUserSelection(fadeDuration: number, mainAnimationDuration: number): Promise<PersonType> {
+        return new Promise<PersonType>((resolve, reject) => {
             for (const element of [this.element, this.inactiveBead?.GetAsElement()]) {
                 if (!element) {
                     throw Error("No element found " + element);
                 }
                 element.addEventListener('mousedown', (event: Event) => {
-                  resolve(this.person.type || PersonType.UNSPECIFIED);
+                    resolve(this.person.type || PersonType.UNSPECIFIED);
                 });
             }
+            // Reject promise if user did not select during one animation cycle.
+            this.animateElement(
+                fadeDuration, mainAnimationDuration
+                ).then(() => reject());
         });
       }
 
@@ -81,14 +83,8 @@ export class ActiveBead extends Bead {
                 }
                 break;
         }
-        this.EndGame();
     }
 
-    EndGame() {
-        this.fadeIn.onfinish = null;
-        this.mainAnimation.onfinish = null;
-        this.fadeOut.onfinish = null;
-    }
 
     private generateFadeInFrames(): Array<Keyframe> {
         var bottom = this.movementIncrement * this.person.position?.yOffset!;
@@ -229,31 +225,33 @@ export class ActiveBead extends Bead {
         return animation;
     }
 
-    private animateElement(fadeDuration: number, mainAnimationDuration: number) {
-        this.fadeIn = this.GenerateFadeInAnimation(fadeDuration);
-        this.mainAnimation = this.GenerateMainAnimation(mainAnimationDuration);
-        this.fadeOut = this.GenerateFadeOutAnimation(fadeDuration);
-        var playbackRate = 1;
-        this.fadeIn.addEventListener("finish", (event) => {
-            this.fadeIn.commitStyles();
-            this.fadeIn.cancel();
-            this.mainAnimation.play();
-        });
-        this.mainAnimation.addEventListener("finish", (event) => {
-            this.mainAnimation.commitStyles();
-            this.mainAnimation.cancel();
-            this.fadeOut.play();
-        });
-        this.fadeOut.addEventListener("finish", (event) => {
-            this.fadeOut.commitStyles();
-            this.fadeOut.cancel();
-            playbackRate = playbackRate * RATE_OF_ANIMATION_SLOWDOWN;
-            this.fadeIn.updatePlaybackRate(playbackRate);
-            this.mainAnimation.updatePlaybackRate(playbackRate);
-            this.fadeOut.updatePlaybackRate(playbackRate);
+    private animateElement(fadeDuration: number, mainAnimationDuration: number): Promise<void> {
+        const promise: Promise<void> = new Promise<void>((resolve) => {
+            this.fadeIn = this.GenerateFadeInAnimation(fadeDuration);
+            this.mainAnimation = this.GenerateMainAnimation(mainAnimationDuration);
+            this.fadeOut = this.GenerateFadeOutAnimation(fadeDuration);
+            this.fadeIn.addEventListener("finish", (event) => {
+                try {
+                    this.fadeIn.commitStyles();
+                } catch {
+                    resolve();
+                }
+                this.fadeIn.cancel();
+                this.mainAnimation.play();
+            });
+            this.mainAnimation.addEventListener("finish", (event) => {
+                try {
+                    this.mainAnimation.commitStyles();
+                } catch {
+                    resolve();
+                }
+                this.mainAnimation.cancel();
+                this.fadeOut.play();
+            });
+            this.fadeOut.addEventListener("finish", (event) => resolve());
             this.fadeIn.play();
-        });
-        this.fadeIn.play();
+        })
+        return promise;
     }
 
 }
