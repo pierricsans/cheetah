@@ -22,8 +22,11 @@ export class ScoreBoard extends AppElement {
     if (!this.journeyBoards.has(this.game.nextJourney)) {
       throw Error("Journey not found: " + this.game.nextJourney);
     }
+    this.journeyBoards.forEach((journeyBoard: JourneyBoard) => {
+      journeyBoard.Update();
+      journeyBoard.Hide();
+    })
     this.journeyBoards.get(this.game.nextJourney)?.Show();
-    this.journeyBoards.forEach((journeyBoard: JourneyBoard) => journeyBoard.Update())
   }
 
   private build() {
@@ -79,7 +82,7 @@ class JourneyBoard extends AppElement {
     super();
     this.journey = journey;
     this.scoreboard = scoreboard;
-    this.Show();
+    this.Hide();
     this.element.classList.add('journeyBoard');
     this.header.textContent = this.journey.symbols[0];
     this.header.classList.add('journeyBoardHeader');
