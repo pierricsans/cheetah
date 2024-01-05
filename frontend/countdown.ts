@@ -4,7 +4,6 @@ export class CountDown {
   numStars: number = TOTAL_NUM_STARS;
   private element: HTMLElement = document.createElement("div");
   private timeRemainingContainer: HTMLElement = document.createElement("div");
-  private timerId: ReturnType<typeof setInterval> | undefined = undefined;
   private stars: Array<HTMLElement> = [];
 
 
