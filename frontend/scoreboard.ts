@@ -1,20 +1,16 @@
-import { Game, Journey, Level } from './protos/level_pb.js';
+import { Game, Journey, Level, NextLevelAction } from './protos/level_pb.js';
 import { TOTAL_NUM_STARS } from './constants.js';
-import { App } from './app.js';
 
 export class ScoreBoard {
-  app: App;
   nextLevelButton: HTMLElement = document.createElement("div");
   private game: Game;
   private element: HTMLElement = document.createElement("div");
   private journeyBoards: Map<number, JourneyBoard> = new Map<number, JourneyBoard>();
   private restartJourneyButton: HTMLElement = document.createElement("div");
   private restartGameButton: HTMLElement = document.createElement("div");
-  nextLevelFunction = (event: Event) => this.app.triggerNextLevel(event);
 
-  constructor(game: Game, app: App) {
+  constructor(game: Game) {
     this.game = game;
-    this.app = app;
     this.build();
   }
 
@@ -57,22 +53,28 @@ export class ScoreBoard {
     this.nextLevelButton.textContent = 'skip_next';
     this.nextLevelButton.classList.add('selectable');
     this.nextLevelButton.classList.add('option');
-    this.nextLevelButton.addEventListener('click', this.nextLevelFunction);
     this.element.appendChild(this.nextLevelButton);
     this.restartJourneyButton.setAttribute('id', 'Retry');
     this.restartJourneyButton.setAttribute('alt', 'Restart from level 1');
     this.restartJourneyButton.classList.add('selectable');
     this.restartJourneyButton.classList.add('option');
-    this.restartJourneyButton.addEventListener('click', (event: Event) => this.app.restartJourneyFromScratch(event));
     this.restartJourneyButton.textContent = 'redo';
     this.element.appendChild(this.restartJourneyButton);
     this.restartGameButton.setAttribute('id', 'Restart');
     this.restartGameButton.setAttribute('alt', 'Restart game');
     this.restartGameButton.classList.add('selectable');
     this.restartGameButton.classList.add('option');
-    this.restartGameButton.addEventListener('click', (event: Event) => this.app.restartGameFromScratch(event));
     this.restartGameButton.textContent = 'restart_alt';
     this.element.appendChild(this.restartGameButton);
+  }
+  
+  waitforUserSelection(): Promise<NextLevelAction> {
+    return new Promise<NextLevelAction>((resolve) => {
+      this.restartGameButton.addEventListener('click', (event: Event) => resolve(NextLevelAction.RESTART_GAME));
+      this.restartJourneyButton.addEventListener('click', (event: Event) => resolve(NextLevelAction.RESTART_JOURNEY));
+      this.nextLevelButton.addEventListener('click', (event) => resolve(NextLevelAction.TRIGGER_NEXT_LEVEL));
+
+    });
   }
 
 }
@@ -134,7 +136,7 @@ class JourneyBoard {
       }
       if ((starNum >= this.journey.minimumStarNumber! && !allLevelsHaveStars) ||
         starNum < this.journey.minimumStarNumber! && allLevelsHaveStars) {
-        this.scoreboard.nextLevelButton.removeEventListener('click', this.scoreboard.nextLevelFunction);
+        this.scoreboard.nextLevelButton.onclick = null;
         this.scoreboard.nextLevelButton.classList.remove('selectable');
       }
     }

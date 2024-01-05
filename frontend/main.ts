@@ -1,8 +1,8 @@
-import { App, shuffleArray } from './app.js';
+import { shuffleArray } from './app.js';
 import { setTheme } from './theme.js';
 import { GridInst } from './grid.js';
 import { Icons, Option, RandomOption, RandomSelector, Selector } from './selector.js';
-import { Game, Grid, Journey, Level, Move, MoveDirection, Person, PersonType, Position, Theme, Trajectory } from './protos/level_pb.js';
+import { Game, Grid, Journey, Level, Move, MoveDirection, NextLevelAction, Person, PersonType, Position, Theme, Trajectory } from './protos/level_pb.js';
 import { ScoreBoard } from './scoreboard.js';
 
 function GetOffset(
@@ -76,7 +76,7 @@ class ValidationElement {
     }
 }
 
-export class TapTheDot implements App {
+export class TapTheDot {
     game: Game;
     journey: Journey;
     level: Level;
@@ -96,7 +96,7 @@ export class TapTheDot implements App {
         this.journey = new Journey().fromJsonString(getJourney(game).toJsonString());
         this.level = new Level().fromJsonString(getLevel(this.journey, this.journey.nextLevel || 1).toJsonString());
         this.validateElement = new ValidationElement(this);
-        this.scoreboard = new ScoreBoard(this.game, this);
+        this.scoreboard = new ScoreBoard(this.game);
         this.selector = new Selector(this.journey, this.level);
     }
 
@@ -120,7 +120,7 @@ export class TapTheDot implements App {
         this.container.appendChild(this.validateElement.GetAsElement());
         setTheme(this.journey);
         this.GenerateColors();
-        this.scoreboard = new ScoreBoard(this.game, this);
+        this.scoreboard = new ScoreBoard(this.game);
         this.container.appendChild(this.scoreboard.GetAsElement());
         this.appendContainer();
     }
@@ -140,6 +140,21 @@ export class TapTheDot implements App {
         this.StoreGameAsLocalStorage();
         this.scoreboard.Update();
         this.scoreboard.Show();
+        this.scoreboard.waitforUserSelection().then((nextLevelAction: NextLevelAction) => {
+            switch (nextLevelAction) {
+                case NextLevelAction.RESTART_GAME:
+                    this.restartGameFromScratch();
+                    break;
+                case NextLevelAction.RESTART_JOURNEY:
+                    this.restartJourneyFromScratch();
+                    break;
+                case NextLevelAction.TRIGGER_NEXT_LEVEL:
+                    this.triggerNextLevel();
+                    break;
+                default:
+                    throw Error("Unknown level action: " + nextLevelAction);
+            }
+        })
     }
 
     GetNextColor(): string {
@@ -466,11 +481,11 @@ export class TapTheDot implements App {
         this.BuildGrid();
     }
 
-    HideValidateElement() {
+    private HideValidateElement() {
         this.validateElement.Hide();
     }
 
-    BuildGrid() {
+    private BuildGrid() {
         this.grid = new GridInst(this.journey, this.level)
         this.container.appendChild(this.grid.GetAsElement());
         this.grid.StartGame().then((score: number | undefined) => {
@@ -492,7 +507,7 @@ export class TapTheDot implements App {
         }
     }
 
-    restartJourneyFromScratch(event: Event) {
+    private restartJourneyFromScratch() {
         // Scracth all scores from current journey
         for (const journey of this.game.journeys) {
             if (journey.number !== this.game.nextJourney) {
@@ -503,7 +518,7 @@ export class TapTheDot implements App {
         this.Init();
     }
 
-    restartGameFromScratch(event: Event) {
+    private restartGameFromScratch() {
         // Scracth all scores from current journey
         for (const journey of this.game.journeys) {
             this.resetJourney(journey);
@@ -519,7 +534,7 @@ export class TapTheDot implements App {
         journey.nextLevel = 1;
     }
 
-    triggerNextLevel(event: Event) {
+    private triggerNextLevel() {
         var gameJourney: Journey = new Journey();
         for (const journey of this.game.journeys) {
             if (journey.number === this.journey.number) {

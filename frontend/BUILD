@@ -75,7 +75,6 @@ ts_project(
     transpiler = "tsc",
     tsconfig = "//frontend:tsconfig",
     deps = [
-        ":app",
         ":constants",
         "//frontend/protos:level_ts_proto",
         "//frontend:node_modules/@bufbuild/protobuf",
