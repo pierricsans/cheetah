@@ -2,7 +2,6 @@ import { ActiveBead } from './bead.js';
 import {
   BeadSelection,
   Journey,
-  Grid,
   Level,
   LevelStatus,
   Person,
@@ -12,7 +11,6 @@ import { CountDown } from './countdown.js';
 import { shuffleArray } from './util.js';
 
 export class GridInst {
-  grid: Grid;
   journey: Journey;
   level: Level;
   countdown: CountDown;
@@ -25,21 +23,12 @@ export class GridInst {
   constructor(journey: Journey, level: Level) {
     this.journey = journey;
     this.level = level;
-    this.grid = this.level.grid!;
     this.countdown = this.AppendCountDown();
     this.outerContainer.setAttribute("id", "outerContainer");
     this.innerContainer.setAttribute("id", "innerContainer");
-    for (const alien of this.grid.aliens) {
-      this.AppendPerson(alien);
-    }
-    if (!this.grid.indigenous) {
-      throw Error("No indigenous found in grid: " + this.grid);
-    }
-    this.AppendPerson(this.grid.indigenous);
     this.outerContainer.appendChild(this.innerContainer);
     this.element.appendChild(this.outerContainer);
     this.element.appendChild(this.inactiveBeadsContainer);
-    this.AppendInactiveBeads();
   }
 
   GetAsElement(): HTMLElement {
@@ -69,8 +58,8 @@ export class GridInst {
     }
   }
 
-  StartGameAndWaitForOutcome(): Promise<LevelStatus> {
-    return new Promise<LevelStatus>((resolve) => {
+  async StartGameAndWaitForOutcome(): Promise<LevelStatus> {
+    const status_1 = await new Promise<LevelStatus>((resolve) => {
       this.startBeadAnimationsAndWait().then((status: BeadSelection) => {
         switch (status) {
           case BeadSelection.WRONG_GUESS:
@@ -84,17 +73,16 @@ export class GridInst {
             resolve(LevelStatus.WIN);
             break;
         }
-      })
-    }).then((status: LevelStatus) => {
-      switch(status) {
-        case LevelStatus.WIN:
-          return LevelStatus.WIN;
-        case LevelStatus.LOSE:
-          return LevelStatus.LOSE;
-        case LevelStatus.UNSPECIFIED:
-          return this.StartGameAndWaitForOutcome();
-      }
+      });
     });
+    switch (status_1) {
+      case LevelStatus.WIN:
+        return LevelStatus.WIN;
+      case LevelStatus.LOSE:
+        return LevelStatus.LOSE;
+      case LevelStatus.UNSPECIFIED:
+        return this.StartGameAndWaitForOutcome();
+    }
   }
 
   private stopAnimations() {
@@ -103,7 +91,20 @@ export class GridInst {
     }
   }
 
-  StartGame(): Promise<number | undefined> {
+  StartGame(level: Level): Promise<number | undefined> {
+    this.level = level;
+    if (!this.level.grid) {
+      throw Error("No grid found in level: " + this.level);
+    }
+    console.log(this.level.grid?.indigenous);
+    for (const alien of this.level.grid.aliens) {
+      this.AppendPerson(alien);
+    }
+    if (!this.level.grid.indigenous) {
+      throw Error("No indigenous found in grid: " + this.level.grid);
+    }
+    this.AppendPerson(this.level.grid.indigenous);
+    this.AppendInactiveBeads();
     const seenCycles = new Set<number>();
     return new Promise<number | undefined>((resolve) => {
       for (const bead of this.beads) {

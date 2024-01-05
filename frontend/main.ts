@@ -47,28 +47,23 @@ function GetOffset(
 
 class ValidationElement {
     private validateContainer = document.createElement("div");
-    private parentSelectorElement: TapTheDot;
 
-    constructor(parentSelectorElement: TapTheDot) {
+    constructor() {
         this.validateContainer.classList.add("notSelectable");
         this.validateContainer.setAttribute("id", "validateButtonContainer");
         this.validateContainer.classList.add("bottomBar")
-        this.parentSelectorElement = parentSelectorElement
     }
 
     GetAsElement() {
         return this.validateContainer;
     }
 
-    EnableValidateButton() {
-        this.validateContainer.addEventListener("click", event => this.Validate(event));
+    enableButtonAndWaitForClick(): Promise<void> {
         this.validateContainer.classList.add("selectable");
         this.validateContainer.classList.remove("notSelectable");
-    }
-
-    Validate(event: Event) {
-        this.parentSelectorElement.FillLevel();
-        this.parentSelectorElement.Validate();
+        return new Promise<void>((resolve) => {
+            this.validateContainer.addEventListener("click", event => resolve());
+        })
     }
 
     Hide() {
@@ -77,16 +72,16 @@ class ValidationElement {
 }
 
 export class TapTheDot {
-    game: Game;
-    journey: Journey;
-    level: Level;
-    scoreboard: ScoreBoard;
+    private game: Game;
+    private journey: Journey;
+    private level: Level;
+    private scoreboard: ScoreBoard;
     private readonly outContainer: HTMLElement = document.body;
     private container: HTMLElement = document.createElement("div");
     private selector: Selector;
     private selection: HTMLElement = document.createElement("div");
     private validateElement: ValidationElement;
-    grid?: GridInst;
+    private grid: GridInst;
     private allTrajectories: Array<Trajectory> = new Array<Trajectory>();
     private allPositions: Map<number, Array<Position>> = new Map<number, Array<Position>>();
     private currentScoreDisplay: HTMLElement = document.createElement("div");
@@ -95,9 +90,10 @@ export class TapTheDot {
         this.game = game;
         this.journey = new Journey().fromJsonString(getJourney(game).toJsonString());
         this.level = new Level().fromJsonString(getLevel(this.journey, this.journey.nextLevel || 1).toJsonString());
-        this.validateElement = new ValidationElement(this);
+        this.validateElement = new ValidationElement();
         this.scoreboard = new ScoreBoard(this.game);
         this.selector = new Selector(this.journey, this.level);
+        this.grid = new GridInst(this.journey, this.level)
     }
 
     Init() {
@@ -106,7 +102,6 @@ export class TapTheDot {
         this.selection.hidden = false;
         this.journey = new Journey().fromJsonString(getJourney(this.game).toJsonString());
         this.level = new Level().fromJsonString(getLevel(this.journey, this.journey.nextLevel || 1).toJsonString());
-
         this.container.setAttribute("id", "selectorContainer");
         this.container.classList.add("banner");
         if (this.level.movesAreRandomlyGenerated) {
@@ -117,7 +112,8 @@ export class TapTheDot {
         this.WaitForUserSelection();
         this.AppendSelector();
         this.GenerateSelectionElement();
-        this.validateElement = new ValidationElement(this);
+        this.validateElement = new ValidationElement();
+        this.grid = new GridInst(this.journey, this.level)
         this.container.appendChild(this.validateElement.GetAsElement());
         setTheme(this.journey);
         this.GenerateColors();
@@ -136,7 +132,7 @@ export class TapTheDot {
 
     UpdateAndShowScoreBoard() {
         this.selection.hidden = true;
-        this.grid?.Hide();
+        this.grid.Hide();
         getLevel(getJourney(this.game), this.journey.nextLevel || 1).score = this.level.score;
         this.StoreGameAsLocalStorage();
         this.scoreboard.Update();
@@ -465,7 +461,10 @@ export class TapTheDot {
         this.level.grid?.indigenous?.trajectory?.moves.push(option.move);
         if (this.level.grid?.indigenous?.trajectory?.moves?.length! === this.level.numMoves) {
             this.selector.MakeAllOptionsUnselectable();
-            this.validateElement.EnableValidateButton();
+            this.validateElement.enableButtonAndWaitForClick().then(() => {
+                this.FillLevel();
+                this.Validate();
+            });
         } else {
             // For RandomOptions, we need to re generate a new Promise for the
             // next user selection.
@@ -487,11 +486,10 @@ export class TapTheDot {
     }
 
     private BuildGrid() {
-        this.grid = new GridInst(this.journey, this.level)
         this.container.appendChild(this.grid.GetAsElement());
-        this.grid.StartGame().then((score: number | undefined) => {
+        this.grid.StartGame(this.level).then((score: number | undefined) => {
             this.level.score = score;
-            this.grid?.End();
+            this.grid.End();
             setTimeout(() => this.UpdateAndShowScoreBoard(), 1000);
         });
     }
