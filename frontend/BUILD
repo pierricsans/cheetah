@@ -88,10 +88,6 @@ ts_project(
     declaration = True,
     transpiler = "tsc",
     tsconfig = "//frontend:tsconfig",
-    deps = [
-        "//frontend/protos:level_ts_proto",
-        "//frontend:node_modules/@bufbuild/protobuf",
-    ]
 )
 
 ts_project(
@@ -103,7 +99,6 @@ ts_project(
     deps = [
         ":app",
         ":bead",
-        ":constants",
         ":countdown",
         "//frontend/protos:level_ts_proto",
         "//frontend:node_modules/@bufbuild/protobuf",

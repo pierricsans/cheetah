@@ -471,9 +471,13 @@ export class TapTheDot implements App {
     }
 
     BuildGrid() {
-        this.grid = new GridInst(this.journey, this.level, this)
-        this.grid.Build();
+        this.grid = new GridInst(this.journey, this.level)
         this.container.appendChild(this.grid.GetAsElement());
+        this.grid.StartGame().then((score: number | undefined) => {
+            this.level.score = score;
+            this.grid?.End();
+            setTimeout(() => this.UpdateAndShowScoreBoard(), 1000);
+        });
     }
 
     private appendContainer() {

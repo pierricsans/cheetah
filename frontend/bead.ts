@@ -51,7 +51,7 @@ export class ActiveBead extends Bead {
         return this.inactiveBead!;
     }
     
-    initAndWaitForUserSelection(fadeDuration: number, mainAnimationDuration: number): Promise<PersonType> {
+    initAndWaitForUserSelection(): Promise<PersonType> {
         return new Promise<PersonType>((resolve, reject) => {
             for (const element of [this.element, this.inactiveBead?.GetAsElement()]) {
                 if (!element) {
@@ -62,13 +62,10 @@ export class ActiveBead extends Bead {
                 });
             }
             // Reject promise if user did not select during one animation cycle.
-            this.animateElement(
-                fadeDuration, mainAnimationDuration
-                ).then(() => reject());
         });
       }
 
-    Win() {
+    Reveal() {
         switch (this.person.type) {
             case PersonType.INDIGENOUS:
                 this.element.style.opacity = "100%";
@@ -105,12 +102,12 @@ export class ActiveBead extends Bead {
         return frames;
     }
 
-    private GenerateFadeInAnimation(duration: number): Animation {
+    private GenerateFadeInAnimation(): Animation {
         const keyframes = new KeyframeEffect(
             this.element,
             this.fadeInFrames,
             {
-                duration: duration,
+                duration: DEFAULT_FADE_IN_OUT_DURATION_MS,
                 fill: "forwards",
                 easing: "ease-in-out"
             }
@@ -132,12 +129,12 @@ export class ActiveBead extends Bead {
         return frames;
     }
 
-    private GenerateFadeOutAnimation(duration: number): Animation {
+    private GenerateFadeOutAnimation(): Animation {
         const keyframes = new KeyframeEffect(
             this.element,
             this.fadeOutFrames,
             {
-                duration: duration,
+                duration: DEFAULT_FADE_IN_OUT_DURATION_MS,
                 fill: "forwards",
                 easing: "ease-in-out"
             }
@@ -214,10 +211,10 @@ export class ActiveBead extends Bead {
         return frames;
     }
 
-    private GenerateMainAnimation(duration: number): Animation {
+    private GenerateMainAnimation(): Animation {
         const keyframes = new KeyframeEffect(this.element, this.mainAnimationFrames,
             {
-                duration: duration,
+                duration: (this.level.timePerMoveMs || 200)  * this.level.numMoves!,
                 fill: "forwards",
                 delay: DEFAULT_DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS
             });
@@ -225,33 +222,47 @@ export class ActiveBead extends Bead {
         return animation;
     }
 
-    private animateElement(fadeDuration: number, mainAnimationDuration: number): Promise<void> {
-        const promise: Promise<void> = new Promise<void>((resolve) => {
-            this.fadeIn = this.GenerateFadeInAnimation(fadeDuration);
-            this.mainAnimation = this.GenerateMainAnimation(mainAnimationDuration);
-            this.fadeOut = this.GenerateFadeOutAnimation(fadeDuration);
-            this.fadeIn.addEventListener("finish", (event) => {
-                try {
-                    this.fadeIn.commitStyles();
-                } catch {
-                    resolve();
-                }
-                this.fadeIn.cancel();
-                this.mainAnimation.play();
-            });
-            this.mainAnimation.addEventListener("finish", (event) => {
-                try {
-                    this.mainAnimation.commitStyles();
-                } catch {
-                    resolve();
-                }
-                this.mainAnimation.cancel();
-                this.fadeOut.play();
-            });
-            this.fadeOut.addEventListener("finish", (event) => resolve());
+    animateElement() {
+        var iterationNum: number = 0;
+        var playBackRate: number = 1;
+        this.fadeIn = this.GenerateFadeInAnimation();
+        this.mainAnimation = this.GenerateMainAnimation();
+        this.fadeOut = this.GenerateFadeOutAnimation();
+        this.fadeIn.onfinish = (event) => {
+            try {
+                this.fadeIn.commitStyles();
+            } catch {}
+            this.fadeIn.cancel();
+            this.mainAnimation.play();
+        };
+        this.mainAnimation.onfinish = (event) => {
+            try {
+                this.mainAnimation.commitStyles();
+            } catch {}
+            this.mainAnimation.cancel();
+            this.fadeOut.play();
+        };
+        this.fadeOut.onfinish = (event) => {
+            try {
+                this.fadeOut.commitStyles();
+            } catch {}
+            this.fadeOut.cancel();
+            const endOfCycleEvent = new ProgressEvent("progress", {"total": iterationNum});
+            this.element.dispatchEvent(endOfCycleEvent);
+            iterationNum += 1;
+            playBackRate = playBackRate * RATE_OF_ANIMATION_SLOWDOWN;
+            this.fadeIn.updatePlaybackRate(playBackRate);
+            this.mainAnimation.updatePlaybackRate(playBackRate);
+            this.fadeOut.updatePlaybackRate(playBackRate);
             this.fadeIn.play();
-        })
-        return promise;
+        };
+        this.fadeIn.play();
+    }
+
+    stopAnimation() {
+        this.fadeIn.onfinish = null;
+        this.mainAnimation.onfinish = null;
+        this.fadeOut.onfinish = null;
     }
 
 }

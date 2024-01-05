@@ -1,14 +1,7 @@
-import { Grid, Journey, Level } from './protos/level_pb.js';
-
 export interface App {
-  journey: Journey;
-  level: Level;
-  refreshCurrentScoreDisplay(score: number): void;
   restartJourneyFromScratch(event: Event): void;
   restartGameFromScratch(event: Event): void;
   triggerNextLevel(event: Event): void;
-  refreshCurrentScoreDisplay(score: number): void;
-  UpdateAndShowScoreBoard(): void;
 }
 
 export function shuffleArray(array: Array<any>) {

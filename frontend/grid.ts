@@ -1,42 +1,32 @@
 import { ActiveBead } from './bead.js';
-import { Journey, Grid, Level, Person, PersonType } from './protos/level_pb.js';
+import {
+  BeadSelection,
+  Journey,
+  Grid,
+  Level,
+  LevelStatus,
+  Person,
+  PersonType
+} from './protos/level_pb.js';
 import { CountDown } from './countdown.js';
-import { App, shuffleArray } from './app.js';
-import { DEFAULT_DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS, DEFAULT_FADE_IN_OUT_DURATION_MS, FALLBACK_COUNTDOWN_DURATION_MS, RATE_OF_ANIMATION_SLOWDOWN } from './constants.js';
+import { shuffleArray } from './app.js';
 
 export class GridInst {
   grid: Grid;
   journey: Journey;
   level: Level;
   countdown: CountDown;
-  app: App;
   private innerContainer: HTMLElement = document.createElement("div");
   private outerContainer: HTMLElement = document.createElement("div");
-  private overallContainer: HTMLElement = document.createElement("div");
+  private element: HTMLElement = document.createElement("div");
   private inactiveBeadsContainer: HTMLElement = document.createElement("div");
   private beads: Array<ActiveBead> = [];
 
-  constructor(journey: Journey, level: Level, app: App) {
+  constructor(journey: Journey, level: Level) {
     this.journey = journey;
-    this.app = app;
     this.level = level;
     this.grid = this.level.grid!;
     this.countdown = this.AppendCountDown();
-  }
-
-  GetAsElement(): HTMLElement {
-    return this.overallContainer;
-  }
-
-  Hide() {
-    this.overallContainer.hidden = true;
-  }
-
-  Show() {
-    this.overallContainer.hidden = false;
-  }
-
-  Build() {
     this.outerContainer.setAttribute("id", "outerContainer");
     this.innerContainer.setAttribute("id", "innerContainer");
     for (const alien of this.grid.aliens) {
@@ -47,9 +37,21 @@ export class GridInst {
     }
     this.AppendPerson(this.grid.indigenous);
     this.outerContainer.appendChild(this.innerContainer);
-    this.overallContainer.appendChild(this.outerContainer);
-    this.overallContainer.appendChild(this.inactiveBeadsContainer);
+    this.element.appendChild(this.outerContainer);
+    this.element.appendChild(this.inactiveBeadsContainer);
     this.AppendInactiveBeads();
+  }
+
+  GetAsElement(): HTMLElement {
+    return this.element;
+  }
+
+  Hide() {
+    this.element.hidden = true;
+  }
+
+  Show() {
+    this.element.hidden = false;
   }
 
   private AppendPerson(person: Person) {
@@ -65,76 +67,95 @@ export class GridInst {
       const inactiveBead = bead.GetInactiveBead();
       this.inactiveBeadsContainer.appendChild(inactiveBead.GetAsElement());
     }
-    this.RemoveStars(DEFAULT_FADE_IN_OUT_DURATION_MS, (this.level.timePerMoveMs || 200) * this.level.numMoves!)
   }
 
-  private RemoveStars(fadeDuration: number, mainAnimationDuration: number) {
-    this.startBeadAnimationsAndWait(fadeDuration, mainAnimationDuration).then(() => {
-      if (this.countdown.RemoveStar()) {
-        this.RemoveStars(fadeDuration * RATE_OF_ANIMATION_SLOWDOWN, mainAnimationDuration * RATE_OF_ANIMATION_SLOWDOWN);
-      } else {
-        this.Lose();
+  StartGameAndWaitForOutcome(): Promise<LevelStatus> {
+    return new Promise<LevelStatus>((resolve) => {
+      this.startBeadAnimationsAndWait().then((status: BeadSelection) => {
+        switch (status) {
+          case BeadSelection.WRONG_GUESS:
+            if (this.countdown.RemoveStar()) {
+              resolve(LevelStatus.UNSPECIFIED);
+            } else {
+              resolve(LevelStatus.LOSE);
+            }
+            break;
+          case BeadSelection.CORRECT_GUESS:
+            resolve(LevelStatus.WIN);
+            break;
+        }
+      })
+    }).then((status: LevelStatus) => {
+      switch(status) {
+        case LevelStatus.WIN:
+          return LevelStatus.WIN;
+        case LevelStatus.LOSE:
+          return LevelStatus.LOSE;
+        case LevelStatus.UNSPECIFIED:
+          return this.StartGameAndWaitForOutcome();
       }
-    })
+    });
   }
 
-  private startBeadAnimationsAndWait(
-    fadeDuration: number,
-    mainAnimationDuration: number): Promise<void> {
-    return new Promise<void>((resolve) => {
+  private stopAnimations() {
+    for (const bead of this.beads) {
+      bead.stopAnimation();
+    }
+  }
+
+  StartGame(): Promise<number | undefined> {
+    const seenCycles = new Set<number>();
+    return new Promise<number | undefined>((resolve) => {
+      for (const bead of this.beads) {
+        bead.GetAsElement().addEventListener("progress", (event) => {
+          if (!seenCycles.has(event.total)) {
+            seenCycles.add(event.total);
+            if (!this.countdown.RemoveStar()) {
+              this.stopAnimations();
+              resolve(0);
+            }
+          }
+        });
+        bead.animateElement();
+      }
+      this.StartGameAndWaitForOutcome().then((outcome: LevelStatus) => {
+        this.stopAnimations();
+        if (outcome == LevelStatus.LOSE) {
+          resolve(undefined);
+        }
+        resolve(this.countdown.numStars);
+      })
+    });
+  }
+
+  private startBeadAnimationsAndWait(): Promise<BeadSelection> {
+    return new Promise<BeadSelection>((resolve) => {
       for (const bead of this.beads) {
         const inactiveBead = bead.GetInactiveBead();
-        bead.initAndWaitForUserSelection(fadeDuration, mainAnimationDuration)
+        bead.initAndWaitForUserSelection()
           .then((type: PersonType) => {
             if (type === PersonType.INDIGENOUS) {
-              this.Win();
+              resolve(BeadSelection.CORRECT_GUESS);
             } else {
-              this.countdown.RemoveStar();
               bead.Hide();
               inactiveBead.Hide();
+              resolve(BeadSelection.WRONG_GUESS);
             }
           })
-          .catch(() => {
-            resolve();
-          });
       }
     });
   }
 
   AppendCountDown(): CountDown {
-    var duration: number = this.getCountdownDuration();
     const countdown = new CountDown();
-    this.overallContainer.appendChild(countdown.GetAsElement());
+    this.element.appendChild(countdown.GetAsElement());
     return countdown;
   }
 
-  private getCountdownDuration(): number {
-    if (this.level.trajectoryIterationsAllowed === undefined ||
-      this.level.numMoves === undefined ||
-      this.level.timePerMoveMs === undefined) {
-      return FALLBACK_COUNTDOWN_DURATION_MS;
-    }
-    var duration: number = 0;
-    var fadeDuration: number = DEFAULT_FADE_IN_OUT_DURATION_MS;
-    var mainAnimationDuration: number = (this.level.timePerMoveMs * this.level.numMoves);
-    for (var i = 0; i < this.level.trajectoryIterationsAllowed; i++) {
-      duration += (2 * fadeDuration) + mainAnimationDuration + DEFAULT_DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS;
-      fadeDuration = fadeDuration * RATE_OF_ANIMATION_SLOWDOWN;
-      mainAnimationDuration = mainAnimationDuration * RATE_OF_ANIMATION_SLOWDOWN;
-    }
-    return duration;
-  }
-
-  Win() {
-    this.app.level.score = this.countdown.numStars;
-    this.app.UpdateAndShowScoreBoard();
+  End() {
     for (const bead of this.beads) {
-      bead.Win();
+      bead.Reveal();
     }
-  }
-
-  Lose() {
-    this.app.level.score = undefined;
   }
 
 }
