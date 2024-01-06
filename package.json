@@ -1,5 +1,3 @@
-/* Update with pnpm update */
-
 {
   "private": true,
   "dependencies": {

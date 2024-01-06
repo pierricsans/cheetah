@@ -4,7 +4,6 @@ import { GridInst } from './src/grid.js';
 import { Icons, Option, RandomOption, RandomSelector, Selector } from './src/selector.js';
 import { Game, Grid, Journey, Level, Move, MoveDirection, NextLevelAction, Person, PersonType, Position, Theme, Trajectory } from './protos/level_pb.js';
 import { ScoreBoard } from './src/scoreboard.js';
-import './static/style.css';
 
 function GetOffset(
     length: number,

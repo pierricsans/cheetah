@@ -31,9 +31,7 @@ module.exports = (_env, options) => {
         inject: true,
         template: path.resolve(__dirname, 'static/index.html'),
       }),
-      new FaviconsWebpackPlugin({
-        logo: path.resolve(__dirname, 'static/favicon.png'),
-        publicPath: '/static'})
+      new FaviconsWebpackPlugin(path.resolve(__dirname, 'static/favicon.png')),
     ],
     optimization: {
       minimizer: [

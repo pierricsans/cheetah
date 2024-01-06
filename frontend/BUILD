@@ -13,7 +13,6 @@ ts_project(
     name = "main",
     srcs = [
         "main.ts",
-        "static/style.css",
     ],
     declaration = True,
     transpiler = "tsc",
