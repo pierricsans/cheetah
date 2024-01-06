@@ -1,5 +1,5 @@
-import { AppElement } from './util.js';
-import { Journey, Level, Move, MoveDirection } from '.././protos/level_pb.js';
+import { AppElement } from "./util.js";
+import { Journey, Level, Move, MoveDirection } from ".././protos/level_pb.js";
 
 // Map between MoveDirection and Material Icon name.
 export const Icons: Map<MoveDirection, string> = new Map([
@@ -33,7 +33,7 @@ export class Selector extends AppElement {
     this.journey = journey;
     this.level = level;
     this.element.setAttribute("id", "selector");
-    this.optionsContainer.setAttribute("id", "optionsContainer")
+    this.optionsContainer.setAttribute("id", "optionsContainer");
     this.GenerateOptions();
   }
 
@@ -52,27 +52,29 @@ export class Selector extends AppElement {
   WaitAndRegisterSelections(): Array<Promise<Option>> {
     const promises: Array<Promise<Option>> = [];
     for (const option of this.options) {
-      promises.push(new Promise<Option>((resolve, reject) => {
-        option.initAndWaitForUserSelection().then(() => {
-          if (this.acceptsFurtherSelections) {
-            option.MakeUnselectable();
-            var atLeastOneSelectable = false;
-            for (const option of this.options) {
-              if (option.IsSelectable()) {
-                atLeastOneSelectable = true;
-              }
-            }
-            if (!atLeastOneSelectable) {
+      promises.push(
+        new Promise<Option>((resolve, reject) => {
+          option.initAndWaitForUserSelection().then(() => {
+            if (this.acceptsFurtherSelections) {
+              option.MakeUnselectable();
+              var atLeastOneSelectable = false;
               for (const option of this.options) {
-                option.MakeSelectable();
+                if (option.IsSelectable()) {
+                  atLeastOneSelectable = true;
+                }
               }
+              if (!atLeastOneSelectable) {
+                for (const option of this.options) {
+                  option.MakeSelectable();
+                }
+              }
+              resolve(option);
+            } else {
+              reject();
             }
-            resolve(option);
-          } else {
-            reject()
-          }
-        });
-      }));
+          });
+        })
+      );
     }
     return promises;
   }
@@ -92,7 +94,6 @@ export class Selector extends AppElement {
 // Instead of the user clicking on several options, a RandomSelector is
 // one where an Option is selected at random as the user clicks on it.
 export class RandomSelector extends Selector {
-
   protected GenerateOptions() {
     const option = new RandomOption(this.journey.allowedMoves);
     this.optionsContainer.appendChild(option.GetAsElement());
@@ -106,26 +107,26 @@ export class RandomSelector extends Selector {
         const option = this.options[0]!;
         option.initAndWaitForUserSelection().then(() => {
           resolve(option);
-        })
-      })];
+        });
+      }),
+    ];
   }
-
 }
 
 export class Option extends AppElement {
   move: Move = new Move();
-  protected text: string = '';
+  protected text: string = "";
 
   constructor() {
     super();
-    this.element.classList.add('option');
-    this.element.classList.add('selectable');
+    this.element.classList.add("option");
+    this.element.classList.add("selectable");
     this.element.setAttribute("tabindex", "0");
   }
 
   initAndWaitForUserSelection(): Promise<void> {
     return new Promise<void>((resolve) => {
-      this.element.addEventListener('mousedown', (event: Event) => {
+      this.element.addEventListener("mousedown", (event: Event) => {
         resolve();
       });
     });
@@ -144,11 +145,9 @@ export class Option extends AppElement {
   IsSelectable(): boolean {
     return this.element.classList.contains("selectable");
   }
-
 }
 
 export class ExplicitOption extends Option {
-
   constructor(move: Move) {
     super();
     this.move = move;
@@ -156,7 +155,6 @@ export class ExplicitOption extends Option {
     this.element.setAttribute("alt", this.text);
     this.element.textContent = Icons.get(this.move?.direction!)!;
   }
-
 }
 
 export class RandomOption extends Option {
@@ -185,9 +183,8 @@ export class RandomOption extends Option {
     this.element.classList.remove("selectable");
     this.element.classList.add("notSelectable");
     this.move = new Move();
-    this.element.textContent = '';
+    this.element.textContent = "";
     this.element.removeAttribute("alt");
     clearInterval(this.timerId);
   }
-
 }

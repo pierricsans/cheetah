@@ -8,22 +8,12 @@
     "lib": ["es2018", "dom", "es5", "dom.iterable"],
     "sourceMap": true,
     "declarationMap": true,
-    "rootDirs": [
-      //".",
-      "bazel-bin",
-    ],
+    "rootDirs": ["bazel-bin"],
     "paths": {
-      "nodemodules/*": [
-        "../node_modules/*"
-      ],
+      "nodemodules/*": ["../node_modules/*"]
     },
     "declaration": true,
-    "allowJs": true,
+    "allowJs": true
   },
-  "exclude": [
-      "bazel-cheetah",
-      "bazel-out",
-      "bazel-testlogs",
-      "node_modules",
-  ]
+  "exclude": ["bazel-cheetah", "bazel-out", "bazel-testlogs", "node_modules"]
 }

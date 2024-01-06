@@ -1,14 +1,14 @@
-import { ActiveBead, endOfCycleParams } from './bead.js';
+import { ActiveBead, endOfCycleParams } from "./bead.js";
 import {
   BeadSelection,
   Journey,
   Level,
   LevelStatus,
   Person,
-  PersonType
-} from '.././protos/level_pb.js';
-import { CountDown } from './countdown.js';
-import { AppElement, shuffleArray } from './util.js';
+  PersonType,
+} from ".././protos/level_pb.js";
+import { CountDown } from "./countdown.js";
+import { AppElement, shuffleArray } from "./util.js";
 
 export class GridInst extends AppElement {
   journey: Journey;
@@ -20,7 +20,7 @@ export class GridInst extends AppElement {
   private beads: Array<ActiveBead> = [];
 
   constructor(journey: Journey, level: Level) {
-    super()
+    super();
     this.journey = journey;
     this.level = level;
     this.countdown = this.AppendCountDown();
@@ -53,17 +53,22 @@ export class GridInst extends AppElement {
     const seenCycles = new Set<number>();
     return new Promise<number | undefined>((resolve) => {
       for (const bead of this.beads) {
-        window.addEventListener("message", (event: MessageEvent<endOfCycleParams>) => {
-          if (!seenCycles.has(event.data.iterationNum)) {
-            seenCycles.add(event.data.iterationNum);
-            this.countdown.RemoveStar(event.data.playbackRate).then((hasStarsRemaining: boolean) => {
-              if (!hasStarsRemaining) {
-                this.stopAnimations();
-                resolve(0);
-              }
-            })
+        window.addEventListener(
+          "message",
+          (event: MessageEvent<endOfCycleParams>) => {
+            if (!seenCycles.has(event.data.iterationNum)) {
+              seenCycles.add(event.data.iterationNum);
+              this.countdown
+                .RemoveStar(event.data.playbackRate)
+                .then((hasStarsRemaining: boolean) => {
+                  if (!hasStarsRemaining) {
+                    this.stopAnimations();
+                    resolve(0);
+                  }
+                });
+            }
           }
-        });
+        );
         bead.animateElement();
       }
       this.StartGameAndWaitForOutcome().then((outcome: LevelStatus) => {
@@ -72,7 +77,7 @@ export class GridInst extends AppElement {
           resolve(undefined);
         }
         resolve(this.countdown.numStars);
-      })
+      });
     });
   }
 
@@ -81,13 +86,15 @@ export class GridInst extends AppElement {
       this.startBeadAnimationsAndWait().then((status: BeadSelection) => {
         switch (status) {
           case BeadSelection.WRONG_GUESS:
-            this.countdown.RemoveStar(/*playbackRate=*/1).then((hasStarsRemaining: boolean) =>{
-              if (hasStarsRemaining) {
-                resolve(LevelStatus.UNSPECIFIED);
-              } else {
-                resolve(LevelStatus.LOSE);
-              }
-            })
+            this.countdown
+              .RemoveStar(/*playbackRate=*/ 1)
+              .then((hasStarsRemaining: boolean) => {
+                if (hasStarsRemaining) {
+                  resolve(LevelStatus.UNSPECIFIED);
+                } else {
+                  resolve(LevelStatus.LOSE);
+                }
+              });
             break;
           case BeadSelection.CORRECT_GUESS:
             resolve(LevelStatus.WIN);
@@ -132,16 +139,15 @@ export class GridInst extends AppElement {
     return new Promise<BeadSelection>((resolve) => {
       for (const bead of this.beads) {
         const inactiveBead = bead.GetInactiveBead();
-        bead.initAndWaitForUserSelection()
-          .then((type: PersonType) => {
-            if (type === PersonType.INDIGENOUS) {
-              resolve(BeadSelection.CORRECT_GUESS);
-            } else {
-              bead.Hide();
-              inactiveBead.Hide();
-              resolve(BeadSelection.WRONG_GUESS);
-            }
-          })
+        bead.initAndWaitForUserSelection().then((type: PersonType) => {
+          if (type === PersonType.INDIGENOUS) {
+            resolve(BeadSelection.CORRECT_GUESS);
+          } else {
+            bead.Hide();
+            inactiveBead.Hide();
+            resolve(BeadSelection.WRONG_GUESS);
+          }
+        });
       }
     });
   }
@@ -151,5 +157,4 @@ export class GridInst extends AppElement {
     this.element.appendChild(countdown.GetAsElement());
     return countdown;
   }
-
 }

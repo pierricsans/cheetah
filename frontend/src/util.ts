@@ -1,9 +1,9 @@
 export function shuffleArray(array: Array<any>) {
   for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const temp = array[i];
-      array[i] = array[j];
-      array[j] = temp;
+    const j = Math.floor(Math.random() * (i + 1));
+    const temp = array[i];
+    array[i] = array[j];
+    array[j] = temp;
   }
 }
 
@@ -16,7 +16,7 @@ export class AppElement {
   Show() {
     this.element.hidden = false;
   }
-  GetAsElement():HTMLDivElement {
+  GetAsElement(): HTMLDivElement {
     return this.element;
   }
 }

@@ -6,11 +6,11 @@
   --ball-size: calc(var(--cell-size) - 1px);
   --ball-opacity: 90%;
   --outer-box-border-thickness: 2vw;
-  --body-background: #E9C46A;
+  --body-background: #e9c46a;
   --app-background: #264653;
-  --primary-color: #2A9D8F;
-  --secondary-color: #E76F51;
-  --tertiary-color: #F4A261;
+  --primary-color: #2a9d8f;
+  --secondary-color: #e76f51;
+  --tertiary-color: #f4a261;
 }
 
 body {
@@ -71,7 +71,6 @@ body {
 }
 
 @keyframes bounce {
-
   0%,
   20%,
   50%,
@@ -168,7 +167,9 @@ body {
     border-width: 3px;
     margin: 10px auto;
     padding: calc((var(--cell-size) / 2));
-    border-radius: calc((var(--ball-size) / 2) + var(--outer-box-border-thickness));
+    border-radius: calc(
+      (var(--ball-size) / 2) + var(--outer-box-border-thickness)
+    );
   }
 
   #optionsContainer {
@@ -307,7 +308,7 @@ body {
 
 #innerContainer {
   position: relative;
-  height: 100%
+  height: 100%;
 }
 
 .activeBead {
@@ -318,7 +319,7 @@ body {
 .bead {
   opacity: var(--ball-opacity);
   border-radius: 50%;
-  font-family: 'Material Symbols Outlined';
+  font-family: "Material Symbols Outlined";
   font-size: var(--ball-size);
 }
 

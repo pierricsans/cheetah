@@ -1,14 +1,13 @@
 import {
   FADE_IN_OUT_DURATION_MS,
   PAUSE_BETWEEN_ANIMATION_CYCLES,
-  TOTAL_NUM_STARS
-} from './constants.js';
-import { AppElement } from './util.js';
+  TOTAL_NUM_STARS,
+} from "./constants.js";
+import { AppElement } from "./util.js";
 
 export class CountDown extends AppElement {
   numStars: number = TOTAL_NUM_STARS;
   private stars: Array<HTMLElement> = [];
-
 
   constructor() {
     super();
@@ -33,7 +32,7 @@ export class CountDown extends AppElement {
         this.stars[this.numStars - 1].classList.add("invalidAction");
         this.numStars -= 1;
         resolve(this.numStars > 0);
-      }
+      };
       animation.play();
     });
   }
@@ -51,7 +50,7 @@ export class CountDown extends AppElement {
         {
           color: "var(--secondary-color)",
           transform: "scale(1, 1) rotate(1turn)",
-        }
+        },
       ],
       {
         duration: FADE_IN_OUT_DURATION_MS + PAUSE_BETWEEN_ANIMATION_CYCLES,
@@ -60,5 +59,4 @@ export class CountDown extends AppElement {
     );
     return new Animation(keyframes);
   }
-
 }

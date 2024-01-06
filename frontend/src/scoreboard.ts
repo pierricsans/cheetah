@@ -1,11 +1,14 @@
-import { Game, Journey, Level, NextLevelAction } from '.././protos/level_pb.js';
-import { TOTAL_NUM_STARS } from './constants.js';
-import { AppElement } from './util.js';
+import { Game, Journey, Level, NextLevelAction } from ".././protos/level_pb.js";
+import { TOTAL_NUM_STARS } from "./constants.js";
+import { AppElement } from "./util.js";
 
 export class ScoreBoard extends AppElement {
   nextLevelButton: HTMLElement = document.createElement("div");
   private game: Game;
-  private journeyBoards: Map<number, JourneyBoard> = new Map<number, JourneyBoard>();
+  private journeyBoards: Map<number, JourneyBoard> = new Map<
+    number,
+    JourneyBoard
+  >();
   private restartJourneyButton: HTMLElement = document.createElement("div");
   private restartGameButton: HTMLElement = document.createElement("div");
 
@@ -25,12 +28,12 @@ export class ScoreBoard extends AppElement {
     this.journeyBoards.forEach((journeyBoard: JourneyBoard) => {
       journeyBoard.Update();
       journeyBoard.Hide();
-    })
+    });
     this.journeyBoards.get(this.game.nextJourney)?.Show();
   }
 
   private build() {
-    this.element.setAttribute('id', 'scoreboard');
+    this.element.setAttribute("id", "scoreboard");
     this.Hide();
     for (const journey of this.game.journeys) {
       if (journey.number === undefined) {
@@ -38,42 +41,46 @@ export class ScoreBoard extends AppElement {
       }
       const journeyBoard = new JourneyBoard(journey, this);
       this.journeyBoards.set(journey.number, journeyBoard);
-      this.element.appendChild(journeyBoard.GetAsElement())
+      this.element.appendChild(journeyBoard.GetAsElement());
     }
-    this.nextLevelButton.setAttribute('id', 'Next');
-    this.nextLevelButton.setAttribute('alt', 'Next level');
-    this.nextLevelButton.textContent = 'skip_next';
-    this.nextLevelButton.classList.add('selectable');
-    this.nextLevelButton.classList.add('option');
+    this.nextLevelButton.setAttribute("id", "Next");
+    this.nextLevelButton.setAttribute("alt", "Next level");
+    this.nextLevelButton.textContent = "skip_next";
+    this.nextLevelButton.classList.add("selectable");
+    this.nextLevelButton.classList.add("option");
     this.element.appendChild(this.nextLevelButton);
-    this.restartJourneyButton.setAttribute('id', 'Retry');
-    this.restartJourneyButton.setAttribute('alt', 'Restart from level 1');
-    this.restartJourneyButton.classList.add('selectable');
-    this.restartJourneyButton.classList.add('option');
-    this.restartJourneyButton.textContent = 'redo';
+    this.restartJourneyButton.setAttribute("id", "Retry");
+    this.restartJourneyButton.setAttribute("alt", "Restart from level 1");
+    this.restartJourneyButton.classList.add("selectable");
+    this.restartJourneyButton.classList.add("option");
+    this.restartJourneyButton.textContent = "redo";
     this.element.appendChild(this.restartJourneyButton);
-    this.restartGameButton.setAttribute('id', 'Restart');
-    this.restartGameButton.setAttribute('alt', 'Restart game');
-    this.restartGameButton.classList.add('selectable');
-    this.restartGameButton.classList.add('option');
-    this.restartGameButton.textContent = 'restart_alt';
+    this.restartGameButton.setAttribute("id", "Restart");
+    this.restartGameButton.setAttribute("alt", "Restart game");
+    this.restartGameButton.classList.add("selectable");
+    this.restartGameButton.classList.add("option");
+    this.restartGameButton.textContent = "restart_alt";
     this.element.appendChild(this.restartGameButton);
   }
-  
+
   waitforUserSelection(): Promise<NextLevelAction> {
     return new Promise<NextLevelAction>((resolve) => {
-      this.restartGameButton.addEventListener('click', (event: Event) => resolve(NextLevelAction.RESTART_GAME));
-      this.restartJourneyButton.addEventListener('click', (event: Event) => resolve(NextLevelAction.RESTART_JOURNEY));
-      this.nextLevelButton.addEventListener('click', (event) => resolve(NextLevelAction.TRIGGER_NEXT_LEVEL));
-
+      this.restartGameButton.addEventListener("click", (event: Event) =>
+        resolve(NextLevelAction.RESTART_GAME)
+      );
+      this.restartJourneyButton.addEventListener("click", (event: Event) =>
+        resolve(NextLevelAction.RESTART_JOURNEY)
+      );
+      this.nextLevelButton.addEventListener("click", (event) =>
+        resolve(NextLevelAction.TRIGGER_NEXT_LEVEL)
+      );
     });
   }
-
 }
 
 class JourneyBoard extends AppElement {
   journey: Journey;
-  levels: Map<number, LevelBoard> = new Map<number, LevelBoard>;
+  levels: Map<number, LevelBoard> = new Map<number, LevelBoard>();
   header = document.createElement("div");
   star = document.createElement("span");
   scoreboard: ScoreBoard;
@@ -83,15 +90,15 @@ class JourneyBoard extends AppElement {
     this.journey = journey;
     this.scoreboard = scoreboard;
     this.Hide();
-    this.element.classList.add('journeyBoard');
+    this.element.classList.add("journeyBoard");
     this.header.textContent = this.journey.symbols[0];
-    this.header.classList.add('journeyBoardHeader');
-    this.star.setAttribute('id', 'starCounter');
+    this.header.classList.add("journeyBoardHeader");
+    this.star.setAttribute("id", "starCounter");
     this.header.appendChild(this.star);
     this.element.appendChild(this.header);
     for (const level of this.journey.levels) {
       if (level.number === undefined) {
-        throw Error('Level number undefined ' + level);
+        throw Error("Level number undefined " + level);
       }
       const levelBoard = new LevelBoard(level);
       this.levels.set(level.number, levelBoard);
@@ -101,36 +108,42 @@ class JourneyBoard extends AppElement {
 
   Update() {
     this.levels.forEach((levelBoard: LevelBoard) => levelBoard.Update());
-    const starNum = this.element.getElementsByClassName('filledStar').length;
-    this.star.textContent = starNum.toString() + '/' + this.journey.minimumStarNumber;
+    const starNum = this.element.getElementsByClassName("filledStar").length;
+    this.star.textContent =
+      starNum.toString() + "/" + this.journey.minimumStarNumber;
     if (this.journey.levels.length === this.journey.nextLevel) {
       var allLevelsHaveStars: boolean = true;
       for (const levelBoard of this.levels.values()) {
-        if (levelBoard.GetAsElement().getElementsByClassName('filledStar').length === 0) {
+        if (
+          levelBoard.GetAsElement().getElementsByClassName("filledStar")
+            .length === 0
+        ) {
           allLevelsHaveStars = false;
         }
       }
-      if ((starNum >= this.journey.minimumStarNumber! && !allLevelsHaveStars) ||
-        starNum < this.journey.minimumStarNumber! && allLevelsHaveStars) {
+      if (
+        (starNum >= this.journey.minimumStarNumber! && !allLevelsHaveStars) ||
+        (starNum < this.journey.minimumStarNumber! && allLevelsHaveStars)
+      ) {
         this.scoreboard.nextLevelButton.onclick = null;
-        this.scoreboard.nextLevelButton.classList.remove('selectable');
+        this.scoreboard.nextLevelButton.classList.remove("selectable");
       }
     }
   }
 }
 
 class LevelBoard extends AppElement {
-  level: Level
+  level: Level;
   levelNumber: HTMLElement = document.createElement("span");
   levelScore: HTMLElement = document.createElement("span");
 
   constructor(level: Level) {
     super();
     this.level = level;
-    this.levelNumber.classList.add('levelBoard-number');
-    this.levelNumber.textContent = this.level.number?.toString() || '';
+    this.levelNumber.classList.add("levelBoard-number");
+    this.levelNumber.textContent = this.level.number?.toString() || "";
     this.element.appendChild(this.levelNumber);
-    this.levelScore.classList.add('levelBoard-score');
+    this.levelScore.classList.add("levelBoard-score");
     this.setLevelScore();
     this.element.appendChild(this.levelScore);
     this.Update();
@@ -140,18 +153,18 @@ class LevelBoard extends AppElement {
     const stars = this.levelScore.children;
     if (this.level.score === undefined) {
       for (var i = 0; i < TOTAL_NUM_STARS; i++) {
-          stars[i].classList.remove('filledStar');
-          stars[i].classList.add('emptyStar');
-        }
+        stars[i].classList.remove("filledStar");
+        stars[i].classList.add("emptyStar");
+      }
       return;
     }
     for (var i = 0; i < TOTAL_NUM_STARS; i++) {
       if (i < this.level.score) {
-        stars[i].classList.add('filledStar');
-        stars[i].classList.remove('emptyStar');
+        stars[i].classList.add("filledStar");
+        stars[i].classList.remove("emptyStar");
       } else {
-        stars[i].classList.remove('filledStar');
-        stars[i].classList.add('emptyStar');
+        stars[i].classList.remove("filledStar");
+        stars[i].classList.add("emptyStar");
       }
     }
   }
@@ -159,10 +172,8 @@ class LevelBoard extends AppElement {
   private setLevelScore() {
     for (var i = 0; i < TOTAL_NUM_STARS; i++) {
       const star = document.createElement("span");
-      star.textContent = 'star_rate';
+      star.textContent = "star_rate";
       this.levelScore.appendChild(star);
     }
   }
-
 }
-
