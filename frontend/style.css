@@ -254,6 +254,11 @@ body {
 
 .validAction {
   color: var(--body-background);
+  animation-name: grow;
+  animation-duration: 500ms;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
 }
 
 .invalidAction {

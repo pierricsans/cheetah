@@ -1,4 +1,8 @@
-import { FADE_IN_OUT_DURATION_MS, TOTAL_NUM_STARS } from './constants.js';
+import {
+  FADE_IN_OUT_DURATION_MS,
+  PAUSE_BETWEEN_ANIMATION_CYCLES,
+  TOTAL_NUM_STARS
+} from './constants.js';
 import { AppElement } from './util.js';
 
 export class CountDown extends AppElement {
@@ -42,11 +46,15 @@ export class CountDown extends AppElement {
           color: "var(--body-background)",
         },
         {
+          transform: "scale(2, 2) rotate(0.5turn)",
+        },
+        {
           color: "var(--secondary-color)",
+          transform: "scale(1, 1) rotate(1turn)",
         }
       ],
       {
-        duration: FADE_IN_OUT_DURATION_MS,
+        duration: FADE_IN_OUT_DURATION_MS + PAUSE_BETWEEN_ANIMATION_CYCLES,
         fill: "forwards",
       }
     );
