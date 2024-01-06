@@ -1,103 +1,103 @@
 load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
 
-package(default_visibility=[
+package(default_visibility = [
     "//frontend:__pkg__",
 ])
 
 ts_project(
-    name="theme",
-    srcs=["theme.ts"],
-    declaration=True,
-    transpiler="tsc",
-    tsconfig="//frontend:tsconfig",
-    deps=[
-        "//frontend/protos:level_ts_proto",
+    name = "theme",
+    srcs = ["theme.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
         "//:node_modules/@bufbuild/protobuf",
-    ]
+        "//frontend/protos:level_ts_proto",
+    ],
 )
 
 ts_project(
-    name="bead",
-    srcs=["bead.ts"],
-    declaration=True,
-    transpiler="tsc",
-    tsconfig="//frontend:tsconfig",
-    deps=[
+    name = "bead",
+    srcs = ["bead.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
         ":constants",
         ":util",
-        "//frontend/protos:level_ts_proto",
         "//:node_modules/@bufbuild/protobuf",
-    ]
+        "//frontend/protos:level_ts_proto",
+    ],
 )
 
 ts_project(
-    name="selector",
-    srcs=["selector.ts"],
-    declaration=True,
-    transpiler="tsc",
-    tsconfig="//frontend:tsconfig",
-    deps=[
+    name = "selector",
+    srcs = ["selector.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
         ":util",
-        "//frontend/protos:level_ts_proto",
         "//:node_modules/@bufbuild/protobuf",
-    ]
+        "//frontend/protos:level_ts_proto",
+    ],
 )
 
 ts_project(
-    name="constants",
-    srcs=["constants.ts"],
-    declaration=True,
-    transpiler="tsc",
-    tsconfig="//frontend:tsconfig",
+    name = "constants",
+    srcs = ["constants.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
 )
 
 ts_project(
-    name="countdown",
-    srcs=["countdown.ts"],
-    declaration=True,
-    transpiler="tsc",
-    tsconfig="//frontend:tsconfig",
-    deps=[
+    name = "countdown",
+    srcs = ["countdown.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
         ":constants",
         ":util",
-        "//frontend/protos:level_ts_proto",
         "//:node_modules/@bufbuild/protobuf",
-    ]
+        "//frontend/protos:level_ts_proto",
+    ],
 )
 
 ts_project(
-    name="scoreboard",
-    srcs=["scoreboard.ts"],
-    declaration=True,
-    transpiler="tsc",
-    tsconfig="//frontend:tsconfig",
-    deps=[
+    name = "scoreboard",
+    srcs = ["scoreboard.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
         ":constants",
         ":util",
-        "//frontend/protos:level_ts_proto",
         "//:node_modules/@bufbuild/protobuf",
-    ]
+        "//frontend/protos:level_ts_proto",
+    ],
 )
 
 ts_project(
-    name="util",
-    srcs=["util.ts"],
-    declaration=True,
-    transpiler="tsc",
-    tsconfig="//frontend:tsconfig",
+    name = "util",
+    srcs = ["util.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
 )
 
 ts_project(
-    name="grid",
-    srcs=["grid.ts"],
-    declaration=True,
-    transpiler="tsc",
-    tsconfig="//frontend:tsconfig",
-    deps=[
-        ":util",
+    name = "grid",
+    srcs = ["grid.ts"],
+    declaration = True,
+    transpiler = "tsc",
+    tsconfig = "//frontend:tsconfig",
+    deps = [
         ":bead",
         ":countdown",
-        "//frontend/protos:level_ts_proto",
+        ":util",
         "//:node_modules/@bufbuild/protobuf",
-    ]
+        "//frontend/protos:level_ts_proto",
+    ],
 )
