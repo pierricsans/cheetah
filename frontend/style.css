@@ -118,9 +118,9 @@ body {
     border-style: solid;
     border-width: 3px;
     margin: 2px;
-    width: calc(var(--box-size-cqw) / var(--move-num));
+    width: var(--cell-size);
     aspect-ratio: 1 /1;
-    font-size: calc(var(--box-size-cqw) / var(--move-num));
+    font-size: var(--cell-size);
     font-family: "Material Symbols Outlined";
     line-height: 1;
     border-radius: 50%;
@@ -131,9 +131,9 @@ body {
     border-style: solid;
     border-width: 3px;
     margin: 2px;
-    width: calc(var(--box-size-cqw) / var(--box-size-num-moves));
+    width: var(--cell-size);
     aspect-ratio: 1 /1;
-    font-size: calc(var(--box-size-cqw) / var(--box-size-num-moves));
+    font-size: var(--cell-size);
     font-family: "Material Symbols Outlined";
     line-height: 1;
     border-radius: 50%;
@@ -144,9 +144,9 @@ body {
     border-color: var(--body-background);
     border-style: solid;
     margin: 2px;
-    width: calc(var(--box-size-cqw) / var(--box-size-num-moves));
+    width: var(--cell-size);
     aspect-ratio: 1 /1;
-    font-size: calc(var(--box-size-cqw) / var(--box-size-num-moves));
+    font-size: var(--cell-size);
     font-family: "Material Symbols Outlined";
     line-height: 1;
     border-radius: 50%;
