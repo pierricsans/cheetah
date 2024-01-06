@@ -1,7 +1,0 @@
-To popupale packages.json:
-cd frontend && pnpm update
-
-Start server
-bazel run -c opt server:wsgi
-
-Next: send list of moves to the server

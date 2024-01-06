@@ -13,7 +13,6 @@
       "nodemodules/*": ["../node_modules/*"]
     },
     "declaration": true,
-    "allowJs": true
   },
   "exclude": ["bazel-cheetah", "bazel-out", "bazel-testlogs", "node_modules"]
 }
