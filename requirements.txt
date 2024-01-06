@@ -1,6 +1,0 @@
-absl-py
-attrs
-webcolors
-typing_extensions
-Flask
-Jinja2==3.1.2

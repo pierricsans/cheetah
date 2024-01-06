@@ -2,7 +2,6 @@ workspace(name = "cheetah")
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-# rules_proto defines abstract rules for building Protocol Buffers.
 http_archive(
     name = "rules_proto",
     sha256 = "dc3fb206a2cb3441b485eb1e423165b231235a1ea9b031b4433cf7bc1fa460dd",
@@ -11,25 +10,6 @@ http_archive(
         "https://github.com/bazelbuild/rules_proto/archive/refs/tags/5.3.0-21.7.tar.gz",
     ],
 )
-
-http_archive(
-    name = "rules_python",
-    sha256 = "e85ae30de33625a63eca7fc40a94fea845e641888e52f32b6beea91e8b1b2793",
-    strip_prefix = "rules_python-0.27.1",
-    url = "https://github.com/bazelbuild/rules_python/releases/download/0.27.1/rules_python-0.27.1.tar.gz",
-)
-
-load("@rules_python//python:repositories.bzl", "py_repositories")
-py_repositories()
-load("@rules_python//python:pip.bzl", "pip_parse")
-
-pip_parse(
-    name = "my_deps",
-    requirements_lock = "//:requirements_lock.txt",
-)
-
-load("@my_deps//:requirements.bzl", "install_deps")
-install_deps()
 
 http_archive(
     name = "aspect_rules_ts",
@@ -118,68 +98,11 @@ load("@buildifier_prebuilt//:defs.bzl", "buildifier_prebuilt_register_toolchains
 buildifier_prebuilt_register_toolchains()
 
 http_archive(
-    name = "bazel_skylib_gazelle_plugin",
-    sha256 = "747addf3f508186234f6232674dd7786743efb8c68619aece5fb0cac97b8f415",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-skylib/releases/download/1.5.0/bazel-skylib-gazelle-plugin-1.5.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-skylib/releases/download/1.5.0/bazel-skylib-gazelle-plugin-1.5.0.tar.gz",
-    ],
-)
-
-load("@bazel_skylib_gazelle_plugin//:workspace.bzl", "bazel_skylib_gazelle_plugin_workspace")
-
-bazel_skylib_gazelle_plugin_workspace()
-
-load("@bazel_skylib_gazelle_plugin//:setup.bzl", "bazel_skylib_gazelle_plugin_setup")
-
-bazel_skylib_gazelle_plugin_setup()
-
-http_archive(
-    name = "io_bazel_rules_go",
-    sha256 = "91585017debb61982f7054c9688857a2ad1fd823fc3f9cb05048b0025c47d023",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/rules_go/releases/download/v0.42.0/rules_go-v0.42.0.zip",
-        "https://github.com/bazelbuild/rules_go/releases/download/v0.42.0/rules_go-v0.42.0.zip",
-    ],
-)
-
-http_archive(
-    name = "bazel_gazelle",
-    sha256 = "b7387f72efb59f876e4daae42f1d3912d0d45563eac7cb23d1de0b094ab588cf",
-    urls = [
-        "https://mirror.bazel.build/github.com/bazelbuild/bazel-gazelle/releases/download/v0.34.0/bazel-gazelle-v0.34.0.tar.gz",
-        "https://github.com/bazelbuild/bazel-gazelle/releases/download/v0.34.0/bazel-gazelle-v0.34.0.tar.gz",
-    ],
-)
-
-
-load("@io_bazel_rules_go//go:deps.bzl", "go_register_toolchains", "go_rules_dependencies")
-load("@bazel_gazelle//:deps.bzl", "gazelle_dependencies", "go_repository")
-
-############################################################
-# Define your own dependencies here using go_repository.
-# Else, dependencies declared by rules_go/gazelle will be used.
-# The first declaration of an external repository "wins".
-############################################################
-
-go_rules_dependencies()
-
-# go_register_toolchains(version = "1.20.5")
-
-gazelle_dependencies()
-
-http_archive(
     name = "aspect_rules_webpack",
     sha256 = "21a85849d01eebbd0cb0a5c0120eb58e4d3275eda68565918e7c0d84e14d30d9",
     strip_prefix = "rules_webpack-0.13.0",
     url = "https://github.com/aspect-build/rules_webpack/releases/download/v0.13.0/rules_webpack-v0.13.0.tar.gz",
 )
-
-#######################
-# rules_webpack setup #
-#######################
-
-# Fetch the Bazel module dependencies
 
 load("@aspect_rules_webpack//webpack:dependencies.bzl", "rules_webpack_dependencies")
 

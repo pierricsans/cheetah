@@ -4,6 +4,7 @@ bazel-cheetah
 bazel-out
 bazel-testlogs
 node_modules
+pnpm-lock.yaml
 
 frontend/node_modules
 **/__pycache__
