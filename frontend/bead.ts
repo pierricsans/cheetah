@@ -1,5 +1,10 @@
 import { Level, Person, MoveDirection, PersonType } from './protos/level_pb.js';
-import { DEFAULT_DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS, DEFAULT_FADE_IN_OUT_DURATION_MS, RATE_OF_ANIMATION_SLOWDOWN } from './constants.js';
+import {
+    DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS,
+    FADE_IN_OUT_DURATION_MS,
+    PAUSE_BETWEEN_ANIMATION_CYCLES,
+    RATE_OF_ANIMATION_SLOWDOWN
+} from './constants.js';
 import { AppElement } from './util.js';
 
 abstract class Bead extends AppElement {
@@ -39,11 +44,11 @@ export class ActiveBead extends Bead {
         this.mainAnimationFrames = this.generateMainAnimationFrames();
         this.fadeOutFrames = this.generateFadeOutFrames();
     }
-    
+
     GetInactiveBead(): InactiveBead {
         return this.inactiveBead!;
     }
-    
+
     initAndWaitForUserSelection(): Promise<PersonType> {
         return new Promise<PersonType>((resolve, reject) => {
             for (const element of [this.element, this.inactiveBead?.GetAsElement()]) {
@@ -56,7 +61,7 @@ export class ActiveBead extends Bead {
             }
             // Reject promise if user did not select during one animation cycle.
         });
-      }
+    }
 
     Reveal() {
         switch (this.person.type) {
@@ -100,7 +105,7 @@ export class ActiveBead extends Bead {
             this.element,
             this.fadeInFrames,
             {
-                duration: DEFAULT_FADE_IN_OUT_DURATION_MS,
+                duration: FADE_IN_OUT_DURATION_MS,
                 fill: "forwards",
                 easing: "ease-in-out"
             }
@@ -127,7 +132,7 @@ export class ActiveBead extends Bead {
             this.element,
             this.fadeOutFrames,
             {
-                duration: DEFAULT_FADE_IN_OUT_DURATION_MS,
+                duration: FADE_IN_OUT_DURATION_MS,
                 fill: "forwards",
                 easing: "ease-in-out"
             }
@@ -207,9 +212,9 @@ export class ActiveBead extends Bead {
     private GenerateMainAnimation(): Animation {
         const keyframes = new KeyframeEffect(this.element, this.mainAnimationFrames,
             {
-                duration: (this.level.timePerMoveMs || 200)  * this.level.numMoves!,
+                duration: (this.level.timePerMoveMs || 200) * this.level.numMoves!,
                 fill: "forwards",
-                delay: DEFAULT_DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS
+                delay: DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS
             });
         const animation = new Animation(keyframes);
         return animation;
@@ -217,7 +222,7 @@ export class ActiveBead extends Bead {
 
     animateElement() {
         var iterationNum: number = 0;
-        var playBackRate: number = 1;
+        var playbackRate: number = 1;
         this.fadeIn = this.GenerateFadeInAnimation();
         this.mainAnimation = this.GenerateMainAnimation();
         this.fadeOut = this.GenerateFadeOutAnimation();
@@ -233,6 +238,11 @@ export class ActiveBead extends Bead {
                 this.mainAnimation.commitStyles();
             } catch {}
             this.mainAnimation.cancel();
+            const payload: endOfCycleParams = {
+                iterationNum: iterationNum,
+                playbackRate: playbackRate,
+            }
+            this.dispatchEndOfCycleEvent(payload);
             this.fadeOut.play();
         };
         this.fadeOut.onfinish = (event) => {
@@ -240,14 +250,12 @@ export class ActiveBead extends Bead {
                 this.fadeOut.commitStyles();
             } catch {}
             this.fadeOut.cancel();
-            const endOfCycleEvent = new ProgressEvent("progress", {"total": iterationNum});
-            this.element.dispatchEvent(endOfCycleEvent);
             iterationNum += 1;
-            playBackRate = playBackRate * RATE_OF_ANIMATION_SLOWDOWN;
-            this.fadeIn.updatePlaybackRate(playBackRate);
-            this.mainAnimation.updatePlaybackRate(playBackRate);
-            this.fadeOut.updatePlaybackRate(playBackRate);
-            this.fadeIn.play();
+            playbackRate = playbackRate * RATE_OF_ANIMATION_SLOWDOWN;
+            this.fadeIn.updatePlaybackRate(playbackRate);
+            this.mainAnimation.updatePlaybackRate(playbackRate);
+            this.fadeOut.updatePlaybackRate(playbackRate);
+            setTimeout(() => this.fadeIn.play(), PAUSE_BETWEEN_ANIMATION_CYCLES);
         };
         this.fadeIn.play();
     }
@@ -258,6 +266,17 @@ export class ActiveBead extends Bead {
         this.fadeOut.onfinish = null;
     }
 
+    private dispatchEndOfCycleEvent(payload: endOfCycleParams) {
+        const endOfCycleEvent = new MessageEvent<endOfCycleParams>(
+            "message", {
+            "data": {
+                iterationNum: payload.iterationNum,
+                playbackRate: payload.playbackRate
+            }
+        });
+        window.dispatchEvent(endOfCycleEvent);
+    }
+
 }
 
 class InactiveBead extends Bead {
@@ -266,4 +285,9 @@ class InactiveBead extends Bead {
         this.element.classList.add('inactiveBead');
     }
 
+}
+
+export interface endOfCycleParams {
+    iterationNum: number,
+    playbackRate: number
 }

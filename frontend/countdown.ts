@@ -1,9 +1,8 @@
-import { TOTAL_NUM_STARS } from './constants.js';
+import { FADE_IN_OUT_DURATION_MS, TOTAL_NUM_STARS } from './constants.js';
 import { AppElement } from './util.js';
 
 export class CountDown extends AppElement {
   numStars: number = TOTAL_NUM_STARS;
-  private timeRemainingContainer: HTMLElement = document.createElement("div");
   private stars: Array<HTMLElement> = [];
 
 
@@ -11,8 +10,6 @@ export class CountDown extends AppElement {
     super();
     this.element.setAttribute("id", "countdown");
     this.element.classList.add("bottomBar");
-    // this.timeRemainingContainer.setAttribute("id", "timeRemainingContainer");
-    // this.element.appendChild(this.timeRemainingContainer);
     for (var i = 0; i < this.numStars; i++) {
       const star = document.createElement("span");
       star.classList.add("levelAction");
@@ -23,11 +20,37 @@ export class CountDown extends AppElement {
     }
   }
 
-  RemoveStar(): boolean {
-    this.stars[this.numStars - 1].classList.remove("validAction");
-    this.stars[this.numStars - 1].classList.add("invalidAction");
-    this.numStars -= 1;
-    return this.numStars > 0;
+  RemoveStar(playbackRate: number): Promise<boolean> {
+    return new Promise((resolve) => {
+      const animation = this.FadeOutStar(this.stars[this.numStars - 1]);
+      animation.playbackRate = playbackRate;
+      animation.onfinish = (event) => {
+        this.stars[this.numStars - 1].classList.remove("validAction");
+        this.stars[this.numStars - 1].classList.add("invalidAction");
+        this.numStars -= 1;
+        resolve(this.numStars > 0);
+      }
+      animation.play();
+    });
+  }
+
+  private FadeOutStar(star: HTMLSpanElement): Animation {
+    const keyframes = new KeyframeEffect(
+      star,
+      [
+        {
+          color: "var(--body-background)",
+        },
+        {
+          color: "var(--secondary-color)",
+        }
+      ],
+      {
+        duration: FADE_IN_OUT_DURATION_MS,
+        fill: "forwards",
+      }
+    );
+    return new Animation(keyframes);
   }
 
 }

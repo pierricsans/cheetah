@@ -1,4 +1,4 @@
-import { ActiveBead } from './bead.js';
+import { ActiveBead, endOfCycleParams } from './bead.js';
 import {
   BeadSelection,
   Journey,
@@ -42,7 +42,6 @@ export class GridInst extends AppElement {
     if (!this.level.grid) {
       throw Error("No grid found in level: " + this.level);
     }
-    console.log(this.level.grid?.indigenous);
     for (const alien of this.level.grid.aliens) {
       this.AppendPerson(alien);
     }
@@ -54,13 +53,15 @@ export class GridInst extends AppElement {
     const seenCycles = new Set<number>();
     return new Promise<number | undefined>((resolve) => {
       for (const bead of this.beads) {
-        bead.GetAsElement().addEventListener("progress", (event) => {
-          if (!seenCycles.has(event.total)) {
-            seenCycles.add(event.total);
-            if (!this.countdown.RemoveStar()) {
-              this.stopAnimations();
-              resolve(0);
-            }
+        window.addEventListener("message", (event: MessageEvent<endOfCycleParams>) => {
+          if (!seenCycles.has(event.data.iterationNum)) {
+            seenCycles.add(event.data.iterationNum);
+            this.countdown.RemoveStar(event.data.playbackRate).then((hasStarsRemaining: boolean) => {
+              if (!hasStarsRemaining) {
+                this.stopAnimations();
+                resolve(0);
+              }
+            })
           }
         });
         bead.animateElement();
@@ -80,11 +81,13 @@ export class GridInst extends AppElement {
       this.startBeadAnimationsAndWait().then((status: BeadSelection) => {
         switch (status) {
           case BeadSelection.WRONG_GUESS:
-            if (this.countdown.RemoveStar()) {
-              resolve(LevelStatus.UNSPECIFIED);
-            } else {
-              resolve(LevelStatus.LOSE);
-            }
+            this.countdown.RemoveStar(/*playbackRate=*/1).then((hasStarsRemaining: boolean) =>{
+              if (hasStarsRemaining) {
+                resolve(LevelStatus.UNSPECIFIED);
+              } else {
+                resolve(LevelStatus.LOSE);
+              }
+            })
             break;
           case BeadSelection.CORRECT_GUESS:
             resolve(LevelStatus.WIN);
