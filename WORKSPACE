@@ -40,7 +40,7 @@ http_archive(
 load("@aspect_rules_ts//ts:repositories.bzl", "rules_ts_dependencies", "LATEST_TYPESCRIPT_VERSION")
 rules_ts_dependencies(
     # This keeps the TypeScript version in-sync with the editor, which is typically best.
-    # ts_version_from = "//frontend:package.json",
+    # ts_version_from = "//:package.json",
 
     # Alternatively, you could pick a specific version, or use
     # load("@aspect_rules_ts//ts:repositories.bzl", "LATEST_TYPESCRIPT_VERSION")
@@ -79,15 +79,15 @@ load("@aspect_rules_js//npm:npm_import.bzl", "npm_translate_lock")
 
 npm_translate_lock(
     name = "npm",
-    npmrc = "//frontend:.npmrc",
-    pnpm_lock = "//frontend:pnpm-lock.yaml",
+    npmrc = "//:.npmrc",
+    pnpm_lock = "//:pnpm-lock.yaml",
     verify_node_modules_ignored = "//:.bazelignore",
 )
 load("@npm//:repositories.bzl", "npm_repositories")
 
 npm_repositories()
 
-rules_ts_dependencies(ts_version_from = "@npm//frontend:typescript/resolved.json")
+rules_ts_dependencies(ts_version_from = "@npm//:typescript/resolved.json")
 
 http_archive(
     name = "aspect_rules_swc",

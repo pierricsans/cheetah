@@ -1,4 +1,4 @@
-import { Game, Journey, Level, NextLevelAction } from './protos/level_pb.js';
+import { Game, Journey, Level, NextLevelAction } from '.././protos/level_pb.js';
 import { TOTAL_NUM_STARS } from './constants.js';
 import { AppElement } from './util.js';
 

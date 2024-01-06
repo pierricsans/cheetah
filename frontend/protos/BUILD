@@ -18,6 +18,6 @@ ts_proto_library(
     name = "level_ts_proto",
     has_services = False,
     copy_files = True,
-    node_modules = "//frontend:node_modules",
+    node_modules = "//:node_modules",
     proto = ":level",
 )

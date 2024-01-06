@@ -1,9 +1,10 @@
-import { AppElement, shuffleArray } from './util.js';
-import { setTheme } from './theme.js';
-import { GridInst } from './grid.js';
-import { Icons, Option, RandomOption, RandomSelector, Selector } from './selector.js';
+import { AppElement, shuffleArray } from './src/util.js';
+import { setTheme } from './src/theme.js';
+import { GridInst } from './src/grid.js';
+import { Icons, Option, RandomOption, RandomSelector, Selector } from './src/selector.js';
 import { Game, Grid, Journey, Level, Move, MoveDirection, NextLevelAction, Person, PersonType, Position, Theme, Trajectory } from './protos/level_pb.js';
-import { ScoreBoard } from './scoreboard.js';
+import { ScoreBoard } from './src/scoreboard.js';
+import './static/style.css';
 
 function GetOffset(
     length: number,

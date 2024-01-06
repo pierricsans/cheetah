@@ -1,8 +1,7 @@
 load("@aspect_bazel_lib//lib:testing.bzl", "assert_contains")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
-load("@aspect_rules_js//npm:defs.bzl", "npm_link_package")
-load("@npm//:defs.bzl", "npm_link_all_packages", "npm_link_targets")
 load("@aspect_rules_ts//ts:defs.bzl", "ts_config")
+load("@aspect_rules_webpack//webpack:defs.bzl", "webpack_bundle")
 
 ts_config(
     name = "tsconfig",
@@ -11,107 +10,10 @@ ts_config(
 )
 
 ts_project(
-    name = "theme",
-    srcs = ["theme.ts"],
-    declaration = True,
-    transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
-    deps = [
-        "//frontend/protos:level_ts_proto",
-        "//frontend:node_modules/@bufbuild/protobuf",
-    ]
-)
-
-ts_project(
-    name = "bead",
-    srcs = ["bead.ts"],
-    declaration = True,
-    transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
-    deps = [
-        ":constants",
-        ":util",
-        "//frontend/protos:level_ts_proto",
-        "//frontend:node_modules/@bufbuild/protobuf",
-    ]
-)
-
-ts_project(
-    name = "selector",
-    srcs = ["selector.ts"],
-    declaration = True,
-    transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
-    deps = [
-        ":util",
-        "//frontend/protos:level_ts_proto",
-        "//frontend:node_modules/@bufbuild/protobuf",
-    ]
-)
-
-ts_project(
-    name = "constants",
-    srcs = ["constants.ts"],
-    declaration = True,
-    transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
-)
-
-ts_project(
-    name = "countdown",
-    srcs = ["countdown.ts"],
-    declaration = True,
-    transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
-    deps = [
-        ":constants",
-        ":util",
-        "//frontend/protos:level_ts_proto",
-        "//frontend:node_modules/@bufbuild/protobuf",
-    ]
-)
-
-ts_project(
-    name = "scoreboard",
-    srcs = ["scoreboard.ts"],
-    declaration = True,
-    transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
-    deps = [
-        ":constants",
-        ":util",
-        "//frontend/protos:level_ts_proto",
-        "//frontend:node_modules/@bufbuild/protobuf",
-    ]
-)
-
-ts_project(
-    name = "util",
-    srcs = ["util.ts"],
-    declaration = True,
-    transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
-)
-
-ts_project(
-    name = "grid",
-    srcs = ["grid.ts"],
-    declaration = True,
-    transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
-    deps = [
-        ":util",
-        ":bead",
-        ":countdown",
-        "//frontend/protos:level_ts_proto",
-        "//frontend:node_modules/@bufbuild/protobuf",
-    ]
-)
-
-ts_project(
     name = "main",
     srcs = [
         "main.ts",
+        "static/style.css",
     ],
     declaration = True,
     transpiler = "tsc",
@@ -121,40 +23,40 @@ ts_project(
       "//frontend:__pkg__",
     ],
     deps = [
-        ":util",
-        ":countdown",
-        ":grid",
-        ":scoreboard",
-        ":selector",
-        ":theme",
+        "//frontend/src:util",
+        "//frontend/src:countdown",
+        "//frontend/src:grid",
+        "//frontend/src:scoreboard",
+        "//frontend/src:selector",
+        "//frontend/src:theme",
         "//frontend/protos:level_ts_proto",
-        "//frontend:node_modules/@bufbuild/protobuf",
-        "//frontend:node_modules/@types/node",
+        "//:node_modules/@bufbuild/protobuf",
+        "//:node_modules/@types/node",
     ],
 )
 
-# This macro expands to a npm_link_package for each third-party package in package.json
-npm_link_all_packages()
-
-npm_link_targets()
-
-load("@aspect_rules_webpack//webpack:defs.bzl", "webpack_bundle")
 
 webpack_bundle(
     name = "bundle",
-    node_modules = ":node_modules",
+    node_modules = "//:node_modules",
     srcs = [
         ":main",
+        "static/style.css",
+        "static/index.html",
+        "static/favicon.png",
     ],
     entry_point = ":main",
+    output_dir = True,
     webpack_config = "webpack_config.js",
-    visibility = [
-        "//monkey:__pkg__",
-        "//server:__pkg__",
-    ],
     deps = [
-        "//frontend:node_modules/css-minimizer-webpack-plugin",
-        "//frontend:node_modules/mini-css-extract-plugin",
-        "//frontend:node_modules/terser-webpack-plugin",
+      "//:node_modules/babel-loader",
+      "//:node_modules/clean-webpack-plugin",
+      "//:node_modules/css-loader",
+      "//:node_modules/css-minimizer-webpack-plugin",
+      "//:node_modules/favicons-webpack-plugin",
+      "//:node_modules/mini-css-extract-plugin",
+      "//:node_modules/html-webpack-plugin",
+      "//:node_modules/terser-webpack-plugin",
+      "//:node_modules/webpack-merge",
     ]
 )

@@ -1,5 +1,5 @@
 import { AppElement } from './util.js';
-import { Journey, Level, Move, MoveDirection } from './protos/level_pb.js';
+import { Journey, Level, Move, MoveDirection } from '.././protos/level_pb.js';
 
 // Map between MoveDirection and Material Icon name.
 export const Icons: Map<MoveDirection, string> = new Map([

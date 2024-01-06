@@ -6,7 +6,7 @@ import {
   LevelStatus,
   Person,
   PersonType
-} from './protos/level_pb.js';
+} from '.././protos/level_pb.js';
 import { CountDown } from './countdown.js';
 import { AppElement, shuffleArray } from './util.js';
 

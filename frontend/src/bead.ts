@@ -1,4 +1,4 @@
-import { Level, Person, MoveDirection, PersonType } from './protos/level_pb.js';
+import { Level, Person, MoveDirection, PersonType } from '.././protos/level_pb.js';
 import {
     DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS,
     FADE_IN_OUT_DURATION_MS,

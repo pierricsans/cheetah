@@ -1,4 +1,4 @@
-import { Journey, Theme } from './protos/level_pb.js';
+import { Journey, Theme } from '.././protos/level_pb.js';
 
 export function setTheme(journey: Journey) {
   switch (journey.theme) {

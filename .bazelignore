@@ -6,3 +6,10 @@ frontend/linked_consumer/node_modules
 frontend/linked_tsconfig/node_modules
 frontend/linked_tsconfig_consumer/node_modules
 frontend/proto_grpc/node_modules
+node_modules
+connect_node/node_modules
+linked/node_modules
+linked_consumer/node_modules
+linked_tsconfig/node_modules
+linked_tsconfig_consumer/node_modules
+proto_grpc/node_modules
