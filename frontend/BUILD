@@ -1,11 +1,5 @@
-load("@aspect_rules_ts//ts:defs.bzl", "ts_config", "ts_project")
+load("@aspect_rules_ts//ts:defs.bzl", "ts_project")
 load("@aspect_rules_webpack//webpack:defs.bzl", "webpack_bundle")
-
-ts_config(
-    name = "tsconfig",
-    src = "tsconfig.json",
-    visibility = [":__subpackages__"],
-)
 
 ts_project(
     name = "main",
@@ -14,7 +8,7 @@ ts_project(
     ],
     declaration = True,
     transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
+    tsconfig = "//:tsconfig",
     visibility = [
         "//frontend:__pkg__",
         "//monkey:__pkg__",

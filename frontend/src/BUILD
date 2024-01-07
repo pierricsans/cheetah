@@ -9,7 +9,7 @@ ts_project(
     srcs = ["theme.ts"],
     declaration = True,
     transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
+    tsconfig = "//:tsconfig",
     deps = [
         "//:node_modules/@bufbuild/protobuf",
         "//frontend/protos:level_ts_proto",
@@ -21,7 +21,7 @@ ts_project(
     srcs = ["bead.ts"],
     declaration = True,
     transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
+    tsconfig = "//:tsconfig",
     deps = [
         ":constants",
         ":util",
@@ -35,7 +35,7 @@ ts_project(
     srcs = ["selector.ts"],
     declaration = True,
     transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
+    tsconfig = "//:tsconfig",
     deps = [
         ":util",
         "//:node_modules/@bufbuild/protobuf",
@@ -48,7 +48,7 @@ ts_project(
     srcs = ["constants.ts"],
     declaration = True,
     transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
+    tsconfig = "//:tsconfig",
 )
 
 ts_project(
@@ -56,7 +56,7 @@ ts_project(
     srcs = ["countdown.ts"],
     declaration = True,
     transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
+    tsconfig = "//:tsconfig",
     deps = [
         ":constants",
         ":util",
@@ -70,7 +70,7 @@ ts_project(
     srcs = ["scoreboard.ts"],
     declaration = True,
     transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
+    tsconfig = "//:tsconfig",
     deps = [
         ":constants",
         ":util",
@@ -84,7 +84,7 @@ ts_project(
     srcs = ["util.ts"],
     declaration = True,
     transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
+    tsconfig = "//:tsconfig",
 )
 
 ts_project(
@@ -92,7 +92,7 @@ ts_project(
     srcs = ["grid.ts"],
     declaration = True,
     transpiler = "tsc",
-    tsconfig = "//frontend:tsconfig",
+    tsconfig = "//:tsconfig",
     deps = [
         ":bead",
         ":countdown",

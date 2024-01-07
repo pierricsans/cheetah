@@ -9,9 +9,6 @@
     "sourceMap": true,
     "declarationMap": true,
     "rootDirs": ["bazel-bin"],
-    "paths": {
-      "nodemodules/*": ["../node_modules/*"]
-    },
     "declaration": true,
   },
   "exclude": ["bazel-cheetah", "bazel-out", "bazel-testlogs", "node_modules"]
