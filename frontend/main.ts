@@ -23,6 +23,7 @@ import {
   Trajectory,
 } from "./protos/level_pb.js";
 import { ScoreBoard } from "./src/scoreboard.js";
+import './static/style.css';
 
 function GetOffset(
   length: number,
@@ -428,7 +429,7 @@ export class TapTheDot {
     var isSelectable = true;
     for (var i = 0; i < this.level.numMoves!; i++) {
       const emptyOption = document.createElement("span");
-      emptyOption.classList.add("selectedOption");
+      emptyOption.classList.add("option");
       if (isSelectable) {
         emptyOption.classList.add("nextSelectable");
         isSelectable = false;

@@ -5,14 +5,12 @@ ts_project(
     name = "main",
     srcs = [
         "main.ts",
+        "static/style.css",
     ],
     declaration = True,
+    declaration_map = True,
     transpiler = "tsc",
     tsconfig = "//:tsconfig",
-    visibility = [
-        "//frontend:__pkg__",
-        "//monkey:__pkg__",
-    ],
     deps = [
         "//:node_modules/@bufbuild/protobuf",
         "//:node_modules/@types/node",

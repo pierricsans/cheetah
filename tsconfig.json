@@ -6,7 +6,7 @@
     "strict": true,
     "moduleResolution": "NodeNext",
     "lib": ["es2018", "dom", "es5", "dom.iterable"],
-    "sourceMap": true,
+    "sourceMap": false,
     "declarationMap": true,
     "rootDirs": ["bazel-bin"],
     "declaration": true,

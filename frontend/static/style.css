@@ -13,6 +13,13 @@
   --tertiary-color: #f4a261;
 }
 
+@font-face {
+  font-family: 'Material Symbols Outlined';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/materialsymbolsoutlined/v156/kJF1BvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oDMzByHX9rA6RzaxHMPdY43zj-jCxv3fzvRNU22ZXGJpEpjC_1v-p_4MrImHCIJIZrDCvHOejbd5zrDAt.woff2) format('woff2');
+}
+
 body {
   background-color: var(--body-background);
   font-family: "Orbitron", sans-serif;
@@ -27,7 +34,6 @@ body {
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   animation-direction: alternate;
-  border-color: var(--primary-color);
   background-color: var(--primary-color);
   color: var(--app-background);
   cursor: pointer;
@@ -36,10 +42,6 @@ body {
 .notSelectable {
   border-color: var(--secondary-color);
   background-color: var(--secondary-color);
-  color: var(--app-background);
-}
-
-.notSelectable:hover {
   cursor: default;
 }
 
@@ -88,27 +90,9 @@ body {
   }
 }
 
-#countdownInnerContainer {
-  width: 98%;
-}
-
 #countdown {
   display: flex;
   justify-content: space-between;
-}
-
-#timeRemainingContainer {
-  background-color: var(--body-background);
-  height: 7cqh;
-  width: 100%;
-  border-radius: 10px;
-  position: absolute;
-}
-
-#top {
-  width: 50%;
-  max-width: 200px;
-  display: block;
 }
 
 @container app-content (min-width: 100px) {
@@ -116,32 +100,6 @@ body {
     display: inline-block;
     border-style: solid;
     border-width: 3px;
-    margin: 2px;
-    width: var(--cell-size);
-    aspect-ratio: 1 /1;
-    font-size: var(--cell-size);
-    font-family: "Material Symbols Outlined";
-    line-height: 1;
-    border-radius: 50%;
-  }
-
-  .selectedOption {
-    display: inline-block;
-    border-style: solid;
-    border-width: 3px;
-    margin: 2px;
-    width: var(--cell-size);
-    aspect-ratio: 1 /1;
-    font-size: var(--cell-size);
-    font-family: "Material Symbols Outlined";
-    line-height: 1;
-    border-radius: 50%;
-  }
-
-  .emptyOption {
-    display: inline-block;
-    border-color: var(--body-background);
-    border-style: solid;
     margin: 2px;
     width: var(--cell-size);
     aspect-ratio: 1 /1;
@@ -186,38 +144,6 @@ body {
     width: 80cqw;
     border-radius: 10px;
     height: 7cqh;
-  }
-
-  #currentLevel {
-    position: fixed;
-    top: 0;
-    margin: 6px;
-    width: 15cqw;
-    border-color: var(--body-background);
-    border-style: solid;
-    border-radius: 10px;
-  }
-
-  #totalScore {
-    position: fixed;
-    top: 0;
-    left: calc(15cqw + 6px);
-    margin: 6px;
-    width: 20cqw;
-    border-color: var(--body-background);
-    border-style: solid;
-    border-radius: 10px;
-  }
-
-  #currentScore {
-    position: fixed;
-    top: 0;
-    left: calc(35cqw + 2 * 6px);
-    margin: 6px;
-    width: 20cqw;
-    border-color: var(--body-background);
-    border-style: solid;
-    border-radius: 10px;
   }
 }
 
@@ -327,23 +253,7 @@ body {
   cursor: pointer;
 }
 
-.inactiveBead {
-  display: inline-block;
-  margin: 2px;
-  font-size: 15cqw;
-}
-
 #inactiveBeadsContainer {
   display: flex;
   justify-content: space-around;
-}
-
-.answerBox {
-  display: block;
-  min-width: 3Opx;
-  min-height: 10px;
-  border-bottom: 5px;
-  border-bottom-color: var(--body-background);
-  border-bottom-style: solid;
-  margin: 10px;
 }

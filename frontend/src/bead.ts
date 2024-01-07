@@ -281,9 +281,6 @@ export class ActiveBead extends Bead {
 }
 
 class InactiveBead extends Bead {
-  protected Init() {
-    this.element.classList.add("inactiveBead");
-  }
 }
 
 export interface endOfCycleParams {

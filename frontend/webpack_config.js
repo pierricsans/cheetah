@@ -28,7 +28,24 @@ module.exports = (_env, options) => {
         inject: true,
         template: path.resolve(__dirname, "static/index.html"),
       }),
-      new FaviconsWebpackPlugin(path.resolve(__dirname, "static/favicon.png")),
+      new FaviconsWebpackPlugin({
+        logo: path.resolve(__dirname, "static/favicon.png"),
+        favicons: {
+          appName: 'SpotTheDot',
+          appDescription: 'Pick a trajectory, and spot the icon following it',
+          developerName: 'Pierric Sans',
+          developerURL: null, // prevent retrieving from the nearest package.json
+          background: '#ddd',
+          theme_color: '#333',
+          icons: {
+            coast: false,
+            yandex: false,
+            appleIcon: false,
+            appleStartup: false,
+            android: false,
+          }
+        }
+      }),
     ],
     optimization: {
       minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],

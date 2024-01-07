@@ -8,6 +8,7 @@ ts_project(
     name = "theme",
     srcs = ["theme.ts"],
     declaration = True,
+    declaration_map = True,
     transpiler = "tsc",
     tsconfig = "//:tsconfig",
     deps = [
@@ -20,6 +21,7 @@ ts_project(
     name = "bead",
     srcs = ["bead.ts"],
     declaration = True,
+    declaration_map = True,
     transpiler = "tsc",
     tsconfig = "//:tsconfig",
     deps = [
@@ -34,6 +36,7 @@ ts_project(
     name = "selector",
     srcs = ["selector.ts"],
     declaration = True,
+    declaration_map = True,
     transpiler = "tsc",
     tsconfig = "//:tsconfig",
     deps = [
@@ -47,6 +50,7 @@ ts_project(
     name = "constants",
     srcs = ["constants.ts"],
     declaration = True,
+    declaration_map = True,
     transpiler = "tsc",
     tsconfig = "//:tsconfig",
 )
@@ -55,6 +59,7 @@ ts_project(
     name = "countdown",
     srcs = ["countdown.ts"],
     declaration = True,
+    declaration_map = True,
     transpiler = "tsc",
     tsconfig = "//:tsconfig",
     deps = [
@@ -69,6 +74,7 @@ ts_project(
     name = "scoreboard",
     srcs = ["scoreboard.ts"],
     declaration = True,
+    declaration_map = True,
     transpiler = "tsc",
     tsconfig = "//:tsconfig",
     deps = [
@@ -83,6 +89,7 @@ ts_project(
     name = "util",
     srcs = ["util.ts"],
     declaration = True,
+    declaration_map = True,
     transpiler = "tsc",
     tsconfig = "//:tsconfig",
 )
@@ -91,6 +98,7 @@ ts_project(
     name = "grid",
     srcs = ["grid.ts"],
     declaration = True,
+    declaration_map = True,
     transpiler = "tsc",
     tsconfig = "//:tsconfig",
     deps = [
