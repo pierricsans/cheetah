@@ -78,6 +78,7 @@ message Position {
 
 message Move {
   optional MoveDirection direction = 1;
+  optional MoveSpin spin = 2;
 }
 
 enum MoveDirection {
@@ -96,6 +97,12 @@ enum MoveDirection {
   MOVE_DIRECTION_DOUBLE_EAST = 12;
 }
 
+enum MoveSpin {
+  MOVE_SPIN_UNSPECIFIED = 0;
+  MOVE_SPIN_HALF_CLOCKWISE = 1;
+  MOVE_SPIN_HALF_COUNTER_CLOCKWISE = 2;
+}
+
 enum PersonType {
   PERSON_TYPE_UNSPECIFIED = 0;
   PERSON_TYPE_INDIGENOUS = 1;
@@ -107,6 +114,7 @@ enum Theme {
   THEME_BEACH = 1;
   THEME_MOUNTAIN = 2;
   THEME_SPACE = 3;
+  THEME_FOOD = 4;
 }
 
 enum LevelStatus {
