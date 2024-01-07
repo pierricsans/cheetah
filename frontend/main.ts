@@ -138,13 +138,13 @@ export class TapTheDot {
     this.grid = new GridInst(this.journey, this.level);
     this.container.appendChild(this.validateElement.GetAsElement());
     setTheme(this.journey);
-    this.GenerateColors();
+    this.GenerateSymbols();
     this.scoreboard = new ScoreBoard(this.game);
     this.container.appendChild(this.scoreboard.GetAsElement());
     this.appendContainer();
   }
 
-  private GenerateColors() {
+  private GenerateSymbols() {
     shuffleArray(this.journey.symbols);
   }
 
@@ -179,7 +179,7 @@ export class TapTheDot {
       });
   }
 
-  GetNextColor(): string {
+  private GetNextColor(): string {
     const color = this.journey.symbols.pop();
     if (color === undefined) {
       console.log("No more colors");
@@ -189,7 +189,7 @@ export class TapTheDot {
     }
   }
 
-  FillLevel() {
+  private FillLevel() {
     const grid: Grid = this.level.grid!;
     grid.height = this.level.size;
     grid.width = this.level.size;
@@ -207,7 +207,7 @@ export class TapTheDot {
     this.GenerateInitialPosition(person);
   }
 
-  refreshCurrentScoreDisplay(score: number) {
+  private refreshCurrentScoreDisplay(score: number) {
     this.currentScoreDisplay.textContent = score.toString();
   }
 
@@ -443,7 +443,7 @@ export class TapTheDot {
     }
   }
 
-  WaitForUserSelection() {
+  private WaitForUserSelection() {
     for (const promise of this.selector.WaitAndRegisterSelections()) {
       promise.then((option: Option) => {
         this.AddSelectedOption(option);
@@ -454,7 +454,7 @@ export class TapTheDot {
     }
   }
 
-  AddSelectedOption(option: Option) {
+  private AddSelectedOption(option: Option) {
     const selectable =
       this.selection.getElementsByClassName("nextSelectable")[0];
     if (!selectable) {
@@ -491,7 +491,7 @@ export class TapTheDot {
   }
 
   // Object this.level has been filled in with moves and initial positions.
-  Validate() {
+  private Validate() {
     this.selector.Hide();
     this.HideValidateElement();
     this.BuildGrid();
