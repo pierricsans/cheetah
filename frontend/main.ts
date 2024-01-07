@@ -213,8 +213,8 @@ export class TapTheDot {
   private GenerateInitialPosition(person: Person) {
     const y_moves = new Array<MoveDirection>();
     const x_moves = new Array<MoveDirection>();
-    if (person.trajectory === undefined) {
-      person.trajectory = new Trajectory();
+    if (!person.trajectory) {
+      throw Error("Person has no trajectory: " + person);
     }
     for (const move of person.trajectory?.moves!) {
       switch (move.direction) {
@@ -258,6 +258,8 @@ export class TapTheDot {
         case MoveDirection.DOUBLE_EAST:
           x_moves.push(move.direction);
           break;
+        default:
+          throw Error("Unknown move direction: " + move.direction);
       }
     }
     if (person.position === undefined) {
