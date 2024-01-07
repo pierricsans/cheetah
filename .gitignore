@@ -5,6 +5,6 @@ bazel-out
 bazel-testlogs
 node_modules
 pnpm-lock.yaml
-
-frontend/node_modules
+frontend/protos/*js
+frontend/protos/*ts
 **/__pycache__
