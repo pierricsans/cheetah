@@ -993,11 +993,11 @@ const GAME: Game = new Game({
         "star",
         "satellite_alt",
       ],
-      minimumStarNumber: 40,
+      minimumStarNumber: 30,
       nextLevel: 1,
     }),
     new Journey({
-      number: 5,
+      number: 6,
       theme: Theme.MOUNTAIN,
       allowedMoves: [
         new Move({ spin: MoveSpin.HALF_CLOCKWISE }),
