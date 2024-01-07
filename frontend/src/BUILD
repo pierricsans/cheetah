@@ -109,3 +109,16 @@ ts_project(
         "//frontend/protos:level_ts_proto",
     ],
 )
+
+ts_project(
+    name = "levels",
+    srcs = ["levels.ts"],
+    declaration = True,
+    declaration_map = True,
+    transpiler = "tsc",
+    tsconfig = "//:tsconfig",
+    deps = [
+        "//:node_modules/@bufbuild/protobuf",
+        "//frontend/protos:level_ts_proto",
+    ],
+)

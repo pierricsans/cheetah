@@ -17,6 +17,7 @@ ts_project(
         "//frontend/protos:level_ts_proto",
         "//frontend/src:countdown",
         "//frontend/src:grid",
+        "//frontend/src:levels",
         "//frontend/src:scoreboard",
         "//frontend/src:selector",
         "//frontend/src:theme",
