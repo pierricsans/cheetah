@@ -106,7 +106,7 @@ body {
     font-size: var(--cell-size);
     font-family: "Material Symbols Outlined";
     line-height: 1;
-    border-radius: 50%;
+    border-radius: 10px;
   }
 
   #selector {
@@ -125,9 +125,7 @@ body {
     border-width: 3px;
     margin: 10px auto;
     padding: calc((var(--cell-size) / 2));
-    border-radius: calc(
-      (var(--ball-size) / 2) + var(--outer-box-border-thickness)
-    );
+    border-radius: 10px;
   }
 
   #optionsContainer {
@@ -211,7 +209,7 @@ body {
 }
 
 #selection {
-  margin-top: 10cqh;
+  margin-top: 2cqh;
 }
 
 #selectorContainer {
@@ -230,6 +228,7 @@ body {
   font-size: 30px;
   text-align: center;
   border: 1px;
+  border-radius: 10px;
 }
 
 #innerContainer {
@@ -244,9 +243,10 @@ body {
 
 .bead {
   opacity: var(--ball-opacity);
-  border-radius: 50%;
+  border-radius: 10px;
   font-family: "Material Symbols Outlined";
   font-size: var(--ball-size);
+  transform-origin: center center;
 }
 
 .bead:hover {

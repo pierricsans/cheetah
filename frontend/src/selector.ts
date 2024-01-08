@@ -1,8 +1,15 @@
 import { AppElement } from "./util.js";
-import { Journey, Level, Move, MoveDirection } from ".././protos/level_pb.js";
+import {
+  Journey,
+  Level,
+  Move,
+  MoveDirection,
+  MoveSpin,
+} from ".././protos/level_pb.js";
 
 // Map between MoveDirection and Material Icon name.
-export const Icons: Map<MoveDirection, string> = new Map([
+export const DirectionIcons: Map<MoveDirection, string> = new Map([
+  [MoveDirection.NO_MOVE, "block"],
   [MoveDirection.NORTH, "north"],
   [MoveDirection.SOUTH, "south"],
   [MoveDirection.WEST, "west"],
@@ -16,6 +23,12 @@ export const Icons: Map<MoveDirection, string> = new Map([
   [MoveDirection.DOUBLE_WEST, "keyboard_double_arrow_left"],
   [MoveDirection.DOUBLE_EAST, "keyboard_double_arrow_right"],
   [MoveDirection.UNSPECIFIED, "question_mark"],
+]);
+
+export const SpinIcons: Map<MoveSpin, string> = new Map([
+  [MoveSpin.NO_SPIN, "block"],
+  [MoveSpin.HALF_CLOCKWISE, "rotate_right"],
+  [MoveSpin.HALF_COUNTER_CLOCKWISE, "rotate_left"],
 ]);
 
 // A selector is the part of the app where the user can input their
@@ -138,8 +151,8 @@ export class Option extends AppElement {
   }
 
   MakeUnselectable() {
-    this.element.classList.remove("selectable");
     this.element.classList.add("notSelectable");
+    this.element.classList.remove("selectable");
   }
 
   IsSelectable(): boolean {
@@ -151,14 +164,22 @@ export class ExplicitOption extends Option {
   constructor(move: Move) {
     super();
     this.move = move;
-    this.text = MoveDirection[move?.direction!];
-    this.element.setAttribute("alt", this.text);
-    this.element.textContent = Icons.get(this.move?.direction!)!;
+    if (this.move.direction) {
+      this.text += MoveDirection[move?.direction!];
+      this.element.setAttribute("alt", this.text);
+      this.element.textContent += DirectionIcons.get(this.move.direction)!;
+    }
+    if (this.move.spin) {
+      this.text +=
+        (this.move.direction ? " " : "") + MoveDirection[move?.spin!];
+      this.element.setAttribute("alt", this.text);
+      this.element.textContent = SpinIcons.get(this.move.spin)!;
+    }
   }
 }
 
 export class RandomOption extends Option {
-  moves: Array<Move>;
+  private moves: Array<Move>;
   private timerId: ReturnType<typeof setInterval> | undefined = undefined;
 
   constructor(moves: Array<Move>) {
@@ -171,8 +192,16 @@ export class RandomOption extends Option {
     const nextMove = moves.shift();
     if (nextMove) {
       option.move = nextMove;
-      option.element.setAttribute("alt", MoveDirection[nextMove?.direction!]);
-      option.element.textContent = Icons.get(nextMove.direction!)!;
+      option.element.textContent = "";
+      if (nextMove.direction) {
+        option.element.textContent += DirectionIcons.get(nextMove.direction)!;
+        option.element.setAttribute("alt", MoveDirection[nextMove.direction]);
+      }
+      if (nextMove.spin) {
+        option.element.textContent +=
+          (nextMove.direction ? " " : "") + SpinIcons.get(nextMove.spin)!;
+        option.element.setAttribute("alt", MoveSpin[nextMove.spin]);
+      }
       moves.push(nextMove);
     } else {
       console.log("No next move: " + moves);

@@ -3,11 +3,12 @@ import { setTheme } from "./src/theme.js";
 import { GAME } from "./src/levels.js";
 import { GridInst } from "./src/grid.js";
 import {
-  Icons,
+  DirectionIcons,
   Option,
   RandomOption,
   RandomSelector,
   Selector,
+  SpinIcons,
 } from "./src/selector.js";
 import {
   Game,
@@ -16,7 +17,6 @@ import {
   Level,
   Move,
   MoveDirection,
-  MoveSpin,
   NextLevelAction,
   Person,
   PersonType,
@@ -152,7 +152,7 @@ export class TapTheDot {
     localStorage.setItem("game", this.game.toJsonString());
   }
 
-  UpdateAndShowScoreBoard() {
+  private UpdateAndShowScoreBoard() {
     this.selection.hidden = true;
     this.grid.Hide();
     getLevel(getJourney(this.game), this.journey.nextLevel || 1).score =
@@ -207,10 +207,6 @@ export class TapTheDot {
     this.GenerateInitialPosition(person);
   }
 
-  private refreshCurrentScoreDisplay(score: number) {
-    this.currentScoreDisplay.textContent = score.toString();
-  }
-
   private GenerateInitialPosition(person: Person) {
     const y_moves = new Array<MoveDirection>();
     const x_moves = new Array<MoveDirection>();
@@ -219,6 +215,10 @@ export class TapTheDot {
     }
     for (const move of person.trajectory?.moves!) {
       switch (move.direction) {
+        case MoveDirection.NO_MOVE:
+        case MoveDirection.UNSPECIFIED:
+        case undefined:
+          break;
         case MoveDirection.NORTH:
           y_moves.push(move.direction);
           break;
@@ -305,6 +305,12 @@ export class TapTheDot {
     for (const move of person.trajectory?.moves!) {
       const position: Position = new Position();
       switch (move.direction) {
+        case undefined:
+        case MoveDirection.UNSPECIFIED:
+        case MoveDirection.NO_MOVE:
+          position.xOffset = currentPosition.xOffset;
+          position.yOffset = currentPosition.yOffset;
+          break;
         case MoveDirection.NORTH:
           position.xOffset = currentPosition.xOffset;
           position.yOffset = currentPosition.yOffset! + 1;
@@ -464,7 +470,10 @@ export class TapTheDot {
     }
     selectable.classList.add("selected");
     selectable.classList.remove("nextSelectable");
-    selectable.textContent = Icons.get(option.move?.direction!)!;
+    if (!option.move) {
+      throw Error("No move was attached to Option: " + option);
+    }
+    selectable.textContent = option.GetAsElement().textContent;
     const nextSelectable =
       this.selection.getElementsByClassName("notSelectable")[0];
     if (nextSelectable !== undefined) {

@@ -374,18 +374,48 @@ export const GAME: Game = new Game({
       nextLevel: 1,
     }),
     new Journey({
-      number: 6,
-      theme: Theme.MOUNTAIN,
+      number: 4,
+      theme: Theme.BEACH,
       allowedMoves: [
-        new Move({ spin: MoveSpin.HALF_CLOCKWISE }),
-        new Move({ spin: MoveSpin.HALF_COUNTER_CLOCKWISE }),
+        new Move({
+          direction: MoveDirection.NORTH,
+          spin: MoveSpin.HALF_CLOCKWISE,
+        }),
+        new Move({
+          direction: MoveDirection.SOUTH,
+          spin: MoveSpin.HALF_COUNTER_CLOCKWISE,
+        }),
+        new Move({
+          direction: MoveDirection.EAST,
+          spin: MoveSpin.HALF_CLOCKWISE,
+        }),
+        new Move({
+          direction: MoveDirection.WEST,
+          spin: MoveSpin.HALF_COUNTER_CLOCKWISE,
+        }),
+        new Move({
+          direction: MoveDirection.SOUTH,
+          spin: MoveSpin.HALF_CLOCKWISE,
+        }),
+        new Move({
+          direction: MoveDirection.EAST,
+          spin: MoveSpin.HALF_COUNTER_CLOCKWISE,
+        }),
+        new Move({
+          direction: MoveDirection.WEST,
+          spin: MoveSpin.HALF_CLOCKWISE,
+        }),
+        new Move({
+          direction: MoveDirection.NORTH,
+          spin: MoveSpin.HALF_COUNTER_CLOCKWISE,
+        }),
       ],
       levels: [
         new Level({
           number: 1,
           size: 5,
           numMoves: 3,
-          numAliens: 5,
+          numAliens: 6,
           grid: getDefaultGrid(),
           movesAreRandomlyGenerated: true,
           timePerMoveMs: 420,
@@ -472,15 +502,8 @@ export const GAME: Game = new Game({
           trajectoryIterationsAllowed: 5,
         }),
       ],
-      symbols: [
-        "rocket_launch",
-        "public",
-        "sunny",
-        "nightlight",
-        "star",
-        "satellite_alt",
-      ],
-      minimumStarNumber: 40,
+      symbols: ["waves", "pool", "surfing", "beach_access", "castle", "sunny"],
+      minimumStarNumber: 45,
       nextLevel: 1,
     }),
   ],

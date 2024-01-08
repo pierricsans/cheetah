@@ -3,6 +3,7 @@ import {
   Person,
   MoveDirection,
   PersonType,
+  MoveSpin,
 } from ".././protos/level_pb.js";
 import {
   DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS,
@@ -104,6 +105,7 @@ export class ActiveBead extends Bead {
       offset: 1,
       bottom: bottom.toString() + "%",
       left: left.toString() + "%",
+      transform: "translate(-50%,50%) rotate(0deg)",
     });
     return frames;
   }
@@ -144,6 +146,7 @@ export class ActiveBead extends Bead {
   private generateMainAnimationFrames(): Array<Keyframe> {
     var bottom = this.movementIncrement * this.person.position?.yOffset!;
     var left = this.movementIncrement * this.person.position?.xOffset!;
+    var rotation = 0;
     var animationOffset = 0;
     const frames: Array<Keyframe> = new Array<Keyframe>();
     frames.push({
@@ -151,11 +154,16 @@ export class ActiveBead extends Bead {
       bottom: bottom.toString() + "%",
       fontSize: "var(--ball-size)",
       left: left.toString() + "%",
+      transform: "translate(-50%,50%) rotate(" + rotation + "deg)",
       easing: "ease-in-out",
     });
     for (const move of this.person.trajectory?.moves!) {
       animationOffset = animationOffset + this.animationOffset;
       switch (move.direction!) {
+        case MoveDirection.NO_MOVE:
+        case MoveDirection.UNSPECIFIED:
+        case undefined:
+          break;
         case MoveDirection.NORTH:
           bottom = bottom + this.movementIncrement;
           break;
@@ -197,12 +205,27 @@ export class ActiveBead extends Bead {
           left = left + 2 * this.movementIncrement;
           break;
         default:
-          console.log("unknown code: " + move.direction);
+          throw Error("unknown code: " + move.direction);
+      }
+      switch (move.spin) {
+        case MoveSpin.NO_SPIN:
+        case MoveSpin.UNSPECIFIED:
+        case undefined:
+          break;
+        case MoveSpin.HALF_CLOCKWISE:
+          rotation = rotation + 180;
+          break;
+        case MoveSpin.HALF_COUNTER_CLOCKWISE:
+          rotation = rotation - 180;
+          break;
+        default:
+          throw Error("Unknown spin code: " + move.spin);
       }
       frames.push({
         offset: Math.min(animationOffset, 1),
         bottom: bottom.toString() + "%",
         left: left.toString() + "%",
+        transform: "translate(-50%,50%) rotate(" + rotation + "deg)",
         easing: "ease-in-out",
       });
     }
@@ -280,8 +303,7 @@ export class ActiveBead extends Bead {
   }
 }
 
-class InactiveBead extends Bead {
-}
+class InactiveBead extends Bead {}
 
 export interface endOfCycleParams {
   iterationNum: number;
