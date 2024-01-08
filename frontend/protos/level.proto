@@ -116,7 +116,7 @@ enum Theme {
   THEME_BEACH = 1;
   THEME_MOUNTAIN = 2;
   THEME_SPACE = 3;
-  THEME_FOOD = 4;
+  THEME_BAKERY = 4;
 }
 
 enum LevelStatus {

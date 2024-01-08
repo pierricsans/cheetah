@@ -14,6 +14,9 @@ export function setTheme(journey: Journey) {
     case Theme.SPACE:
       setSpaceTheme();
       break;
+    case Theme.BAKERY:
+      setBakeryTheme();
+      break;
     default:
       throw Error("Unknown Theme: " + journey.theme);
   }
@@ -41,4 +44,12 @@ function setSpaceTheme() {
   document.documentElement.style.setProperty("--primary-color", "#263B61");
   document.documentElement.style.setProperty("--secondary-color", "#1B264D");
   document.documentElement.style.setProperty("--tertiary-color", "#232323");
+}
+
+function setBakeryTheme() {
+  document.documentElement.style.setProperty("--body-background", "#eebfc2");
+  document.documentElement.style.setProperty("--app-background", "#980417");
+  document.documentElement.style.setProperty("--primary-color", "#93b8b7");
+  document.documentElement.style.setProperty("--secondary-color", "#c31628");
+  document.documentElement.style.setProperty("--tertiary-color", "#f8fcff");
 }

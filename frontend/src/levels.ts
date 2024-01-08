@@ -375,7 +375,7 @@ export const GAME: Game = new Game({
     }),
     new Journey({
       number: 4,
-      theme: Theme.BEACH,
+      theme: Theme.BAKERY,
       allowedMoves: [
         new Move({
           direction: MoveDirection.NORTH,
@@ -502,7 +502,14 @@ export const GAME: Game = new Game({
           trajectoryIterationsAllowed: 5,
         }),
       ],
-      symbols: ["waves", "pool", "surfing", "beach_access", "castle", "sunny"],
+      symbols: [
+        "bakery_dining",
+        "nutrition",
+        "dinner_dining",
+        "local_pizza",
+        "lunch_dining",
+        "cake",
+      ],
       minimumStarNumber: 45,
       nextLevel: 1,
     }),
