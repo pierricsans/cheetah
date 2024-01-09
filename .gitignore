@@ -4,8 +4,9 @@ bazel-cheetah
 bazel-out
 bazel-testlogs
 node_modules
-pnpm-lock.yaml
 frontend/protos/*js
 frontend/protos/*ts
 **/__pycache__
 .DS_Store
+MODULE.bazel.lock
+pnpm-lock.yaml
