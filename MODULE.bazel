@@ -45,3 +45,4 @@ use_repo(rules_ts_ext, "npm_typescript")
 
 
 bazel_dep(name = "aspect_rules_webpack", version = "0.13.0")
+bazel_dep(name = "aspect_bazel_lib", version = "2.2.0")
