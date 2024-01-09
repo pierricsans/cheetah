@@ -9,4 +9,3 @@ frontend/protos/*js
 frontend/protos/*ts
 **/__pycache__
 .DS_Store
-pnpm-lock.yaml
