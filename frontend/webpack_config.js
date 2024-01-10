@@ -50,6 +50,7 @@ module.exports = (_env, options) => {
     optimization: {
       minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],
     },
+    mode: 'production',
   };
 };
 
