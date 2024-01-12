@@ -11,7 +11,7 @@ export class CountDown extends AppElement {
 
   constructor() {
     super();
-    this.element.setAttribute("id", "countdown");
+    this.element.classList.add("horizontalChoices");
     this.element.classList.add("bottomBar");
     for (var i = 0; i < this.numStars; i++) {
       const star = document.createElement("span");

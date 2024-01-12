@@ -1,16 +1,14 @@
 import { Game, Journey, Level, NextLevelAction } from ".././protos/level_pb.js";
-import { TOTAL_NUM_STARS } from "./constants.js";
+import { MOUSEDOWN, TOTAL_NUM_STARS } from "./constants.js";
 import { AppElement } from "./util.js";
 
 export class ScoreBoard extends AppElement {
-  nextLevelButton: HTMLElement = document.createElement("div");
+  private buttonContainer: HTMLElement = document.createElement("div");
   private game: Game;
   private journeyBoards: Map<number, JourneyBoard> = new Map<
     number,
     JourneyBoard
   >();
-  private restartJourneyButton: HTMLElement = document.createElement("div");
-  private restartGameButton: HTMLElement = document.createElement("div");
 
   constructor(game: Game) {
     super();
@@ -30,6 +28,39 @@ export class ScoreBoard extends AppElement {
       journeyBoard.Hide();
     });
     this.journeyBoards.get(this.game.nextJourney)?.Show();
+    this.element.appendChild(this.buttonContainer);
+    this.buttonContainer.classList.add("horizontalChoices");
+    this.buttonContainer.classList.add("bottomBar");
+  }
+
+  waitforUserSelection(): Promise<NextLevelAction> {
+    this.buttonContainer.textContent = "";
+    return new Promise<NextLevelAction>((resolve) => {
+      const restartGame = this.generateButton("restart_alt");
+      this.buttonContainer.appendChild(restartGame);
+      restartGame.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
+        resolve(NextLevelAction.RESTART_GAME)
+      );
+
+      const restartJourney = this.generateButton("redo");
+      this.buttonContainer.appendChild(restartJourney);
+      restartJourney.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
+        resolve(NextLevelAction.RESTART_JOURNEY)
+      );
+      if (!this.game.nextJourney) {
+        throw Error("No next journey");
+      }
+      if (!this.journeyBoards.has(this.game.nextJourney)) {
+        throw Error("No current journey");
+      }
+      if (this.journeyBoards.get(this.game.nextJourney)?.CanAccessNextLevel()) {
+        const nextLevelButton = this.generateButton("skip_next");
+        this.buttonContainer.appendChild(nextLevelButton);
+        nextLevelButton.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
+          resolve(NextLevelAction.TRIGGER_NEXT_LEVEL)
+        );
+      }
+    });
   }
 
   private build() {
@@ -39,42 +70,18 @@ export class ScoreBoard extends AppElement {
       if (journey.number === undefined) {
         throw Error("Journey number not defined: " + journey);
       }
-      const journeyBoard = new JourneyBoard(journey, this);
+      const journeyBoard = new JourneyBoard(journey);
       this.journeyBoards.set(journey.number, journeyBoard);
       this.element.appendChild(journeyBoard.GetAsElement());
     }
-    this.nextLevelButton.setAttribute("id", "Next");
-    this.nextLevelButton.setAttribute("alt", "Next level");
-    this.nextLevelButton.textContent = "skip_next";
-    this.nextLevelButton.classList.add("selectable");
-    this.nextLevelButton.classList.add("option");
-    this.element.appendChild(this.nextLevelButton);
-    this.restartJourneyButton.setAttribute("id", "Retry");
-    this.restartJourneyButton.setAttribute("alt", "Restart from level 1");
-    this.restartJourneyButton.classList.add("selectable");
-    this.restartJourneyButton.classList.add("option");
-    this.restartJourneyButton.textContent = "redo";
-    this.element.appendChild(this.restartJourneyButton);
-    this.restartGameButton.setAttribute("id", "Restart");
-    this.restartGameButton.setAttribute("alt", "Restart game");
-    this.restartGameButton.classList.add("selectable");
-    this.restartGameButton.classList.add("option");
-    this.restartGameButton.textContent = "restart_alt";
-    this.element.appendChild(this.restartGameButton);
   }
 
-  waitforUserSelection(): Promise<NextLevelAction> {
-    return new Promise<NextLevelAction>((resolve) => {
-      this.restartGameButton.addEventListener("click", (event: Event) =>
-        resolve(NextLevelAction.RESTART_GAME)
-      );
-      this.restartJourneyButton.addEventListener("click", (event: Event) =>
-        resolve(NextLevelAction.RESTART_JOURNEY)
-      );
-      this.nextLevelButton.addEventListener("click", (event) =>
-        resolve(NextLevelAction.TRIGGER_NEXT_LEVEL)
-      );
-    });
+  private generateButton(text: string): HTMLElement {
+    var button = document.createElement("div");
+    button.classList.add("selectable");
+    button.classList.add("levelAction");
+    button.textContent = text;
+    return button;
   }
 }
 
@@ -83,12 +90,11 @@ class JourneyBoard extends AppElement {
   levels: Map<number, LevelBoard> = new Map<number, LevelBoard>();
   header = document.createElement("div");
   star = document.createElement("span");
-  scoreboard: ScoreBoard;
+  starNum: number = 0;
 
-  constructor(journey: Journey, scoreboard: ScoreBoard) {
+  constructor(journey: Journey) {
     super();
     this.journey = journey;
-    this.scoreboard = scoreboard;
     this.Hide();
     this.element.classList.add("journeyBoard");
     this.header.textContent = this.journey.symbols[0];
@@ -108,34 +114,44 @@ class JourneyBoard extends AppElement {
 
   Update() {
     this.levels.forEach((levelBoard: LevelBoard) => levelBoard.Update());
-    const starNum = this.element.getElementsByClassName("filledStar").length;
+    this.starNum = this.element.getElementsByClassName("filledStar").length;
     this.star.textContent =
-      starNum.toString() + "/" + this.journey.minimumStarNumber;
-    if (this.journey.levels.length === this.journey.nextLevel) {
-      var allLevelsHaveStars: boolean = true;
-      for (const levelBoard of this.levels.values()) {
-        if (
-          levelBoard.GetAsElement().getElementsByClassName("filledStar")
-            .length === 0
-        ) {
-          allLevelsHaveStars = false;
-        }
-      }
-      if (
-        (starNum >= this.journey.minimumStarNumber! && !allLevelsHaveStars) ||
-        (starNum < this.journey.minimumStarNumber! && allLevelsHaveStars)
-      ) {
-        this.scoreboard.nextLevelButton.onclick = null;
-        this.scoreboard.nextLevelButton.classList.remove("selectable");
-      }
+      this.starNum.toString() + "/" + this.journey.minimumStarNumber;
+  }
+
+  CanAccessNextLevel(): boolean {
+    if (this.journey.nextLevel === undefined) {
+      throw Error("Next level not defined: " + this.journey.nextLevel);
     }
+    const lastPlayedLevel = this.levels.get(this.journey.nextLevel);
+    if (!lastPlayedLevel) {
+      throw Error(
+        "Level does not have LevelBoard: " +
+          this.levels.get(this.journey.nextLevel)
+      );
+    }
+    if (
+      !lastPlayedLevel.GetAsElement().getElementsByClassName("filledStar")
+        .length
+    ) {
+      // Last played level does not have at least one star
+      return false;
+    }
+    if (this.journey.nextLevel !== this.journey.levels.length) {
+      // At least one star and last played lavel is not the last of the journey
+      return true;
+    }
+    if (this.starNum < this.journey.minimumStarNumber!) {
+      return false;
+    }
+    return true;
   }
 }
 
 class LevelBoard extends AppElement {
-  level: Level;
-  levelNumber: HTMLElement = document.createElement("span");
-  levelScore: HTMLElement = document.createElement("span");
+  private level: Level;
+  private levelNumber: HTMLElement = document.createElement("span");
+  private levelScore: HTMLElement = document.createElement("span");
 
   constructor(level: Level) {
     super();

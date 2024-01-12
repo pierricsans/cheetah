@@ -8,6 +8,7 @@ import {
 import {
   DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS,
   FADE_IN_OUT_DURATION_MS,
+  MOUSEDOWN,
   PAUSE_BETWEEN_ANIMATION_CYCLES,
   RATE_OF_ANIMATION_SLOWDOWN,
 } from "./constants.js";
@@ -65,7 +66,7 @@ export class ActiveBead extends Bead {
         if (!element) {
           throw Error("No element found " + element);
         }
-        element.addEventListener("mousedown", (event: Event) => {
+        element.addEventListener(MOUSEDOWN, (event: Event) => {
           resolve(this.person.type || PersonType.UNSPECIFIED);
         });
       }

@@ -25,6 +25,7 @@ import {
 } from "./protos/level_pb.js";
 import { ScoreBoard } from "./src/scoreboard.js";
 import "./static/style.css";
+import { MOUSEDOWN } from "./src/constants.js";
 
 function GetOffset(
   length: number,
@@ -77,7 +78,7 @@ class ValidationElement extends AppElement {
     this.element.classList.add("selectable");
     this.element.classList.remove("notSelectable");
     return new Promise<void>((resolve) => {
-      this.element.addEventListener("click", (event) => resolve());
+      this.element.addEventListener(MOUSEDOWN, (event) => resolve());
     });
   }
 }

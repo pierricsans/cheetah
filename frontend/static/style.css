@@ -90,9 +90,9 @@ body {
   }
 }
 
-#countdown {
+.horizontalChoices {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-around;
 }
 
 @container app-content (min-width: 100px) {
@@ -175,6 +175,7 @@ body {
   font-size: 6cqh;
   min-width: 20px;
   aspect-ratio: 1 /1;
+  border-radius: 10px;
 }
 
 .validAction {

@@ -6,6 +6,7 @@ import {
   MoveDirection,
   MoveSpin,
 } from ".././protos/level_pb.js";
+import { MOUSEDOWN } from "./constants.js";
 
 // Map between MoveDirection and Material Icon name.
 export const DirectionIcons: Map<MoveDirection, string> = new Map([
@@ -139,7 +140,7 @@ export class Option extends AppElement {
 
   initAndWaitForUserSelection(): Promise<void> {
     return new Promise<void>((resolve) => {
-      this.element.addEventListener("mousedown", (event: Event) => {
+      this.element.addEventListener(MOUSEDOWN, (event: Event) => {
         resolve();
       });
     });
