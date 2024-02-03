@@ -53,39 +53,3 @@ module.exports = (_env, options) => {
     mode: 'production',
   };
 };
-
-// const webpack = require('webpack');
-// const path = require('path');
-// const TerserPlugin = require('terser-webpack-plugin');
-// const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-// const CssMinimizerPlugin = require('css-minimizer-webpack-plugin');
-
-// const config = {
-//   module: {
-//     rules: [
-//       {
-//         test: /\.css$/,
-//         use: [
-//           MiniCssExtractPlugin.loader,
-//           'css-loader',
-//         ],
-//       }
-//     ],
-//   },
-//   plugins: [
-//     new MiniCssExtractPlugin({
-//       filename: '[name].[contenthash].css',
-//     }),
-
-//   ],
-//   optimization: {
-//     minimizer: [
-//       new CssMinimizerPlugin(),
-//       new TerserPlugin(),
-//     ],
-//   },
-//   // mode: 'development'
-//   mode: 'production',
-// };
-
-// module.exports = config;
