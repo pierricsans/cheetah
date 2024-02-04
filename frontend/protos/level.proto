@@ -79,6 +79,7 @@ message Position {
 message Move {
   optional MoveDirection direction = 1;
   optional MoveSpin spin = 2;
+  optional MoveGrow grow = 3;
 }
 
 enum MoveDirection {
@@ -103,6 +104,13 @@ enum MoveSpin {
   MOVE_SPIN_NO_SPIN = 1;
   MOVE_SPIN_HALF_CLOCKWISE = 2;
   MOVE_SPIN_HALF_COUNTER_CLOCKWISE = 3;
+}
+
+enum MoveGrow {
+  MOVE_GROW_UNSPECIFIED = 0;
+  MOVE_GROW_NO_GROW = 1;
+  MOVE_GROW_ENLARGE = 2;
+  MOVE_GROW_SHRINK = 3;
 }
 
 enum PersonType {

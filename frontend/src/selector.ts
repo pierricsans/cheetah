@@ -4,6 +4,7 @@ import {
   Level,
   Move,
   MoveDirection,
+  MoveGrow,
   MoveSpin,
 } from ".././protos/level_pb.js";
 import { MOUSEDOWN } from "./constants.js";
@@ -31,6 +32,13 @@ export const SpinIcons: Map<MoveSpin, string> = new Map([
   [MoveSpin.HALF_CLOCKWISE, "rotate_right"],
   [MoveSpin.HALF_COUNTER_CLOCKWISE, "rotate_left"],
 ]);
+
+export const GrowIcons: Map<MoveGrow, string> = new Map([
+  [MoveGrow.NO_GROW, "block"],
+  [MoveGrow.ENLARGE, "open_in_full"],
+  [MoveGrow.SHRINK, "close_fullscreen"],
+
+])
 
 // A selector is the part of the app where the user can input their
 // selection of movements. It generally includes one Option (see below)
@@ -176,6 +184,11 @@ export class ExplicitOption extends Option {
       this.element.setAttribute("alt", this.text);
       this.element.textContent = SpinIcons.get(this.move.spin)!;
     }
+    if (this.move.grow) {
+      this.text += (this.move.grow ? " " : "") + MoveGrow[move?.grow!];
+      this.element.setAttribute("alt", this.text);
+      this.element.textContent = GrowIcons.get(this.move.grow)!;
+    }
   }
 }
 
@@ -202,6 +215,11 @@ export class RandomOption extends Option {
         option.element.textContent +=
           (nextMove.direction ? " " : "") + SpinIcons.get(nextMove.spin)!;
         option.element.setAttribute("alt", MoveSpin[nextMove.spin]);
+      }
+      if (nextMove.grow) {
+        option.element.textContent +=
+          (nextMove.direction ? " " : "") + GrowIcons.get(nextMove.grow)!;
+        option.element.setAttribute("alt", MoveGrow[nextMove.grow]);
       }
       moves.push(nextMove);
     } else {

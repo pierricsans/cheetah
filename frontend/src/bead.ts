@@ -4,6 +4,7 @@ import {
   MoveDirection,
   PersonType,
   MoveSpin,
+  MoveGrow,
 } from ".././protos/level_pb.js";
 import {
   DELAY_BETWEEN_FADE_IN_AND_MAIN_ANIMATION_MS,
@@ -148,6 +149,7 @@ export class ActiveBead extends Bead {
     var bottom = this.movementIncrement * this.person.position?.yOffset!;
     var left = this.movementIncrement * this.person.position?.xOffset!;
     var rotation = 0;
+    var scale = 0;
     var animationOffset = 0;
     const frames: Array<Keyframe> = new Array<Keyframe>();
     frames.push({
@@ -222,11 +224,23 @@ export class ActiveBead extends Bead {
         default:
           throw Error("Unknown spin code: " + move.spin);
       }
+      switch (move.grow) {
+        case MoveGrow.NO_GROW:
+        case MoveGrow.UNSPECIFIED:
+        case undefined:
+          break;
+        case MoveGrow.ENLARGE:
+          scale = scale * 1.3;
+        case MoveGrow.SHRINK:
+          scale = scale / 1.3;
+        default:
+          throw Error("UUnknow gros code: " + move.grow);
+      }
       frames.push({
         offset: Math.min(animationOffset, 1),
         bottom: bottom.toString() + "%",
         left: left.toString() + "%",
-        transform: "translate(-50%,50%) rotate(" + rotation + "deg)",
+        transform: "translate(-50%,50%) rotate(" + rotation + "deg) scale(" + scale +")",
         easing: "ease-in-out",
       });
     }
