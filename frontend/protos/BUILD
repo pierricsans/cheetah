@@ -11,7 +11,7 @@ proto_library(
 
 ts_proto_library(
     name = "level_ts_proto",
-    has_services = False,
+    gen_connect_es = False,
     copy_files = True,
     node_modules = "//:node_modules",
     proto = ":level",
