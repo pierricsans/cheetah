@@ -36,13 +36,13 @@ export class ScoreBoard extends AppElement {
   waitforUserSelection(): Promise<NextLevelAction> {
     this.buttonContainer.textContent = "";
     return new Promise<NextLevelAction>((resolve) => {
-      const restartGame = this.generateButton("restart_alt");
+      const restartGame = this.generateButton("Reset");
       this.buttonContainer.appendChild(restartGame);
       restartGame.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
         resolve(NextLevelAction.RESTART_GAME)
       );
 
-      const restartJourney = this.generateButton("redo");
+      const restartJourney = this.generateButton("Redo");
       this.buttonContainer.appendChild(restartJourney);
       restartJourney.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
         resolve(NextLevelAction.RESTART_JOURNEY)
@@ -54,7 +54,7 @@ export class ScoreBoard extends AppElement {
         throw Error("No current journey");
       }
       if (this.journeyBoards.get(this.game.nextJourney)?.CanAccessNextLevel()) {
-        const nextLevelButton = this.generateButton("skip_next");
+        const nextLevelButton = this.generateButton("Next");
         this.buttonContainer.appendChild(nextLevelButton);
         nextLevelButton.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
           resolve(NextLevelAction.TRIGGER_NEXT_LEVEL)

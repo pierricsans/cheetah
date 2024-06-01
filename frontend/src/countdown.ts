@@ -15,7 +15,7 @@ export class CountDown extends AppElement {
     this.element.classList.add("bottomBar");
     for (var i = 0; i < this.numStars; i++) {
       const star = document.createElement("span");
-      star.classList.add("levelAction");
+      star.classList.add("iconAction");
       star.classList.add("validAction");
       star.textContent = "star_rate";
       this.element.appendChild(star);

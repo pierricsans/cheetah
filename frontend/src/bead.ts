@@ -149,7 +149,7 @@ export class ActiveBead extends Bead {
     var bottom = this.movementIncrement * this.person.position?.yOffset!;
     var left = this.movementIncrement * this.person.position?.xOffset!;
     var rotation = 0;
-    var scale = 0;
+    var scale = 1;
     var animationOffset = 0;
     const frames: Array<Keyframe> = new Array<Keyframe>();
     frames.push({
@@ -230,11 +230,13 @@ export class ActiveBead extends Bead {
         case undefined:
           break;
         case MoveGrow.ENLARGE:
-          scale = scale * 1.3;
+          scale = scale * 1.5;
+          break;
         case MoveGrow.SHRINK:
-          scale = scale / 1.3;
+          scale = scale / 1.5;
+          break;
         default:
-          throw Error("UUnknow gros code: " + move.grow);
+          throw Error("Unknown grow code: " + move.grow);
       }
       frames.push({
         offset: Math.min(animationOffset, 1),

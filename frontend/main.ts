@@ -72,11 +72,13 @@ class ValidationElement extends AppElement {
     this.element.classList.add("notSelectable");
     this.element.setAttribute("id", "validateButtonContainer");
     this.element.classList.add("bottomBar");
+    this.element.textContent = "Pick moves";
   }
 
   enableButtonAndWaitForClick(): Promise<void> {
     this.element.classList.add("selectable");
     this.element.classList.remove("notSelectable");
+    this.element.textContent = "Go spot!";
     return new Promise<void>((resolve) => {
       this.element.addEventListener(MOUSEDOWN, (event) => resolve());
     });

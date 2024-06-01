@@ -94,6 +94,7 @@ body {
 .horizontalChoices {
   display: flex;
   justify-content: space-around;
+  align-items: center;
 }
 
 @container app-content (min-width: 100px) {
@@ -172,6 +173,12 @@ body {
 }
 
 .levelAction {
+  min-width: 20px;
+  padding: 3px;
+  border-radius: 10px;
+}
+
+.iconAction {
   font-family: "Material Symbols Outlined";
   font-size: 6cqh;
   min-width: 20px;

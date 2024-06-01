@@ -519,28 +519,28 @@ export const GAME: Game = new Game({
       theme: Theme.BEACH,
       allowedMoves: [
         new Move({
-          direction: MoveDirection.NORTH,
+          spin: MoveSpin.HALF_CLOCKWISE,
           grow: MoveGrow.NO_GROW,
         }),
         new Move({
-          direction: MoveDirection.SOUTH,
-          grow: MoveGrow.ENLARGE,
-        }),
-        new Move({
-          direction: MoveDirection.NORTH,
+          spin: MoveSpin.HALF_CLOCKWISE,
           grow: MoveGrow.SHRINK,
         }),
         new Move({
-          direction: MoveDirection.SOUTH,
+          spin: MoveSpin.HALF_CLOCKWISE,
+          grow: MoveGrow.ENLARGE,
+        }),
+        new Move({
+          spin: MoveSpin.HALF_COUNTER_CLOCKWISE,
           grow: MoveGrow.NO_GROW,
         }),
         new Move({
-          direction: MoveDirection.NORTH,
-          grow: MoveGrow.ENLARGE,
+          spin: MoveSpin.HALF_COUNTER_CLOCKWISE,
+          grow: MoveGrow.SHRINK,
         }),
         new Move({
-          direction: MoveDirection.SOUTH,
-          grow: MoveGrow.SHRINK,
+          spin: MoveSpin.HALF_COUNTER_CLOCKWISE,
+          grow: MoveGrow.ENLARGE,
         }),
       ],
       levels: [

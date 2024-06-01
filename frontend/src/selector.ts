@@ -213,12 +213,12 @@ export class RandomOption extends Option {
       }
       if (nextMove.spin) {
         option.element.textContent +=
-          (nextMove.direction ? " " : "") + SpinIcons.get(nextMove.spin)!;
+          (option.element.textContent ? " " : "") + SpinIcons.get(nextMove.spin)!;
         option.element.setAttribute("alt", MoveSpin[nextMove.spin]);
       }
       if (nextMove.grow) {
         option.element.textContent +=
-          (nextMove.direction ? " " : "") + GrowIcons.get(nextMove.grow)!;
+          (option.element.textContent ? " " : "") + GrowIcons.get(nextMove.grow)!;
         option.element.setAttribute("alt", MoveGrow[nextMove.grow]);
       }
       moves.push(nextMove);

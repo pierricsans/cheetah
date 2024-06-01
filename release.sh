@@ -8,6 +8,7 @@ COMPILE_ONLY=0                    # This is the default. Simply compiles everyth
 COMPILE_AND_TEST=1                # Does compile only and then runs all tests
 UPDATE_COMPILE_AND_TEST=2         # Does a fresh pnpm update in addition
 UPDATE_COMPILE_TEST_AND_RELEASE=3 # Does everything and then pushes to server
+COMPILE_TEST_AND_RELEASE=4        # Compiles, test then pushes to server
 
 while getopts ":o:" opt; do
   case $opt in
@@ -35,6 +36,8 @@ elif [ "${OPERATION}" == "u" ]; then
   _OPERATION=${UPDATE_COMPILE_AND_TEST}
 elif [ "${OPERATION}" == "r" ]; then
   _OPERATION=${UPDATE_COMPILE_TEST_AND_RELEASE}
+elif [ "${OPERATION}" == "q" ]; then
+  _OPERATION=${COMPILE_TEST_AND_RELEASE}
 else
   echo "Unknown operation ${OPERATION}. Exiting"
   exit 1
@@ -48,7 +51,8 @@ fi
 cmd+="bazel build -c opt //... "
 cmd+="&& bazel run -c opt //frontend/protos:copy_files "
 cmd+="&& bazel run -c opt //frontend/protos:level_ts_proto.copy "
-if [ ${_OPERATION} == ${UPDATE_COMPILE_TEST_AND_RELEASE} ]; then
+if [ ${_OPERATION} == ${UPDATE_COMPILE_TEST_AND_RELEASE} ] ||
+  [ ${_OPERATION} == ${COMPILE_TEST_AND_RELEASE} ]; then
   cmd+="&& cp -R bazel-bin/frontend/bundle/* /Volumes/web/ "
 fi
 echo "Will execute $cmd"
