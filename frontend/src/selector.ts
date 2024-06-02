@@ -86,7 +86,9 @@ export class Selector extends AppElement {
       this.element.appendChild(option.GetAsElement());
       this.options.push(option);
     }
-    const firstOption = this.options.find((option) => option.state == OptionState.Pending);
+    const firstOption = this.options.find(
+      (option) => option.state == OptionState.Pending
+    );
     if (firstOption) {
       firstOption.makeSelectable().then(() => this.setCurrentOption());
     }
@@ -103,7 +105,7 @@ export class Option extends AppElement {
   constructor(moves: Array<Move>) {
     super();
     this.moves = moves;
-    shuffleArray(this.moves)
+    shuffleArray(this.moves);
     this.state = OptionState.Pending;
     this.element.classList.add("option");
     this.element.classList.add("notSelectable");
@@ -146,7 +148,8 @@ export class Option extends AppElement {
     option.element.textContent = "";
     if (move.direction) {
       option.element.textContent +=
-       (option.element.textContent ? " " : "") + DirectionIcons.get(move.direction)!;
+        (option.element.textContent ? " " : "") +
+        DirectionIcons.get(move.direction)!;
       option.element.setAttribute("alt", MoveDirection[move.direction]);
     }
     if (move.spin) {
