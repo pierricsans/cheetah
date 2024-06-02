@@ -3,12 +3,8 @@ import { setTheme } from "./src/theme.js";
 import { GAME } from "./src/levels.js";
 import { GridInst } from "./src/grid.js";
 import {
-  DirectionIcons,
   Option,
-  RandomOption,
   RandomSelector,
-  Selector,
-  SpinIcons,
 } from "./src/selector.js";
 import {
   Game,
@@ -69,16 +65,21 @@ function GetOffset(
 class ValidationElement extends AppElement {
   constructor() {
     super();
-    this.element.classList.add("notSelectable");
     this.element.setAttribute("id", "validateButtonContainer");
     this.element.classList.add("bottomBar");
-    this.element.textContent = "Pick moves";
+  }
+
+  listenforPickAMove(): Promise<void> {
+    this.element.classList.add("selectable");
+    this.element.textContent = "Pick!";
+    return new Promise<void>((resolve) => {
+      this.element.addEventListener(MOUSEDOWN, (event) => resolve());
+    });
   }
 
   enableButtonAndWaitForClick(): Promise<void> {
     this.element.classList.add("selectable");
-    this.element.classList.remove("notSelectable");
-    this.element.textContent = "Go spot!";
+    this.element.textContent = "Play!";
     return new Promise<void>((resolve) => {
       this.element.addEventListener(MOUSEDOWN, (event) => resolve());
     });
@@ -92,7 +93,7 @@ export class TapTheDot {
   private scoreboard: ScoreBoard;
   private readonly outContainer: HTMLElement = document.body;
   private container: HTMLElement = document.createElement("div");
-  private selector: Selector;
+  private selector: RandomSelector;
   private selection: HTMLElement = document.createElement("div");
   private validateElement: ValidationElement;
   private grid: GridInst;
@@ -113,7 +114,7 @@ export class TapTheDot {
     );
     this.validateElement = new ValidationElement();
     this.scoreboard = new ScoreBoard(this.game);
-    this.selector = new Selector(this.journey, this.level);
+    this.selector = new RandomSelector(this.journey, this.level);
     this.grid = new GridInst(this.journey, this.level);
   }
 
@@ -129,15 +130,11 @@ export class TapTheDot {
     );
     this.container.setAttribute("id", "selectorContainer");
     this.container.classList.add("banner");
-    if (this.level.movesAreRandomlyGenerated) {
-      this.selector = new RandomSelector(this.journey, this.level);
-    } else {
-      this.selector = new Selector(this.journey, this.level);
-    }
+    this.validateElement = new ValidationElement();
+    this.selector = new RandomSelector(this.journey, this.level);
     this.WaitForUserSelection();
     this.AppendSelector();
     this.GenerateSelectionElement();
-    this.validateElement = new ValidationElement();
     this.grid = new GridInst(this.journey, this.level);
     this.container.appendChild(this.validateElement.GetAsElement());
     setTheme(this.journey);
@@ -453,14 +450,11 @@ export class TapTheDot {
   }
 
   private WaitForUserSelection() {
-    for (const promise of this.selector.WaitAndRegisterSelections()) {
-      promise.then((option: Option) => {
-        this.AddSelectedOption(option);
-      });
-      promise.catch(() => {
-        console.log("No more selection to make");
-      });
-    }
+    this.validateElement.listenforPickAMove().then(() => {
+      this.AddSelectedOption(this.selector.getOption());
+    }).catch(() => {
+      console.log("No more selection to make");
+    });
   }
 
   private AddSelectedOption(option: Option) {
@@ -494,11 +488,7 @@ export class TapTheDot {
         this.Validate();
       });
     } else {
-      // For RandomOptions, we need to re generate a new Promise for the
-      // next user selection.
-      if (option instanceof RandomOption) {
-        this.WaitForUserSelection();
-      }
+      this.WaitForUserSelection();
     }
   }
 
@@ -592,7 +582,7 @@ function getGame(): Game {
   if (!storedGameStr) {
     return GAME;
   }
-  const storedGame = new Game().fromJsonString(storedGameStr);
+  const storedGame = new Game().fromJsonString(storedGameStr, {ignoreUnknownFields: true});
   var nextJourney = storedGame.nextJourney;
   if (!nextJourney) {
     nextJourney = 1;

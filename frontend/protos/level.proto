@@ -31,10 +31,6 @@ message Level {
   // The name of the grid that this level uses.
   optional Grid grid = 5;
 
-  // Whether the indigenous moves are randomly generated
-  // (ie not chosen by the user).
-  optional bool moves_are_randomly_generated = 6;
-
   // Number of milliseconds per move.
   // The total trajectory duration will be time_per_move_ms * moves.
   optional int32 time_per_move_ms = 7;
@@ -45,6 +41,8 @@ message Level {
 
   // Score obtained by the user. Unset if level not completed.
   optional int32 score = 9;
+
+  reserved 6;
 }
 
 message Grid {

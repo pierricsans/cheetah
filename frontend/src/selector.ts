@@ -40,10 +40,9 @@ export const GrowIcons: Map<MoveGrow, string> = new Map([
 
 ])
 
-// A selector is the part of the app where the user can input their
-// selection of movements. It generally includes one Option (see below)
-// for each direction (e.g. UP, DOWN, ...).
-export class Selector extends AppElement {
+// Instead of the user clicking on several options, a RandomSelector is
+// one where an Option is selected at random as the user clicks on it.
+export class RandomSelector extends AppElement {
   protected journey: Journey;
   protected level: Level;
   protected options: Array<Option> = new Array<Option>();
@@ -58,66 +57,8 @@ export class Selector extends AppElement {
     this.optionsContainer.setAttribute("id", "optionsContainer");
     this.GenerateOptions();
   }
-
   protected GenerateOptions() {
-    this.element.appendChild(this.optionsContainer);
-    for (const move of this.journey.allowedMoves) {
-      const option = new ExplicitOption(move);
-      this.options.push(option);
-      this.optionsContainer.appendChild(option.GetAsElement());
-    }
-  }
-
-  // Handles the user selection event:
-  //   - Registers selection to the App
-  //   - Makes this and/or option selectable or not
-  WaitAndRegisterSelections(): Array<Promise<Option>> {
-    const promises: Array<Promise<Option>> = [];
-    for (const option of this.options) {
-      promises.push(
-        new Promise<Option>((resolve, reject) => {
-          option.initAndWaitForUserSelection().then(() => {
-            if (this.acceptsFurtherSelections) {
-              option.MakeUnselectable();
-              var atLeastOneSelectable = false;
-              for (const option of this.options) {
-                if (option.IsSelectable()) {
-                  atLeastOneSelectable = true;
-                }
-              }
-              if (!atLeastOneSelectable) {
-                for (const option of this.options) {
-                  option.MakeSelectable();
-                }
-              }
-              resolve(option);
-            } else {
-              reject();
-            }
-          });
-        })
-      );
-    }
-    return promises;
-  }
-
-  // Makes all options unselectable.
-  // Intended to be called once the entire trajectory has been decided.
-  MakeAllOptionsUnselectable() {
-    this.acceptsFurtherSelections = false;
-    for (const option of this.options) {
-      if (option.IsSelectable()) {
-        option.MakeUnselectable();
-      }
-    }
-  }
-}
-
-// Instead of the user clicking on several options, a RandomSelector is
-// one where an Option is selected at random as the user clicks on it.
-export class RandomSelector extends Selector {
-  protected GenerateOptions() {
-    const option = new RandomOption(this.journey.allowedMoves);
+    const option = new Option(this.journey.allowedMoves);
     this.optionsContainer.appendChild(option.GetAsElement());
     this.element.appendChild(this.optionsContainer);
     this.options.push(option);
@@ -133,17 +74,36 @@ export class RandomSelector extends Selector {
       }),
     ];
   }
+
+  getOption(): Option {
+    return this.options[0]!;
+  }
+
+  // Makes all options unselectable.
+  // Intended to be called once the entire trajectory has been decided.
+  MakeAllOptionsUnselectable() {
+    this.acceptsFurtherSelections = false;
+    for (const option of this.options) {
+      if (option.IsSelectable()) {
+        option.MakeUnselectable();
+      }
+    }
+  }
 }
 
 export class Option extends AppElement {
   move: Move = new Move();
+  private moves: Array<Move>;
   protected text: string = "";
+  private timerId: ReturnType<typeof setInterval> | undefined = undefined;
 
-  constructor() {
+  constructor(moves: Array<Move>) {
     super();
+    this.moves = moves;
     this.element.classList.add("option");
     this.element.classList.add("selectable");
     this.element.setAttribute("tabindex", "0");
+    this.timerId = setInterval(this.updateText, 100, this.moves, this);
   }
 
   initAndWaitForUserSelection(): Promise<void> {
@@ -160,49 +120,19 @@ export class Option extends AppElement {
   }
 
   MakeUnselectable() {
-    this.element.classList.add("notSelectable");
     this.element.classList.remove("selectable");
+    this.element.classList.add("notSelectable");
+    this.move = new Move();
+    this.element.textContent = "";
+    this.element.removeAttribute("alt");
+    clearInterval(this.timerId);
   }
 
   IsSelectable(): boolean {
     return this.element.classList.contains("selectable");
   }
-}
 
-export class ExplicitOption extends Option {
-  constructor(move: Move) {
-    super();
-    this.move = move;
-    if (this.move.direction) {
-      this.text += MoveDirection[move?.direction!];
-      this.element.setAttribute("alt", this.text);
-      this.element.textContent += DirectionIcons.get(this.move.direction)!;
-    }
-    if (this.move.spin) {
-      this.text +=
-        (this.move.direction ? " " : "") + MoveDirection[move?.spin!];
-      this.element.setAttribute("alt", this.text);
-      this.element.textContent = SpinIcons.get(this.move.spin)!;
-    }
-    if (this.move.grow) {
-      this.text += (this.move.grow ? " " : "") + MoveGrow[move?.grow!];
-      this.element.setAttribute("alt", this.text);
-      this.element.textContent = GrowIcons.get(this.move.grow)!;
-    }
-  }
-}
-
-export class RandomOption extends Option {
-  private moves: Array<Move>;
-  private timerId: ReturnType<typeof setInterval> | undefined = undefined;
-
-  constructor(moves: Array<Move>) {
-    super();
-    this.moves = moves;
-    this.timerId = setInterval(this.updateText, 100, this.moves, this);
-  }
-
-  updateText(moves: Array<Move>, option: RandomOption) {
+  updateText(moves: Array<Move>, option: Option) {
     const nextMove = moves.shift();
     if (nextMove) {
       option.move = nextMove;
@@ -225,14 +155,5 @@ export class RandomOption extends Option {
     } else {
       console.log("No next move: " + moves);
     }
-  }
-
-  MakeUnselectable() {
-    this.element.classList.remove("selectable");
-    this.element.classList.add("notSelectable");
-    this.move = new Move();
-    this.element.textContent = "";
-    this.element.removeAttribute("alt");
-    clearInterval(this.timerId);
   }
 }
