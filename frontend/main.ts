@@ -4,7 +4,7 @@ import { GAME } from "./src/levels.js";
 import { GridInst } from "./src/grid.js";
 import {
   Option,
-  RandomSelector,
+  Selector,
 } from "./src/selector.js";
 import {
   Game,
@@ -63,15 +63,18 @@ function GetOffset(
 }
 
 class ValidationElement extends AppElement {
+  textElement = document.createElement("span");
   constructor() {
     super();
     this.element.setAttribute("id", "validateButtonContainer");
     this.element.classList.add("bottomBar");
+    this.element.classList.add("horizontalChoices");
+    this.element.appendChild(this.textElement);
   }
 
   listenforPickAMove(): Promise<void> {
     this.element.classList.add("selectable");
-    this.element.textContent = "Pick!";
+    this.textElement.textContent = "Pick!";
     return new Promise<void>((resolve) => {
       this.element.addEventListener(MOUSEDOWN, (event) => resolve());
     });
@@ -79,7 +82,7 @@ class ValidationElement extends AppElement {
 
   enableButtonAndWaitForClick(): Promise<void> {
     this.element.classList.add("selectable");
-    this.element.textContent = "Play!";
+    this.textElement.textContent = "Play!";
     return new Promise<void>((resolve) => {
       this.element.addEventListener(MOUSEDOWN, (event) => resolve());
     });
@@ -93,8 +96,7 @@ export class TapTheDot {
   private scoreboard: ScoreBoard;
   private readonly outContainer: HTMLElement = document.body;
   private container: HTMLElement = document.createElement("div");
-  private selector: RandomSelector;
-  private selection: HTMLElement = document.createElement("div");
+  private selector: Selector;
   private validateElement: ValidationElement;
   private grid: GridInst;
   private allTrajectories: Array<Trajectory> = new Array<Trajectory>();
@@ -114,14 +116,13 @@ export class TapTheDot {
     );
     this.validateElement = new ValidationElement();
     this.scoreboard = new ScoreBoard(this.game);
-    this.selector = new RandomSelector(this.journey, this.level);
+    this.selector = new Selector(this.journey, this.level);
     this.grid = new GridInst(this.journey, this.level);
   }
 
   Init() {
     this.cleanup();
     this.StoreGameAsLocalStorage();
-    this.selection.hidden = false;
     this.journey = new Journey().fromJsonString(
       getJourney(this.game).toJsonString()
     );
@@ -131,10 +132,10 @@ export class TapTheDot {
     this.container.setAttribute("id", "selectorContainer");
     this.container.classList.add("banner");
     this.validateElement = new ValidationElement();
-    this.selector = new RandomSelector(this.journey, this.level);
+    this.selector = new Selector(this.journey, this.level);
+    this.selector.GenerateSelectionElement();
     this.WaitForUserSelection();
     this.AppendSelector();
-    this.GenerateSelectionElement();
     this.grid = new GridInst(this.journey, this.level);
     this.container.appendChild(this.validateElement.GetAsElement());
     setTheme(this.journey);
@@ -153,8 +154,8 @@ export class TapTheDot {
   }
 
   private UpdateAndShowScoreBoard() {
-    this.selection.hidden = true;
     this.grid.Hide();
+    this.selector.Hide();
     getLevel(getJourney(this.game), this.journey.nextLevel || 1).score =
       this.level.score;
     this.StoreGameAsLocalStorage();
@@ -432,57 +433,23 @@ export class TapTheDot {
     this.container.appendChild(this.selector.GetAsElement());
   }
 
-  private GenerateSelectionElement() {
-    this.selection.setAttribute("id", "selection");
-    this.container.appendChild(this.selection);
-    var isSelectable = true;
-    for (var i = 0; i < this.level.numMoves!; i++) {
-      const emptyOption = document.createElement("span");
-      emptyOption.classList.add("option");
-      if (isSelectable) {
-        emptyOption.classList.add("nextSelectable");
-        isSelectable = false;
-      } else {
-        emptyOption.classList.add("notSelectable");
-      }
-      this.selection.appendChild(emptyOption);
-    }
-  }
-
   private WaitForUserSelection() {
     this.validateElement.listenforPickAMove().then(() => {
-      this.AddSelectedOption(this.selector.getOption());
+      const option = this.selector.setCurrentOption();
+      this.AddSelectedOption(option);
     }).catch(() => {
-      console.log("No more selection to make");
+      this.validateElement.enableButtonAndWaitForClick().then(() => {
+        this.FillLevel();
+        this.Validate();
+      });
     });
   }
 
   private AddSelectedOption(option: Option) {
-    const selectable =
-      this.selection.getElementsByClassName("nextSelectable")[0];
-    if (!selectable) {
-      // All moves in the trajectory have been filled.
-      // This can happen when
-      return;
-    }
-    selectable.classList.add("selected");
-    selectable.classList.remove("nextSelectable");
-    if (!option.move) {
-      throw Error("No move was attached to Option: " + option);
-    }
-    selectable.textContent = option.GetAsElement().textContent;
-    const nextSelectable =
-      this.selection.getElementsByClassName("notSelectable")[0];
-    if (nextSelectable !== undefined) {
-      nextSelectable.classList.add("nextSelectable");
-      nextSelectable.classList.remove("notSelectable");
-    }
-    this.level.grid?.indigenous?.trajectory?.moves.push(option.move);
     if (
       this.level.grid?.indigenous?.trajectory?.moves?.length! ===
       this.level.numMoves
     ) {
-      this.selector.MakeAllOptionsUnselectable();
       this.validateElement.enableButtonAndWaitForClick().then(() => {
         this.FillLevel();
         this.Validate();
@@ -494,13 +461,8 @@ export class TapTheDot {
 
   // Object this.level has been filled in with moves and initial positions.
   private Validate() {
-    this.selector.Hide();
-    this.HideValidateElement();
-    this.BuildGrid();
-  }
-
-  private HideValidateElement() {
     this.validateElement.Hide();
+    this.BuildGrid();
   }
 
   private BuildGrid() {
