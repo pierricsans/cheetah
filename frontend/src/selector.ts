@@ -122,7 +122,7 @@ export class Option extends AppElement {
   }
 
   makeSelectable(): Promise<void> {
-    this.timerId = setInterval(this.displayNextMove, 150, this.moves, this);
+    this.timerId = setInterval(this.displayNextMove, 60, this.moves, this);
     this.state = OptionState.Selectable;
     this.element.classList.add("nextSelectable");
     this.element.classList.add("selectable");
