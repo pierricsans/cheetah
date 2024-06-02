@@ -81,15 +81,14 @@ export class Selector extends AppElement {
   }
 
   GenerateSelectionElement() {
-
     for (var i = 0; i < this.level.numMoves!; i++) {
       const option = new Option(this.journey.allowedMoves);
       this.element.appendChild(option.GetAsElement());
       this.options.push(option);
     }
-    const firsOption = this.options.find((option) => option.state == OptionState.Pending);
-    if (firsOption) {
-      firsOption.makeSelectable().then(() => this.setCurrentOption());
+    const firstOption = this.options.find((option) => option.state == OptionState.Pending);
+    if (firstOption) {
+      firstOption.makeSelectable().then(() => this.setCurrentOption());
     }
   }
 }
@@ -109,7 +108,6 @@ export class Option extends AppElement {
     this.element.classList.add("option");
     this.element.classList.add("notSelectable");
     this.element.setAttribute("tabindex", "0");
-    this.timerId = setInterval(this.displayNextMove, 50, this.moves, this);
   }
 
   finalizeOption() {
@@ -122,6 +120,7 @@ export class Option extends AppElement {
   }
 
   makeSelectable(): Promise<void> {
+    this.timerId = setInterval(this.displayNextMove, 150, this.moves, this);
     this.state = OptionState.Selectable;
     this.element.classList.add("nextSelectable");
     this.element.classList.add("selectable");
@@ -146,7 +145,8 @@ export class Option extends AppElement {
   setText(option: Option, move: Move) {
     option.element.textContent = "";
     if (move.direction) {
-      option.element.textContent += DirectionIcons.get(move.direction)!;
+      option.element.textContent +=
+       (option.element.textContent ? " " : "") + DirectionIcons.get(move.direction)!;
       option.element.setAttribute("alt", MoveDirection[move.direction]);
     }
     if (move.spin) {
