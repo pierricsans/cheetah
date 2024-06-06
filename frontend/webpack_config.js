@@ -20,7 +20,7 @@ module.exports = (_env, options) => {
     },
     plugins: [
       new MiniCssExtractPlugin({
-        filename: "[name].[contenthash].css",
+        filename: "[name].css",
       }),
       new CleanWebpackPlugin(),
       new HtmlWebpackPlugin({
@@ -48,7 +48,17 @@ module.exports = (_env, options) => {
       }),
     ],
     optimization: {
-      minimizer: [new CssMinimizerPlugin(), new TerserPlugin()],
+      minimizer: [new CssMinimizerPlugin(), new TerserPlugin({
+        terserOptions: {
+          module: true,
+          toplevel: true,
+          mangle: {
+            eval: true,
+            module: true,
+            toplevel: true
+          }
+        }
+      })],
     },
     mode: 'production',
   };

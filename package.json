@@ -5,6 +5,7 @@
     "@bufbuild/protoc-gen-es": "latest",
     "@types/node": "latest",
     "babel-loader": "latest",
+    "clean-css": "latest",
     "clean-webpack-plugin": "latest",
     "css-loader": "latest",
     "css-minimizer-webpack-plugin": "latest",
