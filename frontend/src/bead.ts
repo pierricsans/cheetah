@@ -320,7 +320,12 @@ export class ActiveBead extends Bead {
   }
 }
 
-class InactiveBead extends Bead {}
+class InactiveBead extends Bead {
+  constructor(person: Person, level: Level) {
+    super(person, level);
+    this.element.classList.add("inactiveBead");
+  }
+}
 
 export interface endOfCycleParams {
   iterationNum: number;

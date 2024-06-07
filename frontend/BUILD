@@ -20,7 +20,6 @@ ts_project(
         "//frontend/src:levels",
         "//frontend/src:scoreboard",
         "//frontend/src:selector",
-        "//frontend/src:theme",
         "//frontend/src:util",
     ],
 )

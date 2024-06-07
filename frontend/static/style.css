@@ -7,18 +7,14 @@
   --ball-opacity: 90%;
   --outer-box-border-thickness: 2vw;
   --body-background: #e9c46a;
-  --app-background: #264653;
-  --primary-color: #2a9d8f;
-  --secondary-color: #e76f51;
-  --tertiary-color: #f4a261;
+  --app-background: #dce7ec;
 }
 
 @font-face {
-  font-family: "Material Symbols Outlined";
+  font-family: "Noto Color Emoji", sans-serif;
   font-style: normal;
   font-weight: 400;
-  src: url(https://fonts.gstatic.com/s/materialsymbolsoutlined/v156/kJF1BvYX7BgnkSrUwT8OhrdQw4oELdPIeeII9v6oDMzByHX9rA6RzaxHMPdY43zj-jCxv3fzvRNU22ZXGJpEpjC_1v-p_4MrImHCIJIZrDCvHOejbd5zrDAt.woff2)
-    format("woff2");
+  src: url("https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap");
 }
 
 body {
@@ -35,8 +31,6 @@ body {
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   animation-direction: alternate;
-  background-color: var(--primary-color);
-  color: var(--app-background);
   cursor: pointer;
 }
 
@@ -44,18 +38,6 @@ body {
   border-color: var(--secondary-color);
   background-color: var(--secondary-color);
   cursor: default;
-}
-
-.selected {
-  border-color: var(--body-background);
-  background-color: var(--body-background);
-  color: var(--app-background);
-}
-
-.nextSelectable {
-  border-color: var(--body-background);
-  background-color: var(--body-background);
-  color: var(--app-background);
 }
 
 @keyframes grow {
@@ -77,15 +59,12 @@ body {
 @container app-content (min-width: 100px) {
   .option {
     display: inline-block;
-    border-style: solid;
-    border-width: 3px;
     margin: 2px;
     width: var(--cell-size);
     aspect-ratio: 1 /1;
-    font-size: var(--cell-size);
-    font-family: "Material Symbols Outlined";
+    font-size: var(--ball-size);
+    font-family: "Noto Color Emoji", sans-serif;
     line-height: 1;
-    border-radius: 6px;
   }
 
   #selector {
@@ -121,12 +100,12 @@ body {
     width: 90cqw;
     border-radius: 6px;
     height: 7cqh;
-    font-size: 5cqh;
+    font-size: var(--ball-size);
   }
 }
 
-[hidden]{
-  display:none;
+[hidden] {
+  display: none;
 }
 
 #starCounter {
@@ -135,7 +114,7 @@ body {
 }
 
 .journeyBoardHeader {
-  font-family: "Material Symbols Outlined";
+  font-family: "Noto Color Emoji", sans-serif;
 }
 
 .filledStar {
@@ -143,11 +122,11 @@ body {
 }
 
 .emptyStar {
-  color: var(--secondary-color);
+  visibility: hidden;
 }
 
 .levelBoard-score {
-  font-family: "Material Symbols Outlined";
+  font-family: "Noto Color Emoji", sans-serif;
 }
 
 .levelBoard-number {
@@ -161,8 +140,8 @@ body {
 }
 
 .iconAction {
-  font-family: "Material Symbols Outlined";
-  font-size: 6cqh;
+  font-family: "Noto Color Emoji", sans-serif;
+  font-size: var(--ball-size);
   min-width: 20px;
   aspect-ratio: 1 /1;
   border-radius: 6px;
@@ -175,10 +154,6 @@ body {
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
   animation-direction: alternate;
-}
-
-.invalidAction {
-  color: var(--secondary-color);
 }
 
 #Restart {
@@ -235,7 +210,7 @@ body {
 .bead {
   opacity: var(--ball-opacity);
   border-radius: 6px;
-  font-family: "Material Symbols Outlined";
+  font-family: "Noto Color Emoji", sans-serif;
   font-size: var(--ball-size);
   transform-origin: center center;
 }
@@ -247,4 +222,9 @@ body {
 #inactiveBeadsContainer {
   display: flex;
   justify-content: space-around;
+  align-items: stretch;
+}
+
+.inactiveBead {
+  font-size: calc(var(--ball-size) / 2);
 }

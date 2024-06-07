@@ -36,17 +36,6 @@ export class ScoreBoard extends AppElement {
   waitforUserSelection(): Promise<NextLevelAction> {
     this.buttonContainer.textContent = "";
     return new Promise<NextLevelAction>((resolve) => {
-      const restartGame = this.generateButton("Reset");
-      this.buttonContainer.appendChild(restartGame);
-      restartGame.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
-        resolve(NextLevelAction.RESTART_GAME)
-      );
-
-      const restartJourney = this.generateButton("Redo");
-      this.buttonContainer.appendChild(restartJourney);
-      restartJourney.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
-        resolve(NextLevelAction.RESTART_JOURNEY)
-      );
       if (!this.game.nextJourney) {
         throw Error("No next journey");
       }
@@ -58,7 +47,20 @@ export class ScoreBoard extends AppElement {
         this.buttonContainer.appendChild(nextLevelButton);
         nextLevelButton.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
           resolve(NextLevelAction.TRIGGER_NEXT_LEVEL)
+      );
+    } else {
+        const restartGame = this.generateButton("Reset");
+        this.buttonContainer.appendChild(restartGame);
+        restartGame.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
+          resolve(NextLevelAction.RESTART_GAME)
         );
+  
+        const restartJourney = this.generateButton("Retry");
+        this.buttonContainer.appendChild(restartJourney);
+        restartJourney.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
+          resolve(NextLevelAction.RESTART_JOURNEY)
+        );
+
       }
     });
   }
@@ -188,7 +190,7 @@ class LevelBoard extends AppElement {
   private setLevelScore() {
     for (var i = 0; i < TOTAL_NUM_STARS; i++) {
       const star = document.createElement("span");
-      star.textContent = "star_rate";
+      star.textContent = "⭐";
       this.levelScore.appendChild(star);
     }
   }

@@ -5,19 +5,6 @@ package(default_visibility = [
 ])
 
 ts_project(
-    name = "theme",
-    srcs = ["theme.ts"],
-    declaration = True,
-    declaration_map = True,
-    transpiler = "tsc",
-    tsconfig = "//:tsconfig",
-    deps = [
-        "//:node_modules/@bufbuild/protobuf",
-        "//frontend/protos:level_ts_proto",
-    ],
-)
-
-ts_project(
     name = "bead",
     srcs = ["bead.ts"],
     declaration = True,

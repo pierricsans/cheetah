@@ -1,5 +1,4 @@
 import { AppElement, shuffleArray } from "./src/util.js";
-import { setTheme } from "./src/theme.js";
 import { GAME } from "./src/levels.js";
 import { GridInst } from "./src/grid.js";
 import {
@@ -74,7 +73,7 @@ class ValidationElement extends AppElement {
 
   listenforPickAMove(): Promise<void> {
     this.element.classList.add("selectable");
-    this.textElement.textContent = "Pick!";
+    this.textElement.textContent = "spin";
     return new Promise<void>((resolve) => {
       this.element.addEventListener(MOUSEDOWN, (event) => resolve());
     });
@@ -82,7 +81,7 @@ class ValidationElement extends AppElement {
 
   enableButtonAndWaitForClick(): Promise<void> {
     this.element.classList.add("selectable");
-    this.textElement.textContent = "Play!";
+    this.textElement.textContent = "spot";
     return new Promise<void>((resolve) => {
       this.element.addEventListener(MOUSEDOWN, (event) => resolve());
     });
@@ -138,7 +137,6 @@ export class TapTheDot {
     this.AppendSelector();
     this.grid = new GridInst(this.journey, this.level);
     this.container.appendChild(this.validateElement.GetAsElement());
-    setTheme(this.journey);
     this.GenerateSymbols();
     this.scoreboard = new ScoreBoard(this.game);
     this.container.appendChild(this.scoreboard.GetAsElement());

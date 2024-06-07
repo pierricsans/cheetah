@@ -17,7 +17,7 @@ export class CountDown extends AppElement {
       const star = document.createElement("span");
       star.classList.add("iconAction");
       star.classList.add("validAction");
-      star.textContent = "star_rate";
+      star.textContent = "🌟";
       this.element.appendChild(star);
       this.stars.push(star);
     }
@@ -25,11 +25,13 @@ export class CountDown extends AppElement {
 
   RemoveStar(playbackRate: number): Promise<boolean> {
     return new Promise((resolve) => {
+      this.stars[this.numStars - 1].textContent = "⭐";
       const animation = this.FadeOutStar(this.stars[this.numStars - 1]);
       animation.playbackRate = playbackRate;
       animation.onfinish = (event) => {
-        this.stars[this.numStars - 1].classList.remove("validAction");
-        this.stars[this.numStars - 1].classList.add("invalidAction");
+        const star = this.stars[this.numStars - 1];
+        star.classList.remove("validAction");
+        star.classList.add("emptyStar");
         this.numStars -= 1;
         resolve(this.numStars > 0);
       };

@@ -18,31 +18,31 @@ enum OptionState {
 // Map between MoveDirection and Material Icon name.
 export const DirectionIcons: Map<MoveDirection, string> = new Map([
   [MoveDirection.NO_MOVE, "block"],
-  [MoveDirection.NORTH, "north"],
-  [MoveDirection.SOUTH, "south"],
-  [MoveDirection.WEST, "west"],
-  [MoveDirection.EAST, "east"],
-  [MoveDirection.SOUTH_EAST, "south_east"],
-  [MoveDirection.SOUTH_WEST, "south_west"],
-  [MoveDirection.NORTH_WEST, "north_west"],
-  [MoveDirection.NORTH_EAST, "north_east"],
-  [MoveDirection.DOUBLE_NORTH, "keyboard_double_arrow_up"],
-  [MoveDirection.DOUBLE_SOUTH, "keyboard_double_arrow_down"],
-  [MoveDirection.DOUBLE_WEST, "keyboard_double_arrow_left"],
-  [MoveDirection.DOUBLE_EAST, "keyboard_double_arrow_right"],
-  [MoveDirection.UNSPECIFIED, "question_mark"],
+  [MoveDirection.NORTH, "🔼"],
+  [MoveDirection.SOUTH, "🔽"],
+  [MoveDirection.WEST, "◀️"],
+  [MoveDirection.EAST, "▶️"],
+  [MoveDirection.SOUTH_EAST, "↘️"],
+  [MoveDirection.SOUTH_WEST, "↙️"],
+  [MoveDirection.NORTH_WEST, "↖️"],
+  [MoveDirection.NORTH_EAST, "↗️"],
+  [MoveDirection.DOUBLE_NORTH, "⏫"],
+  [MoveDirection.DOUBLE_SOUTH, "⏬"],
+  [MoveDirection.DOUBLE_WEST, "⏪"],
+  [MoveDirection.DOUBLE_EAST, "⏩"],
+  [MoveDirection.UNSPECIFIED, "❓"],
 ]);
 
 export const SpinIcons: Map<MoveSpin, string> = new Map([
-  [MoveSpin.NO_SPIN, "block"],
-  [MoveSpin.HALF_CLOCKWISE, "rotate_right"],
-  [MoveSpin.HALF_COUNTER_CLOCKWISE, "rotate_left"],
+  [MoveSpin.NO_SPIN, "❌"],
+  [MoveSpin.HALF_CLOCKWISE, "↪️"],
+  [MoveSpin.HALF_COUNTER_CLOCKWISE, "↩️"],
 ]);
 
 export const GrowIcons: Map<MoveGrow, string> = new Map([
-  [MoveGrow.NO_GROW, "block"],
-  [MoveGrow.ENLARGE, "open_in_full"],
-  [MoveGrow.SHRINK, "close_fullscreen"],
+  [MoveGrow.NO_GROW, "❌"],
+  [MoveGrow.ENLARGE, "👐"],
+  [MoveGrow.SHRINK, "🤏"],
 ]);
 
 // Instead of the user clicking on several options, a RandomSelector is
