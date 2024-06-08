@@ -144,7 +144,7 @@ export class GridInst extends AppElement {
             resolve(BeadSelection.CORRECT_GUESS);
           } else {
             bead.Hide();
-            inactiveBead.Hide();
+            inactiveBead.RenderHidden();
             resolve(BeadSelection.WRONG_GUESS);
           }
         });

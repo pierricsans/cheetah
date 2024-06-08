@@ -325,6 +325,10 @@ class InactiveBead extends Bead {
     super(person, level);
     this.element.classList.add("inactiveBead");
   }
+
+  RenderHidden() {
+    this.element.classList.add("hidden");
+  }
 }
 
 export interface endOfCycleParams {

@@ -125,6 +125,10 @@ body {
   visibility: hidden;
 }
 
+.hidden {
+  visibility: hidden;
+}
+
 .levelBoard-score {
   font-family: "Noto Color Emoji", sans-serif;
 }
