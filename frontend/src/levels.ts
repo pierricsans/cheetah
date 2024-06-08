@@ -617,7 +617,7 @@ export const GAME: Game = new Game({
       symbols: [
         "🍰",
         "🥧",
-        "🧁",
+        "🍬",
         "🎂",
         "🍭",
         "🍫",
