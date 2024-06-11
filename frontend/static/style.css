@@ -6,8 +6,8 @@
   --ball-size: calc(var(--cell-size) - 1px);
   --ball-opacity: 90%;
   --outer-box-border-thickness: 2vw;
-  --body-background: #e9c46a;
-  --app-background: #dce7ec;
+  --body-background: #EA9010;
+  --app-background: #37371F;
 }
 
 @font-face {

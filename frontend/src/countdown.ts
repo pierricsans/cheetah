@@ -44,13 +44,12 @@ export class CountDown extends AppElement {
       star,
       [
         {
-          color: "var(--body-background)",
+          transform: "scale(1, 1)",
         },
         {
           transform: "scale(2, 2) rotate(0.5turn)",
         },
         {
-          color: "var(--secondary-color)",
           transform: "scale(1, 1) rotate(1turn)",
         },
       ],
