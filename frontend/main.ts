@@ -132,7 +132,6 @@ export class TapTheDot {
     this.container.classList.add("banner");
     this.validateElement = new ValidationElement();
     this.selector = new Selector(this.journey, this.level);
-    this.selector.GenerateSelectionElement();
     this.WaitForUserSelection();
     this.AppendSelector();
     this.grid = new GridInst(this.journey, this.level);
@@ -433,28 +432,19 @@ export class TapTheDot {
 
   private WaitForUserSelection() {
     this.validateElement.listenforPickAMove().then(() => {
-      const option = this.selector.setCurrentOption();
-      this.AddSelectedOption(option);
+      this.selector.TriggerRoll().then(() => {
+        
+      this.validateElement.enableButtonAndWaitForClick().then(() => {
+        this.FillLevel();
+        this.Validate();
+      });
+      });
     }).catch(() => {
       this.validateElement.enableButtonAndWaitForClick().then(() => {
         this.FillLevel();
         this.Validate();
       });
     });
-  }
-
-  private AddSelectedOption(option: Option) {
-    if (
-      this.level.grid?.indigenous?.trajectory?.moves?.length! ===
-      this.level.numMoves
-    ) {
-      this.validateElement.enableButtonAndWaitForClick().then(() => {
-        this.FillLevel();
-        this.Validate();
-      });
-    } else {
-      this.WaitForUserSelection();
-    }
   }
 
   // Object this.level has been filled in with moves and initial positions.
