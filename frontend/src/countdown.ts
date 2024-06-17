@@ -44,13 +44,16 @@ export class CountDown extends AppElement {
       star,
       [
         {
+          offset: 0,
           transform: "scale(1, 1)",
         },
         {
+          offset: 0.5,
           transform: "scale(2, 2) rotate(0.5turn)",
         },
         {
-          transform: "scale(1, 1) rotate(1turn)",
+          offset: 1,
+          transform: "scale(0, 0) rotate(1turn)",
         },
       ],
       {

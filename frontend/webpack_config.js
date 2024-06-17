@@ -31,7 +31,7 @@ module.exports = (_env, options) => {
       new FaviconsWebpackPlugin({
         logo: path.resolve(__dirname, "static/favicon.png"),
         favicons: {
-          appName: 'SpotTheDot',
+          appName: 'gospot.it',
           appDescription: 'Pick a trajectory, and spot the icon following it',
           developerName: 'Pierric Sans',
           developerURL: null, // prevent retrieving from the nearest package.json
@@ -61,5 +61,6 @@ module.exports = (_env, options) => {
       })],
     },
     mode: 'production',
+    target: ['web'],
   };
 };
