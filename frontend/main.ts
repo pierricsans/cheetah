@@ -1,4 +1,4 @@
-import { shuffleArray, AppElement } from "./src/util.js";
+import { AppElement } from "./src/util.js";
 import { GAME } from "./src/levels.js";
 import {
   Game,
@@ -13,25 +13,22 @@ import { LevelGame } from "./src/level_game.js";
 
 export class GoSpotItApp extends AppElement {
   private game: Game;
-  private journey: Journey;
-  private level: Level;
+  private journey: Journey | null;
+  private level: Level | null;
   private levelGame: LevelGame | null;
-  private scoreboard: ScoreBoard;
+  private scoreboard: ScoreBoard | null;
   private readonly outContainer: HTMLElement = document.body;
 
   constructor(game: Game) {
     super();
     this.game = game;
     this.levelGame = null;
-    this.journey = new Journey().fromJsonString(
-      getJourney(game).toJsonString()
-    );
-    this.level = new Level().fromJsonString(
-      getLevel(this.journey, this.journey.nextLevel || 1).toJsonString()
-    );
-    this.scoreboard = new ScoreBoard(this.game);
+    this.journey = null;
+    this.level = null;
+    this.scoreboard = null;
     this.element.setAttribute("id", "selectorContainer");
     this.element.classList.add("banner");
+    this.outContainer.appendChild(this.element);
   }
 
   StartNewGameLevel() {
@@ -45,31 +42,32 @@ export class GoSpotItApp extends AppElement {
     );
     this.levelGame = new LevelGame(this.journey, this.level);
     this.Append(this.levelGame);
-    this.GenerateSymbols();
     this.scoreboard = new ScoreBoard(this.game);
     this.Append(this.scoreboard);
-    this.appendContainer();
     this.levelGame.Start().then(() => {this.UpdateAndShowScoreBoard()});
-  }
-
-  private GenerateSymbols() {
-    shuffleArray(this.journey.symbols);
   }
 
   private StoreGameAsLocalStorage() {
     localStorage.setItem("game", this.game.toJsonString());
   }
 
-  private appendContainer() {
-    this.outContainer.appendChild(this.element);
-  }
-
   private cleanup() {
     this.Remove(this.levelGame);
-    this.scoreboard.Hide();
+    if (this.scoreboard) {   
+      this.scoreboard.Hide();
+    }
   }
 
   private UpdateAndShowScoreBoard() {
+    if (!this.scoreboard) {
+      return;
+    }
+    if (!this.journey) {
+      return;
+    }
+    if (!this.level) {
+      return;
+    }
     this.levelGame?.Hide();
     getLevel(getJourney(this.game), this.journey.nextLevel || 1).score =
       this.level.score;
@@ -123,6 +121,9 @@ export class GoSpotItApp extends AppElement {
   }
 
   private triggerNextLevel() {
+    if (!this.journey) {
+      return;
+    }
     var gameJourney: Journey = new Journey();
     for (const journey of this.game.journeys) {
       if (journey.number === this.journey.number) {

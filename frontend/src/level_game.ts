@@ -4,7 +4,7 @@
 //   3. Get your score
 //   4. Back to main game, for next level
 
-import { AppElement } from "./util.js";
+import { shuffleArray, AppElement } from "./util.js";
 
 import {
   Grid,
@@ -44,7 +44,7 @@ export class LevelGame extends AppElement {
     super();
     this.journey = journey;
     this.level = level;
-    this.element.classList.add("levelGame");
+    shuffleArray(this.journey.symbols);
     this.selector = new Selector(this.journey, this.level);
     this.Append(this.selector);
     this.grid = new GridInst(this.journey, this.level);
