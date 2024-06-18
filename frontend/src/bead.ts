@@ -26,6 +26,14 @@ abstract class Bead extends AppElement {
     this.element.classList.add("bead");
     this.element.textContent = this.person.color!;
   }
+
+  WaitForClick() {
+    return new Promise<PersonType>((resolve, reject) => {
+      this.element.addEventListener(MOUSEDOWN, (event: Event) => {
+        resolve(this.person.type || PersonType.UNSPECIFIED);
+      });
+    });
+  }
 }
 
 export class ActiveBead extends Bead {
@@ -63,12 +71,12 @@ export class ActiveBead extends Bead {
 
   initAndWaitForUserSelection(): Promise<PersonType> {
     return new Promise<PersonType>((resolve, reject) => {
-      for (const element of [this.element, this.inactiveBead?.GetAsElement()]) {
-        if (!element) {
-          throw Error("No element found " + element);
+      for (const bead of [this, this.inactiveBead]) {
+        if (!bead) {
+          throw Error("No element found " + bead);
         }
-        element.addEventListener(MOUSEDOWN, (event: Event) => {
-          resolve(this.person.type || PersonType.UNSPECIFIED);
+        bead.WaitForClick().then((type) => {
+          resolve(type);
         });
       }
       // Reject promise if user did not select during one animation cycle.
@@ -80,13 +88,13 @@ export class ActiveBead extends Bead {
       case PersonType.INDIGENOUS:
         this.element.style.opacity = "100%";
         if (this.inactiveBead !== null) {
-          this.inactiveBead.GetAsElement().style.opacity = "100%";
+          this.inactiveBead.SetOpacity("100%");
         }
         break;
       case PersonType.ALIEN:
         this.element.style.opacity = "20%";
         if (this.inactiveBead !== null) {
-          this.inactiveBead.GetAsElement().style.opacity = "20%";
+          this.inactiveBead.SetOpacity("20%");
         }
         break;
     }
@@ -242,7 +250,12 @@ export class ActiveBead extends Bead {
         offset: Math.min(animationOffset, 1),
         bottom: bottom.toString() + "%",
         left: left.toString() + "%",
-        transform: "translate(-50%,50%) rotate(" + rotation + "deg) scale(" + scale +")",
+        transform:
+          "translate(-50%,50%) rotate(" +
+          rotation +
+          "deg) scale(" +
+          scale +
+          ")",
         easing: "ease-in-out",
       });
     }
@@ -328,6 +341,9 @@ class InactiveBead extends Bead {
 
   RenderHidden() {
     this.element.classList.add("hidden");
+  }
+  SetOpacity(opacity: string) {
+    this.element.style.opacity = opacity;
   }
 }
 

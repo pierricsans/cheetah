@@ -10,13 +10,34 @@ import {
 import { CountDown } from "./countdown.js";
 import { AppElement, shuffleArray } from "./util.js";
 
+class InnerContainer extends AppElement {
+  constructor() {
+    super();
+    this.element.setAttribute("id", "innerContainer");
+  }
+}
+
+class OuterContainer extends AppElement {
+  constructor() {
+    super();
+    this.element.setAttribute("id", "outerContainer");
+  }
+}
+
+class BeadsContainer extends AppElement {
+  constructor() {
+    super();
+    this.element.setAttribute("id", "inactiveBeadsContainer");
+  }
+}
+
 export class GridInst extends AppElement {
   journey: Journey;
   level: Level;
   countdown: CountDown;
-  private innerContainer: HTMLElement = document.createElement("div");
-  private outerContainer: HTMLElement = document.createElement("div");
-  private inactiveBeadsContainer: HTMLElement = document.createElement("div");
+  private innerContainer: InnerContainer = new InnerContainer();
+  private outerContainer: OuterContainer = new OuterContainer();
+  private inactiveBeadsContainer: BeadsContainer = new BeadsContainer();
   private beads: Array<ActiveBead> = [];
 
   constructor(journey: Journey, level: Level) {
@@ -24,11 +45,9 @@ export class GridInst extends AppElement {
     this.journey = journey;
     this.level = level;
     this.countdown = this.AppendCountDown();
-    this.outerContainer.setAttribute("id", "outerContainer");
-    this.innerContainer.setAttribute("id", "innerContainer");
-    this.outerContainer.appendChild(this.innerContainer);
-    this.element.appendChild(this.outerContainer);
-    this.element.appendChild(this.inactiveBeadsContainer);
+    this.outerContainer.Append(this.innerContainer);
+    this.Append(this.outerContainer);
+    this.Append(this.inactiveBeadsContainer);
   }
 
   End() {
@@ -117,15 +136,14 @@ export class GridInst extends AppElement {
   private AppendPerson(person: Person) {
     const bead = new ActiveBead(person, this.level);
     this.beads.push(bead);
-    this.innerContainer.appendChild(bead.GetAsElement());
+    this.innerContainer.Append(bead);
   }
 
   private AppendInactiveBeads() {
     shuffleArray(this.beads);
-    this.inactiveBeadsContainer.setAttribute("id", "inactiveBeadsContainer");
     for (const bead of this.beads) {
       const inactiveBead = bead.GetInactiveBead();
-      this.inactiveBeadsContainer.appendChild(inactiveBead.GetAsElement());
+      this.inactiveBeadsContainer.Append(inactiveBead);
     }
   }
 
@@ -154,7 +172,7 @@ export class GridInst extends AppElement {
 
   private AppendCountDown(): CountDown {
     const countdown = new CountDown();
-    this.element.appendChild(countdown.GetAsElement());
+    this.Append(countdown);
     return countdown;
   }
 }

@@ -1,125 +1,40 @@
-import { AppElement, shuffleArray } from "./src/util.js";
+import { shuffleArray, AppElement } from "./src/util.js";
 import { GAME } from "./src/levels.js";
-import { GridInst } from "./src/grid.js";
-import {
-  Option,
-  Selector,
-} from "./src/selector.js";
 import {
   Game,
-  Grid,
   Journey,
   Level,
-  Move,
-  MoveDirection,
   NextLevelAction,
-  Person,
-  PersonType,
-  Position,
-  Trajectory,
 } from "./protos/level_pb.js";
 import { ScoreBoard } from "./src/scoreboard.js";
 import "./static/style.css";
-import { MOUSEDOWN } from "./src/constants.js";
+import { LevelGame } from "./src/level_game.js";
 
-function GetOffset(
-  length: number,
-  moves: Array<MoveDirection>,
-  backwardMoves: Array<MoveDirection>,
-  forwardMoves: Array<MoveDirection>,
-  doubleBackWardMoves: Array<MoveDirection>,
-  doubleForwardMoves: Array<MoveDirection>
-): number {
-  var currentPosition = 0;
-  var backwardsMost = 0;
-  var forwardsMost = 0;
-  for (const move of moves) {
-    if (forwardMoves.includes(move)) {
-      currentPosition += 1;
-      forwardsMost = Math.max(currentPosition, forwardsMost);
-      backwardsMost = Math.min(currentPosition, backwardsMost);
-    }
-    if (backwardMoves.includes(move)) {
-      currentPosition -= 1;
-      forwardsMost = Math.max(currentPosition, forwardsMost);
-      backwardsMost = Math.min(currentPosition, backwardsMost);
-    }
-    if (doubleForwardMoves.includes(move)) {
-      currentPosition += 2;
-      forwardsMost = Math.max(currentPosition, forwardsMost);
-      backwardsMost = Math.min(currentPosition, backwardsMost);
-    }
-    if (doubleBackWardMoves.includes(move)) {
-      currentPosition -= 2;
-      forwardsMost = Math.max(currentPosition, forwardsMost);
-      backwardsMost = Math.min(currentPosition, backwardsMost);
-    }
-  }
-  const max = length - Math.max(0, forwardsMost) + 1;
-  const min = Math.abs(backwardsMost);
-  const value = Math.floor(Math.random() * (max - min) + min);
-  return value;
-}
 
-class ValidationElement extends AppElement {
-  textElement = document.createElement("span");
-  constructor() {
-    super();
-    this.element.setAttribute("id", "validateButtonContainer");
-    this.element.classList.add("bottomBar");
-    this.element.classList.add("horizontalChoices");
-    this.element.appendChild(this.textElement);
-  }
-
-  listenforPickAMove(): Promise<void> {
-    this.element.classList.add("selectable");
-    this.textElement.textContent = "spin";
-    return new Promise<void>((resolve) => {
-      this.element.addEventListener(MOUSEDOWN, (event) => resolve());
-    });
-  }
-
-  enableButtonAndWaitForClick(): Promise<void> {
-    this.element.classList.add("selectable");
-    this.textElement.textContent = "spot";
-    return new Promise<void>((resolve) => {
-      this.element.addEventListener(MOUSEDOWN, (event) => resolve());
-    });
-  }
-}
-
-export class TapTheDot {
+export class GoSpotItApp extends AppElement {
   private game: Game;
   private journey: Journey;
   private level: Level;
+  private levelGame: LevelGame | null;
   private scoreboard: ScoreBoard;
   private readonly outContainer: HTMLElement = document.body;
-  private container: HTMLElement = document.createElement("div");
-  private selector: Selector;
-  private validateElement: ValidationElement;
-  private grid: GridInst;
-  private allTrajectories: Array<Trajectory> = new Array<Trajectory>();
-  private allPositions: Map<number, Array<Position>> = new Map<
-    number,
-    Array<Position>
-  >();
-  private currentScoreDisplay: HTMLElement = document.createElement("div");
 
   constructor(game: Game) {
+    super();
     this.game = game;
+    this.levelGame = null;
     this.journey = new Journey().fromJsonString(
       getJourney(game).toJsonString()
     );
     this.level = new Level().fromJsonString(
       getLevel(this.journey, this.journey.nextLevel || 1).toJsonString()
     );
-    this.validateElement = new ValidationElement();
     this.scoreboard = new ScoreBoard(this.game);
-    this.selector = new Selector(this.journey, this.level);
-    this.grid = new GridInst(this.journey, this.level);
+    this.element.setAttribute("id", "selectorContainer");
+    this.element.classList.add("banner");
   }
 
-  Init() {
+  StartNewGameLevel() {
     this.cleanup();
     this.StoreGameAsLocalStorage();
     this.journey = new Journey().fromJsonString(
@@ -128,18 +43,13 @@ export class TapTheDot {
     this.level = new Level().fromJsonString(
       getLevel(this.journey, this.journey.nextLevel || 1).toJsonString()
     );
-    this.container.setAttribute("id", "selectorContainer");
-    this.container.classList.add("banner");
-    this.validateElement = new ValidationElement();
-    this.selector = new Selector(this.journey, this.level);
-    this.WaitForUserSelection();
-    this.AppendSelector();
-    this.grid = new GridInst(this.journey, this.level);
-    this.container.appendChild(this.validateElement.GetAsElement());
+    this.levelGame = new LevelGame(this.journey, this.level);
+    this.Append(this.levelGame);
     this.GenerateSymbols();
     this.scoreboard = new ScoreBoard(this.game);
-    this.container.appendChild(this.scoreboard.GetAsElement());
+    this.Append(this.scoreboard);
     this.appendContainer();
+    this.levelGame.Start().then(() => {this.UpdateAndShowScoreBoard()});
   }
 
   private GenerateSymbols() {
@@ -150,9 +60,17 @@ export class TapTheDot {
     localStorage.setItem("game", this.game.toJsonString());
   }
 
+  private appendContainer() {
+    this.outContainer.appendChild(this.element);
+  }
+
+  private cleanup() {
+    this.Remove(this.levelGame);
+    this.scoreboard.Hide();
+  }
+
   private UpdateAndShowScoreBoard() {
-    this.grid.Hide();
-    this.selector.Hide();
+    this.levelGame?.Hide();
     getLevel(getJourney(this.game), this.journey.nextLevel || 1).score =
       this.level.score;
     this.StoreGameAsLocalStorage();
@@ -177,303 +95,6 @@ export class TapTheDot {
       });
   }
 
-  private GetNextColor(): string {
-    const color = this.journey.symbols.pop();
-    if (color === undefined) {
-      console.log("No more colors");
-      return "";
-    } else {
-      return color;
-    }
-  }
-
-  private FillLevel() {
-    const grid: Grid = this.level.grid!;
-    grid.height = this.level.size;
-    grid.width = this.level.size;
-    this.GenerateInitialState(grid.indigenous!);
-    this.AddAliens();
-  }
-
-  private GenerateInitialState(person: Person, generateMoves: boolean = false) {
-    person.color = this.GetNextColor();
-    if (generateMoves) {
-      this.GenerateMoves(person);
-    } else {
-      this.allTrajectories.push(person.trajectory!);
-    }
-    this.GenerateInitialPosition(person);
-  }
-
-  private GenerateInitialPosition(person: Person) {
-    const y_moves = new Array<MoveDirection>();
-    const x_moves = new Array<MoveDirection>();
-    if (!person.trajectory) {
-      throw Error("Person has no trajectory: " + person);
-    }
-    for (const move of person.trajectory?.moves!) {
-      switch (move.direction) {
-        case MoveDirection.NO_MOVE:
-        case MoveDirection.UNSPECIFIED:
-        case undefined:
-          break;
-        case MoveDirection.NORTH:
-          y_moves.push(move.direction);
-          break;
-        case MoveDirection.SOUTH:
-          y_moves.push(move.direction);
-          break;
-        case MoveDirection.WEST:
-          x_moves.push(move.direction);
-          break;
-        case MoveDirection.EAST:
-          x_moves.push(move.direction);
-          break;
-        case MoveDirection.SOUTH_EAST:
-          y_moves.push(move.direction);
-          x_moves.push(move.direction);
-          break;
-        case MoveDirection.SOUTH_WEST:
-          y_moves.push(move.direction);
-          x_moves.push(move.direction);
-          break;
-        case MoveDirection.NORTH_EAST:
-          y_moves.push(move.direction);
-          x_moves.push(move.direction);
-          break;
-        case MoveDirection.NORTH_WEST:
-          y_moves.push(move.direction);
-          x_moves.push(move.direction);
-          break;
-        case MoveDirection.DOUBLE_NORTH:
-          y_moves.push(move.direction);
-          break;
-        case MoveDirection.DOUBLE_SOUTH:
-          y_moves.push(move.direction);
-          break;
-        case MoveDirection.DOUBLE_WEST:
-          x_moves.push(move.direction);
-          break;
-        case MoveDirection.DOUBLE_EAST:
-          x_moves.push(move.direction);
-          break;
-        default:
-          throw Error("Unknown move direction: " + move.direction);
-      }
-    }
-    if (person.position === undefined) {
-      person.position = new Position();
-    }
-    person.position.xOffset = GetOffset(
-      this.level.grid?.width!,
-      x_moves,
-      [MoveDirection.WEST, MoveDirection.NORTH_WEST, MoveDirection.SOUTH_WEST],
-      [MoveDirection.EAST, MoveDirection.NORTH_EAST, MoveDirection.SOUTH_EAST],
-      [MoveDirection.DOUBLE_WEST],
-      [MoveDirection.DOUBLE_EAST]
-    );
-    person.position.yOffset = GetOffset(
-      this.level.grid?.width!,
-      y_moves,
-      [MoveDirection.SOUTH, MoveDirection.SOUTH_EAST, MoveDirection.SOUTH_WEST],
-      [MoveDirection.NORTH, MoveDirection.NORTH_EAST, MoveDirection.NORTH_WEST],
-      [MoveDirection.DOUBLE_SOUTH],
-      [MoveDirection.DOUBLE_NORTH]
-    );
-    if (!this.registerPosition(person)) {
-      delete person.position;
-      console.log("unlucky-position");
-      this.GenerateInitialPosition(person);
-    }
-  }
-
-  private registerPosition(person: Person): boolean {
-    const initialPosition = person.position!;
-    if (!this.allPositions.has(0)) {
-      this.allPositions.set(0, new Array());
-    }
-    for (const registeredPosition of this.allPositions.get(0)!) {
-      if (initialPosition.equals(registeredPosition)) {
-        return false;
-      }
-    }
-    this.allPositions.get(0)?.push(initialPosition);
-    var nextMove: number = 1;
-    var currentPosition: Position = initialPosition;
-    for (const move of person.trajectory?.moves!) {
-      const position: Position = new Position();
-      switch (move.direction) {
-        case undefined:
-        case MoveDirection.UNSPECIFIED:
-        case MoveDirection.NO_MOVE:
-          position.xOffset = currentPosition.xOffset;
-          position.yOffset = currentPosition.yOffset;
-          break;
-        case MoveDirection.NORTH:
-          position.xOffset = currentPosition.xOffset;
-          position.yOffset = currentPosition.yOffset! + 1;
-          break;
-        case MoveDirection.SOUTH:
-          position.xOffset = currentPosition.xOffset;
-          position.yOffset = currentPosition.yOffset! - 1;
-          break;
-        case MoveDirection.EAST:
-          position.xOffset = currentPosition.xOffset! + 1;
-          position.yOffset = currentPosition.yOffset;
-          break;
-        case MoveDirection.WEST:
-          position.xOffset = currentPosition.xOffset! - 1;
-          position.yOffset = currentPosition.yOffset;
-          break;
-        case MoveDirection.SOUTH_EAST:
-          position.xOffset = currentPosition.xOffset! + 1;
-          position.yOffset = currentPosition.yOffset! - 1;
-          break;
-        case MoveDirection.SOUTH_WEST:
-          position.xOffset = currentPosition.xOffset! - 1;
-          position.yOffset = currentPosition.yOffset! - 1;
-          break;
-        case MoveDirection.NORTH_EAST:
-          position.xOffset = currentPosition.xOffset! + 1;
-          position.yOffset = currentPosition.yOffset! + 1;
-          break;
-        case MoveDirection.NORTH_WEST:
-          position.xOffset = currentPosition.xOffset! - 1;
-          position.yOffset = currentPosition.yOffset! + 1;
-          break;
-        case MoveDirection.DOUBLE_NORTH:
-          position.xOffset = currentPosition.xOffset;
-          position.yOffset = currentPosition.yOffset! + 2;
-          break;
-        case MoveDirection.DOUBLE_SOUTH:
-          position.xOffset = currentPosition.xOffset;
-          position.yOffset = currentPosition.yOffset! - 2;
-          break;
-        case MoveDirection.DOUBLE_EAST:
-          position.xOffset = currentPosition.xOffset! + 2;
-          position.yOffset = currentPosition.yOffset;
-          break;
-        case MoveDirection.DOUBLE_WEST:
-          position.xOffset = currentPosition.xOffset! - 2;
-          position.yOffset = currentPosition.yOffset;
-          break;
-        default:
-          throw Error("Unknown MoveDirection: " + move.direction);
-      }
-      if (!this.allPositions.has(nextMove)) {
-        this.allPositions.set(nextMove, new Array());
-      }
-      for (const registeredPosition of this.allPositions.get(nextMove)!) {
-        if (registeredPosition.equals(position)) {
-          return false;
-        }
-      }
-      this.allPositions.get(nextMove)?.push(position);
-      nextMove += 1;
-      currentPosition = position;
-    }
-    return true;
-  }
-
-  private GenerateMoves(person: Person) {
-    if (person.trajectory === undefined) {
-      person.trajectory = new Trajectory();
-    }
-    for (var i = 0; i < this.level.numMoves!; i++) {
-      const randint = Math.floor(
-        Math.random() * this.journey.allowedMoves.length
-      );
-      const randMove = this.journey.allowedMoves[randint];
-      const move = new Move().fromJsonString(randMove.toJsonString());
-      person.trajectory?.moves.push(move);
-    }
-    for (const trajectory of this.allTrajectories) {
-      if (trajectory.equals(person.trajectory)) {
-        if (person.trajectory !== undefined) {
-          person.trajectory.moves = [];
-        }
-        this.GenerateMoves(person);
-        return;
-      }
-    }
-    this.allTrajectories.push(person.trajectory);
-  }
-
-  private CheckIndigenousHasMoves() {
-    if (this.level.grid?.indigenous === undefined) {
-      console.log("No indigenous found");
-    }
-    if (
-      this.level.grid?.indigenous?.trajectory?.moves?.length! !==
-      this.level.numMoves!
-    ) {
-      console.log(
-        "Required moves: " +
-          this.level.numMoves! +
-          " vs actual: " +
-          this.level.grid?.indigenous?.trajectory?.moves?.length!
-      );
-    }
-  }
-
-  private AddAliens() {
-    this.CheckIndigenousHasMoves();
-    for (var i = 0; i < this.level.numAliens!; i++) {
-      const alien = new Person();
-      this.level.grid?.aliens.push(alien);
-      alien.type = PersonType.ALIEN;
-      this.GenerateInitialState(alien, true);
-    }
-  }
-
-  private AppendSelector() {
-    this.container.appendChild(this.selector.GetAsElement());
-  }
-
-  private WaitForUserSelection() {
-    this.validateElement.listenforPickAMove().then(() => {
-      this.selector.TriggerRoll().then(() => {
-        
-      this.validateElement.enableButtonAndWaitForClick().then(() => {
-        this.FillLevel();
-        this.Validate();
-      });
-      });
-    }).catch(() => {
-      this.validateElement.enableButtonAndWaitForClick().then(() => {
-        this.FillLevel();
-        this.Validate();
-      });
-    });
-  }
-
-  // Object this.level has been filled in with moves and initial positions.
-  private Validate() {
-    this.validateElement.Hide();
-    this.BuildGrid();
-  }
-
-  private BuildGrid() {
-    this.container.appendChild(this.grid.GetAsElement());
-    this.grid.StartGame(this.level).then((score: number | undefined) => {
-      this.level.score = score;
-      this.grid.End();
-      setTimeout(() => this.UpdateAndShowScoreBoard(), 1000);
-    });
-  }
-
-  private appendContainer() {
-    this.outContainer.appendChild(this.container);
-  }
-
-  private cleanup() {
-    this.allTrajectories = new Array<Trajectory>();
-    this.allPositions = new Map<number, Array<Position>>();
-    while (this.outContainer.hasChildNodes()) {
-      clear(this.outContainer.firstChild!);
-    }
-  }
-
   private restartJourneyFromScratch() {
     // Scracth all scores from current journey
     for (const journey of this.game.journeys) {
@@ -482,7 +103,7 @@ export class TapTheDot {
       }
       this.resetJourney(journey);
     }
-    this.Init();
+    this.StartNewGameLevel();
   }
 
   private restartGameFromScratch() {
@@ -491,7 +112,7 @@ export class TapTheDot {
       this.resetJourney(journey);
     }
     this.game.nextJourney = 1;
-    this.Init();
+    this.StartNewGameLevel();
   }
 
   private resetJourney(journey: Journey) {
@@ -513,18 +134,12 @@ export class TapTheDot {
     }
     if (gameJourney.nextLevel === gameJourney.levels.length) {
       this.game.nextJourney! += 1;
-      this.Init();
+      this.StartNewGameLevel();
       return;
     }
     gameJourney.nextLevel += 1;
-    this.Init();
+    this.StartNewGameLevel();
   }
-}
-
-function Init() {
-  const game: Game = getGame();
-  const app = new TapTheDot(game);
-  app.Init();
 }
 
 function getGame(): Game {
@@ -532,7 +147,9 @@ function getGame(): Game {
   if (!storedGameStr) {
     return GAME;
   }
-  const storedGame = new Game().fromJsonString(storedGameStr, {ignoreUnknownFields: true});
+  const storedGame = new Game().fromJsonString(storedGameStr, {
+    ignoreUnknownFields: true,
+  });
   var nextJourney = storedGame.nextJourney;
   if (!nextJourney) {
     nextJourney = 1;
@@ -558,7 +175,7 @@ function getGame(): Game {
   return GAME;
 }
 
-export function getJourney(game: Game): Journey {
+function getJourney(game: Game): Journey {
   var fallbackJourney: Journey = new Journey();
   for (const journey of game.journeys) {
     if (journey.number === game.nextJourney) {
@@ -571,7 +188,7 @@ export function getJourney(game: Game): Journey {
   return fallbackJourney;
 }
 
-export function getLevel(journey: Journey, levelNumber: number): Level {
+function getLevel(journey: Journey, levelNumber: number): Level {
   for (const level of journey.levels) {
     if (level.number === levelNumber) {
       return level;
@@ -585,6 +202,12 @@ function clear(node: Node) {
     clear(node.firstChild!);
   }
   node.parentNode?.removeChild(node);
+}
+
+function Init() {
+  const game: Game = getGame();
+  const app = new GoSpotItApp(game);
+  app.StartNewGameLevel();
 }
 
 Init();

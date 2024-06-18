@@ -16,7 +16,17 @@ export class AppElement {
   Show() {
     this.element.hidden = false;
   }
-  GetAsElement(): HTMLDivElement {
+  protected GetAsElement(): HTMLDivElement {
     return this.element;
   }
+  Remove(element: AppElement | null) {
+    if (!element) {
+      return;
+    }
+    this.element.removeChild(element.GetAsElement());
+  }
+  Append(element: AppElement) {
+    this.GetAsElement().appendChild(element.GetAsElement());
+  }
+
 }

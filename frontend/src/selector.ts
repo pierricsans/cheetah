@@ -64,7 +64,7 @@ export class Selector extends AppElement {
         maxIterations
       );
       maxIterations = maxIterations + 3;
-      this.element.appendChild(option.GetAsElement());
+      this.Append(option);
       this.options.push(option);
     }
   }

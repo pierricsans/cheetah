@@ -3,7 +3,6 @@ syntax = "proto2";
 message Game {
   repeated Journey journeys = 1;
   optional int32 next_journey = 2;
-
 }
 
 message Journey {

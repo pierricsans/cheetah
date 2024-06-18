@@ -47,20 +47,19 @@ export class ScoreBoard extends AppElement {
         this.buttonContainer.appendChild(nextLevelButton);
         nextLevelButton.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
           resolve(NextLevelAction.TRIGGER_NEXT_LEVEL)
-      );
-    } else {
+        );
+      } else {
         const restartGame = this.generateButton("Reset");
         this.buttonContainer.appendChild(restartGame);
         restartGame.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
           resolve(NextLevelAction.RESTART_GAME)
         );
-  
+
         const restartJourney = this.generateButton("Retry");
         this.buttonContainer.appendChild(restartJourney);
         restartJourney.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
           resolve(NextLevelAction.RESTART_JOURNEY)
         );
-
       }
     });
   }
@@ -74,7 +73,7 @@ export class ScoreBoard extends AppElement {
       }
       const journeyBoard = new JourneyBoard(journey);
       this.journeyBoards.set(journey.number, journeyBoard);
-      this.element.appendChild(journeyBoard.GetAsElement());
+      this.Append(journeyBoard);
     }
   }
 
@@ -110,7 +109,7 @@ class JourneyBoard extends AppElement {
       }
       const levelBoard = new LevelBoard(level);
       this.levels.set(level.number, levelBoard);
-      this.element.appendChild(levelBoard.GetAsElement());
+      this.Append(levelBoard);
     }
   }
 
@@ -132,10 +131,7 @@ class JourneyBoard extends AppElement {
           this.levels.get(this.journey.nextLevel)
       );
     }
-    if (
-      !lastPlayedLevel.GetAsElement().getElementsByClassName("filledStar")
-        .length
-    ) {
+    if (!lastPlayedLevel.GetNumberOfStars()) {
       // Last played level does not have at least one star
       return false;
     }
@@ -185,6 +181,10 @@ class LevelBoard extends AppElement {
         stars[i].classList.add("emptyStar");
       }
     }
+  }
+
+  GetNumberOfStars(): number {
+    return this.GetAsElement().getElementsByClassName("filledStar").length;
   }
 
   private setLevelScore() {

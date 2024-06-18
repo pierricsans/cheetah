@@ -20,6 +20,23 @@ ts_project(
 )
 
 ts_project(
+    name = "level_game",
+    srcs = ["level_game.ts"],
+    declaration = True,
+    declaration_map = True,
+    transpiler = "tsc",
+    tsconfig = "//:tsconfig",
+    deps = [
+        ":grid",
+        ":selector",
+        ":util",
+        ":validation",
+        "//:node_modules/@bufbuild/protobuf",
+        "//frontend/protos:level_ts_proto",
+    ],
+)
+
+ts_project(
     name = "selector",
     srcs = ["selector.ts"],
     declaration = True,
@@ -107,5 +124,19 @@ ts_project(
     deps = [
         "//:node_modules/@bufbuild/protobuf",
         "//frontend/protos:level_ts_proto",
+    ],
+)
+
+ts_project(
+    name = "validation",
+    srcs = ["validation.ts"],
+    declaration = True,
+    declaration_map = True,
+    transpiler = "tsc",
+    tsconfig = "//:tsconfig",
+    deps = [
+        ":constants",
+        ":util",
+        "//:node_modules/@bufbuild/protobuf",
     ],
 )
