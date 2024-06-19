@@ -27,7 +27,7 @@ class OuterContainer extends AppElement {
 class BeadsContainer extends AppElement {
   constructor() {
     super();
-    this.element.setAttribute("id", "inactiveBeadsContainer");
+    this.element.setAttribute("id", "avatarBeadsContainer");
   }
 }
 
@@ -37,7 +37,7 @@ export class GridInst extends AppElement {
   countdown: CountDown;
   private innerContainer: InnerContainer = new InnerContainer();
   private outerContainer: OuterContainer = new OuterContainer();
-  private inactiveBeadsContainer: BeadsContainer = new BeadsContainer();
+  private avatarBeadsContainer: BeadsContainer = new BeadsContainer();
   private beads: Array<ActiveBead> = [];
 
   constructor(journey: Journey, level: Level) {
@@ -47,7 +47,7 @@ export class GridInst extends AppElement {
     this.countdown = this.AppendCountDown();
     this.outerContainer.Append(this.innerContainer);
     this.Append(this.outerContainer);
-    this.Append(this.inactiveBeadsContainer);
+    this.Append(this.avatarBeadsContainer);
   }
 
   End() {
@@ -68,7 +68,7 @@ export class GridInst extends AppElement {
       throw Error("No indigenous found in grid: " + this.level.grid);
     }
     this.AppendPerson(this.level.grid.indigenous);
-    this.AppendInactiveBeads();
+    this.AppendAvatarBeads();
     const seenCycles = new Set<number>();
     return new Promise<number | undefined>((resolve) => {
       for (const bead of this.beads) {
@@ -139,11 +139,11 @@ export class GridInst extends AppElement {
     this.innerContainer.Append(bead);
   }
 
-  private AppendInactiveBeads() {
+  private AppendAvatarBeads() {
     shuffleArray(this.beads);
     for (const bead of this.beads) {
-      const inactiveBead = bead.GetInactiveBead();
-      this.inactiveBeadsContainer.Append(inactiveBead);
+      const avatarBead = bead.GetAvatarBead();
+      this.avatarBeadsContainer.Append(avatarBead);
     }
   }
 
@@ -156,13 +156,13 @@ export class GridInst extends AppElement {
   private startBeadAnimationsAndWait(): Promise<BeadSelection> {
     return new Promise<BeadSelection>((resolve) => {
       for (const bead of this.beads) {
-        const inactiveBead = bead.GetInactiveBead();
+        const inactiveBead = bead.GetAvatarBead();
         bead.initAndWaitForUserSelection().then((type: PersonType) => {
           if (type === PersonType.INDIGENOUS) {
             resolve(BeadSelection.CORRECT_GUESS);
           } else {
-            bead.Hide();
-            inactiveBead.RenderHidden();
+            bead.RenderInactive();
+            inactiveBead.RenderInactive();
             resolve(BeadSelection.WRONG_GUESS);
           }
         });

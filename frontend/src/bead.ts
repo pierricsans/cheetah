@@ -24,21 +24,27 @@ abstract class Bead extends AppElement {
     this.person = person;
     this.level = level;
     this.element.classList.add("bead");
+    this.element.classList.add("active");
     this.element.textContent = this.person.color!;
   }
 
   WaitForClick() {
-    return new Promise<PersonType>((resolve, reject) => {
-      this.element.addEventListener(MOUSEDOWN, (event: Event) => {
+    return new Promise<PersonType>((resolve) => {
+      this.element.addEventListener(MOUSEDOWN, (_: Event) => {
         resolve(this.person.type || PersonType.UNSPECIFIED);
       });
     });
+  }
+
+  RenderInactive() {
+    this.element.classList.remove("active");
+    this.element.classList.add("inactive");
   }
 }
 
 export class ActiveBead extends Bead {
   private movementIncrement: number;
-  private inactiveBead: InactiveBead | null = null;
+  private avatarBead: AvatarBead | null = null;
   private animationOffset: number;
   private fadeIn: Animation = new Animation();
   private mainAnimation: Animation = new Animation();
@@ -59,19 +65,19 @@ export class ActiveBead extends Bead {
     this.element.style.left =
       (this.movementIncrement * this.person.position?.xOffset!).toString() +
       "%";
-    this.inactiveBead = new InactiveBead(this.person, this.level);
+    this.avatarBead = new AvatarBead(this.person, this.level);
     this.fadeInFrames = this.generateFadeInFrames();
     this.mainAnimationFrames = this.generateMainAnimationFrames();
     this.fadeOutFrames = this.generateFadeOutFrames();
   }
 
-  GetInactiveBead(): InactiveBead {
-    return this.inactiveBead!;
+  GetAvatarBead(): AvatarBead {
+    return this.avatarBead!;
   }
 
   initAndWaitForUserSelection(): Promise<PersonType> {
     return new Promise<PersonType>((resolve, reject) => {
-      for (const bead of [this, this.inactiveBead]) {
+      for (const bead of [this, this.avatarBead]) {
         if (!bead) {
           throw Error("No element found " + bead);
         }
@@ -84,19 +90,11 @@ export class ActiveBead extends Bead {
   }
 
   Reveal() {
-    switch (this.person.type) {
-      case PersonType.INDIGENOUS:
-        this.element.style.opacity = "100%";
-        if (this.inactiveBead !== null) {
-          this.inactiveBead.SetOpacity("100%");
+    if (this.person.type === PersonType.ALIEN) {
+        this.RenderInactive();
+        if (this.avatarBead !== null) {
+          this.RenderInactive();
         }
-        break;
-      case PersonType.ALIEN:
-        this.element.style.opacity = "20%";
-        if (this.inactiveBead !== null) {
-          this.inactiveBead.SetOpacity("20%");
-        }
-        break;
     }
   }
 
@@ -333,17 +331,10 @@ export class ActiveBead extends Bead {
   }
 }
 
-class InactiveBead extends Bead {
+class AvatarBead extends Bead {
   constructor(person: Person, level: Level) {
     super(person, level);
-    this.element.classList.add("inactiveBead");
-  }
-
-  RenderHidden() {
-    this.element.classList.add("hidden");
-  }
-  SetOpacity(opacity: string) {
-    this.element.style.opacity = opacity;
+    this.element.classList.add("avatarBead");
   }
 }
 

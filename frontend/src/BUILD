@@ -27,6 +27,7 @@ ts_project(
     transpiler = "tsc",
     tsconfig = "//:tsconfig",
     deps = [
+        ":constants",
         ":grid",
         ":selector",
         ":util",

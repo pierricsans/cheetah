@@ -4,7 +4,6 @@
   --box-size-num-moves: 5;
   --cell-size: calc(var(--box-size-cqw) / var(--box-size-num-moves));
   --ball-size: calc(var(--cell-size) - 1px);
-  --ball-opacity: 90%;
   --outer-box-border-thickness: 2vw;
   --body-background: #FFFFFF;
   --app-background: #1768AC;
@@ -199,9 +198,6 @@ body {
 }
 
 .bead {
-  opacity: var(--ball-opacity);
-  border-radius: 6px;
-  font-family: "Noto Color Emoji", sans-serif;
   font-size: var(--ball-size);
   transform-origin: center center;
 }
@@ -210,12 +206,12 @@ body {
   cursor: pointer;
 }
 
-#inactiveBeadsContainer {
+#avatarBeadsContainer {
   display: flex;
   justify-content: space-around;
   align-items: stretch;
 }
 
-.inactiveBead {
+.avatarBead {
   font-size: calc(var(--ball-size) / 2);
 }

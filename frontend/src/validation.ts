@@ -11,15 +11,15 @@ export class ValidationElement extends AppElement {
     this.element.appendChild(this.textElement);
   }
 
-  listenforPickAMove(): Promise<void> {
+  listenForSpinClick(): Promise<void> {
     this.element.classList.add("selectable");
     this.textElement.textContent = "spin";
     return new Promise<void>((resolve) => {
-      this.element.addEventListener(MOUSEDOWN, (event) => resolve());
+      this.element.addEventListener(MOUSEDOWN, (_: Event) => resolve());
     });
   }
 
-  enableButtonAndWaitForClick(): Promise<void> {
+  listenForSpotClick(): Promise<void> {
     this.element.classList.add("selectable");
     this.textElement.textContent = "spot";
     return new Promise<void>((resolve) => {

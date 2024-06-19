@@ -19,6 +19,7 @@ import {
 } from ".././protos/level_pb.js";
 import { GridInst } from "./grid.js";
 import { Selector } from "./selector.js";
+import { TIMEOUT_BETWEEN_GAME_AND_SCOREBOARD } from "./constants.js";
 
 import { ValidationElement } from "./validation.js";
 
@@ -58,13 +59,12 @@ export class LevelGame extends AppElement {
   }
 
   private BuildGridAndStartGame(): Promise<void> {
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
       this.Append(this.grid);
-      this.grid.StartGame(this.level).then((score: number | undefined) => {
-        this.level.score = score;
-        this.grid.End();
-        setTimeout(() => resolve(), 1000);
-      });
+      const score: number | undefined = await this.grid.StartGame(this.level);
+      this.level.score = score;
+      this.grid.End();
+      setTimeout(() => resolve(), TIMEOUT_BETWEEN_GAME_AND_SCOREBOARD);
     });
   }
 
@@ -292,7 +292,7 @@ export class LevelGame extends AppElement {
     }
   }
 
-  private FillLevel() {
+  private GenerateAliensAndStates() {
     const grid: Grid = this.level.grid!;
     grid.height = this.level.size;
     grid.width = this.level.size;
@@ -309,30 +309,17 @@ export class LevelGame extends AppElement {
     }
   }
 
-  private WaitForUserSelection(): Promise<void> {
-    return new Promise((resolve) => {
-      this.validateElement
-        .listenforPickAMove()
-        .then(() => {
-          this.selector.TriggerRoll().then(() => {
-            this.validateElement.enableButtonAndWaitForClick().then(() => {
-              this.FillLevel();
-              this.validateElement.Hide();
-              resolve();
-            });
-          });
-        })
-        //.catch(() => {
-        //  this.validateElement.enableButtonAndWaitForClick().then(() => {
-        //    console.log("If this ever shows up in the console, I need to keep, otherwise it can go.")
-        //    this.FillLevel();
-        //    this.validateElement.Hide();
-        //  });
-        //});
+  private async WaitForUserSelection(): Promise<void> {
+    return new Promise(async (resolve) => {
+      await this.validateElement.listenForSpinClick();
+      await this.selector.TriggerRoll();
+      await this.validateElement.listenForSpotClick();
+      this.GenerateAliensAndStates();
+      this.validateElement.Hide();
+      resolve();
     });
   }
 }
-
 
 function GetOffset(
   length: number,
