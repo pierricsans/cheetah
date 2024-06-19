@@ -155,33 +155,6 @@ body {
   font-family: "Noto Emoji", sans-serif;
 }
 
-.validAction {
-  color: var(--body-background);
-  animation-name: grow;
-  animation-duration: 500ms;
-  animation-timing-function: ease-in-out;
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
-}
-
-#Restart {
-  position: absolute;
-  left: 45cqw;
-  bottom: 20cqh;
-}
-
-#Retry {
-  left: 25cqw;
-  position: absolute;
-  margin-top: 5cqh;
-}
-
-#Next {
-  left: 65cqw;
-  position: absolute;
-  margin-top: 5cqh;
-}
-
 #selection {
   margin-top: 2cqh;
   -webkit-mask-image: -webkit-gradient(
