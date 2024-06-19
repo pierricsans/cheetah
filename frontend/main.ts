@@ -48,9 +48,7 @@ export class GoSpotItApp extends AppElement {
 
   private cleanup() {
     this.Remove(this.levelGame);
-    if (this.scoreboard) {   
-      this.scoreboard.Hide();
-    }
+    this.Remove(this.scoreboard);
   }
 
   private UpdateAndShowScoreBoard() {

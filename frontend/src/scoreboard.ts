@@ -32,7 +32,7 @@ export class ScoreBoard extends AppElement {
     this.buttonContainer.textContent = "";
     return new Promise<NextLevelAction>((resolve) => {
       if (this.journeyBoards.get(this.storer.GetNextJourney())?.CanAccessNextLevel()) {
-        const nextLevelButton = this.generateButton("Next");
+        const nextLevelButton = this.generateButton("next");
         this.buttonContainer.appendChild(nextLevelButton);
         nextLevelButton.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
           resolve(NextLevelAction.TRIGGER_NEXT_LEVEL)
