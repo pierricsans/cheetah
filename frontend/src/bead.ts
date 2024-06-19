@@ -42,9 +42,10 @@ abstract class Bead extends AppElement {
   }
 }
 
-export class ActiveBead extends Bead {
+// A bead that is in the board, moving.
+export class BoardBead extends Bead {
   private movementIncrement: number;
-  private avatarBead: AvatarBead | null = null;
+  private avatarBead: AvatarBead;
   private animationOffset: number;
   private fadeIn: Animation = new Animation();
   private mainAnimation: Animation = new Animation();
@@ -72,29 +73,24 @@ export class ActiveBead extends Bead {
   }
 
   GetAvatarBead(): AvatarBead {
-    return this.avatarBead!;
+    return this.avatarBead;
   }
 
   initAndWaitForUserSelection(): Promise<PersonType> {
-    return new Promise<PersonType>((resolve, reject) => {
-      for (const bead of [this, this.avatarBead]) {
-        if (!bead) {
-          throw Error("No element found " + bead);
-        }
-        bead.WaitForClick().then((type) => {
-          resolve(type);
-        });
-      }
-      // Reject promise if user did not select during one animation cycle.
+    return new Promise<PersonType>(async (resolve) => {
+      const promises: Array<Promise<PersonType>> = [];
+      promises.push(this.WaitForClick());
+      promises.push(this.avatarBead?.WaitForClick());
+      const type: PersonType = await Promise.any(promises);
+      this.Reveal();
+      resolve(type);
     });
   }
 
   Reveal() {
     if (this.person.type === PersonType.ALIEN) {
-        this.RenderInactive();
-        if (this.avatarBead !== null) {
-          this.RenderInactive();
-        }
+      this.RenderInactive();
+      this.avatarBead.RenderInactive();
     }
   }
 

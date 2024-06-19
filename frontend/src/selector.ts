@@ -70,17 +70,16 @@ export class Selector extends AppElement {
   }
 
   TriggerRoll(): Promise<void> {
-    return new Promise<void>((resolve) => {
+    return new Promise<void>(async (resolve) => {
       const promises: Array<Promise<Move>> = [];
       for (const option of this.options) {
         promises.push(option.triggerApplication());
       }
-      Promise.all(promises).then((moves) => {
-        for (const move of moves) {
-          this.level.grid?.indigenous?.trajectory?.moves.push(move);
-        }
-        resolve();
-      });
+      const moves: Array<Move> = await Promise.all(promises);
+      for (const move of moves) {
+        this.level.grid?.indigenous?.trajectory?.moves.push(move);
+      }
+      resolve();
     });
   }
 }

@@ -1,4 +1,4 @@
-import { ActiveBead, endOfCycleParams } from "./bead.js";
+import { BoardBead, endOfCycleParams } from "./bead.js";
 import {
   BeadSelection,
   Journey,
@@ -38,7 +38,7 @@ export class GridInst extends AppElement {
   private innerContainer: InnerContainer = new InnerContainer();
   private outerContainer: OuterContainer = new OuterContainer();
   private avatarBeadsContainer: BeadsContainer = new BeadsContainer();
-  private beads: Array<ActiveBead> = [];
+  private beads: Array<BoardBead> = [];
 
   constructor(journey: Journey, level: Level) {
     super();
@@ -70,57 +70,54 @@ export class GridInst extends AppElement {
     this.AppendPerson(this.level.grid.indigenous);
     this.AppendAvatarBeads();
     const seenCycles = new Set<number>();
-    return new Promise<number | undefined>((resolve) => {
+    return new Promise<number | undefined>(async (resolve) => {
       for (const bead of this.beads) {
         window.addEventListener(
           "message",
-          (event: MessageEvent<endOfCycleParams>) => {
+          async (event: MessageEvent<endOfCycleParams>) => {
             if (!seenCycles.has(event.data.iterationNum)) {
               seenCycles.add(event.data.iterationNum);
-              this.countdown
-                .RemoveStar(event.data.playbackRate)
-                .then((hasStarsRemaining: boolean) => {
-                  if (!hasStarsRemaining) {
-                    this.stopAnimations();
-                    resolve(0);
-                  }
-                });
+              const hasStarsRemaining: boolean =
+                await this.countdown.RemoveStar(event.data.playbackRate);
+              if (!hasStarsRemaining) {
+                this.stopAnimations();
+                resolve(0);
+              }
             }
           }
         );
         bead.animateElement();
       }
-      this.StartGameAndWaitForOutcome().then((outcome: LevelStatus) => {
-        this.stopAnimations();
-        if (outcome == LevelStatus.LOSE) {
-          resolve(undefined);
-        }
-        resolve(this.countdown.numStars);
-      });
+      const outcome: LevelStatus = await this.StartGameAndWaitForOutcome();
+      this.stopAnimations();
+      if (outcome == LevelStatus.LOSE) {
+        resolve(undefined);
+      }
+      resolve(this.countdown.numStars);
     });
   }
 
   private async StartGameAndWaitForOutcome(): Promise<LevelStatus> {
-    const status: LevelStatus = await new Promise<LevelStatus>((resolve) => {
-      this.startBeadAnimationsAndWait().then((status: BeadSelection) => {
+    const status: LevelStatus = await new Promise<LevelStatus>(
+      async (resolve) => {
+        const status: BeadSelection = await this.startBeadAnimationsAndWait();
         switch (status) {
           case BeadSelection.WRONG_GUESS:
-            this.countdown
-              .RemoveStar(/*playbackRate=*/ 1)
-              .then((hasStarsRemaining: boolean) => {
-                if (hasStarsRemaining) {
-                  resolve(LevelStatus.UNSPECIFIED);
-                } else {
-                  resolve(LevelStatus.LOSE);
-                }
-              });
+            const hasStarsRemaining: boolean = await this.countdown.RemoveStar(
+              /*playbackRate=*/ 1
+            );
+            if (hasStarsRemaining) {
+              resolve(LevelStatus.UNSPECIFIED);
+            } else {
+              resolve(LevelStatus.LOSE);
+            }
             break;
           case BeadSelection.CORRECT_GUESS:
             resolve(LevelStatus.WIN);
             break;
         }
-      });
-    });
+      }
+    );
     switch (status) {
       case LevelStatus.WIN:
         return LevelStatus.WIN;
@@ -134,7 +131,7 @@ export class GridInst extends AppElement {
   }
 
   private AppendPerson(person: Person) {
-    const bead = new ActiveBead(person, this.level);
+    const bead = new BoardBead(person, this.level);
     this.beads.push(bead);
     this.innerContainer.Append(bead);
   }
@@ -154,18 +151,16 @@ export class GridInst extends AppElement {
   }
 
   private startBeadAnimationsAndWait(): Promise<BeadSelection> {
-    return new Promise<BeadSelection>((resolve) => {
+    return new Promise<BeadSelection>(async (resolve) => {
+      const promises: Array<Promise<PersonType>> = [];
       for (const bead of this.beads) {
-        const inactiveBead = bead.GetAvatarBead();
-        bead.initAndWaitForUserSelection().then((type: PersonType) => {
-          if (type === PersonType.INDIGENOUS) {
-            resolve(BeadSelection.CORRECT_GUESS);
-          } else {
-            bead.RenderInactive();
-            inactiveBead.RenderInactive();
-            resolve(BeadSelection.WRONG_GUESS);
-          }
-        });
+        promises.push(bead.initAndWaitForUserSelection());
+      }
+      const type: PersonType = await Promise.any(promises);
+      if (type === PersonType.INDIGENOUS) {
+        resolve(BeadSelection.CORRECT_GUESS);
+      } else {
+        resolve(BeadSelection.WRONG_GUESS);
       }
     });
   }
