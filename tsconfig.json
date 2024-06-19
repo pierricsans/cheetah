@@ -1,11 +1,11 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "target": "ES2018",
+    "target": "ES2022",
     "module": "NodeNext",
     "strict": true,
     "moduleResolution": "NodeNext",
-    "lib": ["es2018", "dom", "es5", "dom.iterable"],
+    "lib": ["es2022", "dom", "es5", "dom.iterable"],
     "sourceMap": false,
     "declarationMap": true,
     "rootDirs": [".", "bazel-bin/"],

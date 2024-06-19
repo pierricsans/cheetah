@@ -1,5 +1,4 @@
 import { AppElement } from "./src/util.js";
-import { GAME } from "./src/levels.js";
 import {
   Game,
   Journey,
@@ -9,46 +8,42 @@ import {
 import { ScoreBoard } from "./src/scoreboard.js";
 import "./static/style.css";
 import { LevelGame } from "./src/level_game.js";
+import { GameStorer } from "./src/storer.js";
 
 
 export class GoSpotItApp extends AppElement {
-  private game: Game;
-  private journey: Journey | null;
-  private level: Level | null;
-  private levelGame: LevelGame | null;
-  private scoreboard: ScoreBoard | null;
+  private storer: GameStorer;
+  private levelGame: LevelGame | null = null;
+  private journey: Journey | null = null;
+  private level: Level | null = null;
+  private scoreboard: ScoreBoard | null = null;
   private readonly outContainer: HTMLElement = document.body;
 
-  constructor(game: Game) {
+  constructor() {
     super();
-    this.game = game;
-    this.levelGame = null;
-    this.journey = null;
-    this.level = null;
-    this.scoreboard = null;
+    this.storer = new GameStorer();
     this.element.setAttribute("id", "selectorContainer");
     this.element.classList.add("banner");
     this.outContainer.appendChild(this.element);
   }
 
-  StartNewGameLevel() {
+  async StartNewGameLevel() {
     this.cleanup();
-    this.StoreGameAsLocalStorage();
+    this.storer.StoreGameAsLocalStorage();
     this.journey = new Journey().fromJsonString(
-      getJourney(this.game).toJsonString()
+      this.storer.getJourney().toJsonString()
     );
     this.level = new Level().fromJsonString(
-      getLevel(this.journey, this.journey.nextLevel || 1).toJsonString()
+      this.storer.getLevel(this.journey, this.journey.nextLevel || 1).toJsonString()
     );
     this.levelGame = new LevelGame(this.journey, this.level);
     this.Append(this.levelGame);
-    this.scoreboard = new ScoreBoard(this.game);
+    this.scoreboard = new ScoreBoard(this.storer);
     this.Append(this.scoreboard);
-    this.levelGame.Start().then(() => {this.UpdateAndShowScoreBoard()});
-  }
-
-  private StoreGameAsLocalStorage() {
-    localStorage.setItem("game", this.game.toJsonString());
+    await this.levelGame.Start();
+    this.UpdateAndShowScoreBoard();
+    const action = await this.scoreboard.waitforUserSelection();
+    this.performNextLevelAction(action);
   }
 
   private cleanup() {
@@ -69,145 +64,51 @@ export class GoSpotItApp extends AppElement {
       return;
     }
     this.levelGame?.Hide();
-    getLevel(getJourney(this.game), this.journey.nextLevel || 1).score =
+    this.storer.getLevel(this.storer.getJourney(), this.journey.nextLevel || 1).score =
       this.level.score;
-    this.StoreGameAsLocalStorage();
+    this.storer.StoreGameAsLocalStorage();
     this.scoreboard.Update();
     this.scoreboard.Show();
-    this.scoreboard
-      .waitforUserSelection()
-      .then((nextLevelAction: NextLevelAction) => {
-        switch (nextLevelAction) {
-          case NextLevelAction.RESTART_GAME:
-            this.restartGameFromScratch();
-            break;
-          case NextLevelAction.RESTART_JOURNEY:
-            this.restartJourneyFromScratch();
-            break;
-          case NextLevelAction.TRIGGER_NEXT_LEVEL:
-            this.triggerNextLevel();
-            break;
-          default:
-            throw Error("Unknown level action: " + nextLevelAction);
-        }
-      });
   }
 
-  private restartJourneyFromScratch() {
-    // Scracth all scores from current journey
-    for (const journey of this.game.journeys) {
-      if (journey.number !== this.game.nextJourney) {
-        continue;
-      }
-      this.resetJourney(journey);
+  private performNextLevelAction(action: NextLevelAction) {
+    switch (action) {
+      case NextLevelAction.RESTART_GAME:
+        this.storer.RestartGame();
+        break;
+      case NextLevelAction.RESTART_JOURNEY:
+        this.storer.RestartJourney();
+        break;
+      case NextLevelAction.TRIGGER_NEXT_LEVEL:
+        this.triggerNextLevel();
+        break;
+      default:
+        throw Error("Unknown level action: " + action);
     }
     this.StartNewGameLevel();
-  }
-
-  private restartGameFromScratch() {
-    // Scracth all scores from current journey
-    for (const journey of this.game.journeys) {
-      this.resetJourney(journey);
-    }
-    this.game.nextJourney = 1;
-    this.StartNewGameLevel();
-  }
-
-  private resetJourney(journey: Journey) {
-    for (const level of journey.levels) {
-      level.score = undefined;
-    }
-    journey.nextLevel = 1;
   }
 
   private triggerNextLevel() {
     if (!this.journey) {
       return;
     }
-    var gameJourney: Journey = new Journey();
-    for (const journey of this.game.journeys) {
-      if (journey.number === this.journey.number) {
-        gameJourney = journey;
-      }
+    if (!this.journey.number) {
+      throw new Error("Journey does not have a number");
     }
+    var gameJourney = this.storer.GetJourneyFromNumber(this.journey.number);
     if (!gameJourney.nextLevel) {
       gameJourney.nextLevel = 1;
     }
     if (gameJourney.nextLevel === gameJourney.levels.length) {
-      this.game.nextJourney! += 1;
-      this.StartNewGameLevel();
-      return;
+      this.storer.IncrementJourney();
     }
     gameJourney.nextLevel += 1;
-    this.StartNewGameLevel();
   }
 }
 
-function getGame(): Game {
-  const storedGameStr = localStorage.getItem("game");
-  if (!storedGameStr) {
-    return GAME;
-  }
-  const storedGame = new Game().fromJsonString(storedGameStr, {
-    ignoreUnknownFields: true,
-  });
-  var nextJourney = storedGame.nextJourney;
-  if (!nextJourney) {
-    nextJourney = 1;
-  }
-  GAME.nextJourney = nextJourney;
-  for (var i = 0; i < nextJourney; i++) {
-    const storedJourney = storedGame.journeys.at(i);
-    const journey = GAME.journeys.at(i);
-    if (storedJourney && journey) {
-      if (!storedJourney.nextLevel) {
-        storedJourney.nextLevel = 1;
-      }
-      journey.nextLevel = storedJourney.nextLevel;
-      for (var j = 0; j < GAME.journeys[i].levels.length; j++) {
-        const storedLevel = storedJourney.levels.at(j);
-        const level = journey.levels.at(j);
-        if (storedLevel && storedLevel.score && level) {
-          level.score = storedLevel.score;
-        }
-      }
-    }
-  }
-  return GAME;
-}
-
-function getJourney(game: Game): Journey {
-  var fallbackJourney: Journey = new Journey();
-  for (const journey of game.journeys) {
-    if (journey.number === game.nextJourney) {
-      return journey;
-    }
-    if (fallbackJourney === undefined) {
-      fallbackJourney = journey;
-    }
-  }
-  return fallbackJourney;
-}
-
-function getLevel(journey: Journey, levelNumber: number): Level {
-  for (const level of journey.levels) {
-    if (level.number === levelNumber) {
-      return level;
-    }
-  }
-  throw new Error("Journey is completed");
-}
-
-function clear(node: Node) {
-  while (node.hasChildNodes()) {
-    clear(node.firstChild!);
-  }
-  node.parentNode?.removeChild(node);
-}
 
 function Init() {
-  const game: Game = getGame();
-  const app = new GoSpotItApp(game);
+  const app = new GoSpotItApp();
   app.StartNewGameLevel();
 }
 

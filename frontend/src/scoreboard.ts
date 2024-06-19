@@ -1,33 +1,28 @@
 import { Game, Journey, Level, NextLevelAction } from ".././protos/level_pb.js";
 import { MOUSEDOWN, TOTAL_NUM_STARS } from "./constants.js";
 import { AppElement } from "./util.js";
+import { GameStorer } from "./storer.js";
 
 export class ScoreBoard extends AppElement {
   private buttonContainer: HTMLElement = document.createElement("div");
-  private game: Game;
+  private storer: GameStorer;
   private journeyBoards: Map<number, JourneyBoard> = new Map<
     number,
     JourneyBoard
   >();
 
-  constructor(game: Game) {
+  constructor(storer: GameStorer) {
     super();
-    this.game = game;
+    this.storer = storer;
     this.build();
   }
 
   Update() {
-    if (this.game.nextJourney === undefined) {
-      throw Error("game.nextJourney is undefined");
-    }
-    if (!this.journeyBoards.has(this.game.nextJourney)) {
-      throw Error("Journey not found: " + this.game.nextJourney);
-    }
     this.journeyBoards.forEach((journeyBoard: JourneyBoard) => {
       journeyBoard.Update();
       journeyBoard.Hide();
     });
-    this.journeyBoards.get(this.game.nextJourney)?.Show();
+    this.journeyBoards.get(this.storer.GetNextJourney())?.Show();
     this.element.appendChild(this.buttonContainer);
     this.buttonContainer.classList.add("horizontalChoices");
     this.buttonContainer.classList.add("bottomBar");
@@ -36,13 +31,7 @@ export class ScoreBoard extends AppElement {
   waitforUserSelection(): Promise<NextLevelAction> {
     this.buttonContainer.textContent = "";
     return new Promise<NextLevelAction>((resolve) => {
-      if (!this.game.nextJourney) {
-        throw Error("No next journey");
-      }
-      if (!this.journeyBoards.has(this.game.nextJourney)) {
-        throw Error("No current journey");
-      }
-      if (this.journeyBoards.get(this.game.nextJourney)?.CanAccessNextLevel()) {
+      if (this.journeyBoards.get(this.storer.GetNextJourney())?.CanAccessNextLevel()) {
         const nextLevelButton = this.generateButton("Next");
         this.buttonContainer.appendChild(nextLevelButton);
         nextLevelButton.addEventListener(MOUSEDOWN, (event: MouseEvent) =>
@@ -67,7 +56,7 @@ export class ScoreBoard extends AppElement {
   private build() {
     this.element.setAttribute("id", "scoreboard");
     this.Hide();
-    for (const journey of this.game.journeys) {
+    for (const journey of this.storer.GetJourneys()) {
       if (journey.number === undefined) {
         throw Error("Journey number not defined: " + journey);
       }

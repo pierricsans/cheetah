@@ -83,6 +83,7 @@ ts_project(
     tsconfig = "//:tsconfig",
     deps = [
         ":constants",
+        ":storer",
         ":util",
         "//:node_modules/@bufbuild/protobuf",
         "//frontend/protos:level_ts_proto",
@@ -122,6 +123,20 @@ ts_project(
     transpiler = "tsc",
     tsconfig = "//:tsconfig",
     deps = [
+        "//:node_modules/@bufbuild/protobuf",
+        "//frontend/protos:level_ts_proto",
+    ],
+)
+
+ts_project(
+    name = "storer",
+    srcs = ["storer.ts"],
+    declaration = True,
+    declaration_map = True,
+    transpiler = "tsc",
+    tsconfig = "//:tsconfig",
+    deps = [
+        ":levels",
         "//:node_modules/@bufbuild/protobuf",
         "//frontend/protos:level_ts_proto",
     ],
