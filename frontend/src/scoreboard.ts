@@ -104,7 +104,7 @@ class JourneyBoard extends AppElement {
 
   Update() {
     this.levels.forEach((levelBoard: LevelBoard) => levelBoard.Update());
-    this.starNum = this.element.getElementsByClassName("filledStar").length;
+    this.starNum = this.element.getElementsByClassName("active").length;
     this.star.textContent =
       this.starNum.toString() + "/" + this.journey.minimumStarNumber;
   }
@@ -156,24 +156,24 @@ class LevelBoard extends AppElement {
     const stars = this.levelScore.children;
     if (this.level.score === undefined) {
       for (var i = 0; i < TOTAL_NUM_STARS; i++) {
-        stars[i].classList.remove("filledStar");
-        stars[i].classList.add("emptyStar");
+        stars[i].classList.remove("active");
+        stars[i].classList.add("inactive");
       }
       return;
     }
     for (var i = 0; i < TOTAL_NUM_STARS; i++) {
       if (i < this.level.score) {
-        stars[i].classList.add("filledStar");
-        stars[i].classList.remove("emptyStar");
+        stars[i].classList.add("active");
+        stars[i].classList.remove("inactive");
       } else {
-        stars[i].classList.remove("filledStar");
-        stars[i].classList.add("emptyStar");
+        stars[i].classList.remove("active");
+        stars[i].classList.add("inactive");
       }
     }
   }
 
   GetNumberOfStars(): number {
-    return this.GetAsElement().getElementsByClassName("filledStar").length;
+    return this.GetAsElement().getElementsByClassName("active").length;
   }
 
   private setLevelScore() {

@@ -15,8 +15,8 @@ export class CountDown extends AppElement {
     this.element.classList.add("bottomBar");
     for (var i = 0; i < this.numStars; i++) {
       const star = document.createElement("span");
-      star.classList.add("iconAction");
-      star.classList.add("validAction");
+      star.classList.add("active");
+      star.classList.add("star");
       star.textContent = "🌟";
       this.element.appendChild(star);
       this.stars.push(star);
@@ -30,8 +30,8 @@ export class CountDown extends AppElement {
       star.textContent = "⭐";
       animation.playbackRate = playbackRate;
       animation.onfinish = (event) => {
-        star.classList.remove("validAction");
-        star.classList.add("emptyStar");
+        star.classList.remove("active");
+        star.classList.add("inactive");
         this.numStars -= 1;
         resolve(this.numStars > 0);
       };
@@ -53,7 +53,7 @@ export class CountDown extends AppElement {
         },
         {
           offset: 1,
-          transform: "scale(0, 0) rotate(1turn)",
+          transform: "scale(1, 1) rotate(1turn)",
         },
       ],
       {

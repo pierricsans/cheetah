@@ -6,8 +6,8 @@
   --ball-size: calc(var(--cell-size) - 1px);
   --ball-opacity: 90%;
   --outer-box-border-thickness: 2vw;
-  --body-background: #ea9010;
-  --app-background: #37371f;
+  --body-background: #FFFFFF;
+  --app-background: #1768AC;
 }
 
 @font-face {
@@ -15,6 +15,14 @@
   font-style: normal;
   font-weight: 400;
   src: url("https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap");
+}
+
+@font-face {
+  font-family: "Noto Emoji", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+  src: url('https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap');
 }
 
 body {
@@ -58,13 +66,10 @@ body {
 
 @container app-content (min-width: 100px) {
   .option {
-    display: inline-block;
-    margin: 2px;
-    width: var(--cell-size);
-    aspect-ratio: 1 /1;
     font-size: var(--ball-size);
-    font-family: "Noto Color Emoji", sans-serif;
-    line-height: 1;
+    font-family: "Noto Emoji", sans-serif;
+    color: var(--app-background);
+    background-color: var(--body-background);
   }
 
   #selector {
@@ -117,14 +122,6 @@ body {
   font-family: "Noto Color Emoji", sans-serif;
 }
 
-.filledStar {
-  color: var(--body-background);
-}
-
-.emptyStar {
-  visibility: hidden;
-}
-
 .hidden {
   visibility: hidden;
 }
@@ -143,12 +140,19 @@ body {
   border-radius: 6px;
 }
 
-.iconAction {
-  font-family: "Noto Color Emoji", sans-serif;
+.star {
   font-size: var(--ball-size);
   min-width: 20px;
   aspect-ratio: 1 /1;
   border-radius: 6px;
+}
+
+.active {
+  font-family: "Noto Color Emoji", sans-serif;
+}
+
+.inactive {
+  font-family: "Noto Emoji", sans-serif;
 }
 
 .validAction {
