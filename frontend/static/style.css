@@ -1,26 +1,15 @@
 :root {
   --box-size-cqw: 80cqw;
-  --move-num: 8;
   --box-size-num-moves: 5;
   --cell-size: calc(var(--box-size-cqw) / var(--box-size-num-moves));
-  --ball-size: calc(var(--cell-size) - 1px);
-  --outer-box-border-thickness: 2vw;
   --body-background: #FFFFFF;
   --app-background: #1768AC;
 }
 
 @font-face {
-  font-family: "Noto Color Emoji", sans-serif;
-  font-style: normal;
-  font-weight: 400;
-  src: url("https://fonts.googleapis.com/css2?family=Noto+Color+Emoji&display=swap");
-}
-
-@font-face {
   font-family: "Noto Emoji", sans-serif;
   font-optical-sizing: auto;
-  font-weight: 500;
-  font-style: normal;
+  font-weight: 400;
   src: url('https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap');
 }
 
@@ -65,7 +54,7 @@ body {
 
 @container app-content (min-width: 100px) {
   .option {
-    font-size: var(--ball-size);
+    font-size: var(--cell-size);
     font-family: "Noto Emoji", sans-serif;
     color: var(--app-background);
     background-color: var(--body-background);
@@ -104,7 +93,7 @@ body {
     width: 90cqw;
     border-radius: 6px;
     height: 7cqh;
-    font-size: var(--ball-size);
+    font-size: var(--cell-size);
   }
 }
 
@@ -117,16 +106,19 @@ body {
   margin-left: 5cqw;
 }
 
+.journeyBoard {
+  font-family: "Noto Emoji";
+  font-weight: 400;
+  font-style: normal;
+  font-size: calc(var(--cell-size) * 0.7); /* Magic number: Test this on more screens */ 
+}
+
 .journeyBoardHeader {
-  font-family: "Noto Color Emoji", sans-serif;
+  margin: 5cqh 0;
 }
 
 .hidden {
   visibility: hidden;
-}
-
-.levelBoard-score {
-  font-family: "Noto Color Emoji", sans-serif;
 }
 
 .levelBoard-number {
@@ -140,18 +132,24 @@ body {
 }
 
 .star {
-  font-size: var(--ball-size);
+  font-size: var(--cell-size);
   min-width: 20px;
   aspect-ratio: 1 /1;
   border-radius: 6px;
 }
 
 .active {
-  font-family: "Noto Color Emoji", sans-serif;
+  font-family: "Noto Emoji", sans-serif;
+  font-weight: 400;
+  font-optical-sizing: auto;
+  color: #ffffff;
 }
 
 .inactive {
   font-family: "Noto Emoji", sans-serif;
+  font-weight: 400;
+  font-optical-sizing: auto;
+  color: #000000;
 }
 
 #selection {
@@ -198,7 +196,7 @@ body {
 }
 
 .bead {
-  font-size: var(--ball-size);
+  font-size: var(--cell-size);
   transform-origin: center center;
 }
 
@@ -213,5 +211,5 @@ body {
 }
 
 .avatarBead {
-  font-size: calc(var(--ball-size) / 2);
+  font-size: calc(var(--cell-size) / 2);
 }

@@ -1,15 +1,9 @@
 import { AppElement } from "./src/util.js";
-import {
-  Game,
-  Journey,
-  Level,
-  NextLevelAction,
-} from "./protos/level_pb.js";
+import { Game, Journey, Level, NextLevelAction } from "./protos/level_pb.js";
 import { ScoreBoard } from "./src/scoreboard.js";
 import "./static/style.css";
 import { LevelGame } from "./src/level_game.js";
 import { GameStorer } from "./src/storer.js";
-
 
 export class GoSpotItApp extends AppElement {
   private storer: GameStorer;
@@ -34,7 +28,9 @@ export class GoSpotItApp extends AppElement {
       this.storer.getJourney().toJsonString()
     );
     this.level = new Level().fromJsonString(
-      this.storer.getLevel(this.journey, this.journey.nextLevel || 1).toJsonString()
+      this.storer
+        .getLevel(this.journey, this.journey.nextLevel || 1)
+        .toJsonString()
     );
     this.levelGame = new LevelGame(this.journey, this.level);
     this.Append(this.levelGame);
@@ -62,8 +58,10 @@ export class GoSpotItApp extends AppElement {
       return;
     }
     this.levelGame?.Hide();
-    this.storer.getLevel(this.storer.getJourney(), this.journey.nextLevel || 1).score =
-      this.level.score;
+    this.storer.getLevel(
+      this.storer.getJourney(),
+      this.journey.nextLevel || 1
+    ).score = this.level.score;
     this.storer.StoreGameAsLocalStorage();
     this.scoreboard.Update();
     this.scoreboard.Show();
@@ -103,7 +101,6 @@ export class GoSpotItApp extends AppElement {
     gameJourney.nextLevel += 1;
   }
 }
-
 
 function Init() {
   const app = new GoSpotItApp();

@@ -54,7 +54,6 @@ export class ScoreBoard extends AppElement {
   }
 
   private build() {
-    this.element.setAttribute("id", "scoreboard");
     this.Hide();
     for (const journey of this.storer.GetJourneys()) {
       if (journey.number === undefined) {
@@ -146,7 +145,6 @@ class LevelBoard extends AppElement {
     this.levelNumber.classList.add("levelBoard-number");
     this.levelNumber.textContent = this.level.number?.toString() || "";
     this.element.appendChild(this.levelNumber);
-    this.levelScore.classList.add("levelBoard-score");
     this.setLevelScore();
     this.element.appendChild(this.levelScore);
     this.Update();

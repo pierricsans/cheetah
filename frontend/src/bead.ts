@@ -105,7 +105,7 @@ export class BoardBead extends Bead {
       left: left.toString() + "%",
     });
     frames.push({
-      fontSize: "var(--ball-size)",
+      fontSize: "var(--cell-size)",
       offset: 1,
       bottom: bottom.toString() + "%",
       left: left.toString() + "%",
@@ -127,7 +127,7 @@ export class BoardBead extends Bead {
   private generateFadeOutFrames(): Array<Keyframe> {
     const frames: Array<Keyframe> = new Array<Keyframe>();
     frames.push({
-      fontSize: "var(--ball-size)",
+      fontSize: "var(--cell-size)",
       offset: 0,
     });
     frames.push({
@@ -157,7 +157,7 @@ export class BoardBead extends Bead {
     frames.push({
       offset: 0,
       bottom: bottom.toString() + "%",
-      fontSize: "var(--ball-size)",
+      fontSize: "var(--cell-size)",
       left: left.toString() + "%",
       transform: "translate(-50%,50%) rotate(" + rotation + "deg)",
       easing: "ease-in-out",
