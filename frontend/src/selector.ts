@@ -109,6 +109,9 @@ export class Option extends AppElement {
   }
 
   private getNumDimensions() {
+    if (this.numDimensions !== 0) {
+      return this.numDimensions;
+    }
     // Assumes all allowed moves have the same number of dimensions
     const firstMove = this.allowedMoves[0];
     if (firstMove.direction) {
