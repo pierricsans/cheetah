@@ -48,9 +48,9 @@ if [ ${_OPERATION} == ${UPDATE_COMPILE_AND_TEST} ] ||
   [ ${_OPERATION} == ${UPDATE_COMPILE_TEST_AND_RELEASE} ]; then
   cmd+="sudo bazel clean && sudo pnpm update && "
 fi
-cmd+="bazel build -c opt //... "
-cmd+="&& bazel run -c opt //frontend/protos:copy_files "
-cmd+="&& bazel run -c opt //frontend/protos:level_ts_proto.copy "
+cmd+="bazel build --nofetch -c opt //... "
+cmd+="&& bazel run -c opt --nofetch //frontend/protos:copy_files "
+cmd+="&& bazel run -c opt --nofetch //frontend/protos:level_ts_proto.copy "
 if [ ${_OPERATION} == ${UPDATE_COMPILE_TEST_AND_RELEASE} ] ||
   [ ${_OPERATION} == ${COMPILE_TEST_AND_RELEASE} ]; then
   cmd+="&& cp -R bazel-bin/frontend/bundle/* /Volumes/web/ "
