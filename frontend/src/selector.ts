@@ -10,7 +10,7 @@ import {
 
 // Map between MoveDirection and Material Icon name.
 export const DirectionIcons: Map<MoveDirection, string> = new Map([
-  [MoveDirection.NO_MOVE, "block"],
+  [MoveDirection.NO_MOVE, "🚫"],
   [MoveDirection.NORTH, "🔼"],
   [MoveDirection.SOUTH, "🔽"],
   [MoveDirection.WEST, "◀️"],
@@ -91,6 +91,8 @@ export class Option extends AppElement {
   private numIteration: number = 0;
   private maxIterations: number;
   private event: CustomEvent = new CustomEvent("animationDone");
+  private numMovesInDom: number = 4;
+  private NthElementShow: number = 2;
   // Each move's number of dimensions.
   // If only direction: MOVE_DIRECTION_NORTH, then 1.
   // If direction: MOVE_DIRECTION_NORTH spin: MOVE_SPIN_HALF_CLOCKWISE then 2.
@@ -126,8 +128,19 @@ export class Option extends AppElement {
   }
 
   private createElements() {
-    for (var i = 0; i < 4; i++) {
+    for (var i = 0; i < this.numMovesInDom; i++) {
       this.element.appendChild(this.createElement(this.getNextMove()));
+    }
+    // Insert a dummy "?" element which will be shown as the starting
+    // roll element. This is does not belong to allowdMoved, it will be
+    // discarded when moveToFrontAnd() is called.
+    this.element.insertBefore(this.createElement(new Move().fromJson({
+      'direction': MoveDirection.UNSPECIFIED
+    })), this.element.children[2]);
+    // Also remove the first element so that we always only have exactly
+    // this.numMovesInDom in the container.
+    if (this.element.firstElementChild) {
+      this.element.removeChild(this.element.firstElementChild);
     }
   }
 
@@ -190,7 +203,7 @@ export class Option extends AppElement {
       return;
     }
     if (this.numIteration > this.maxIterations) {
-      this.move = this.allowedMoves[this.allowedMoves.length - 2];
+      this.move = this.allowedMoves[this.allowedMoves.length - this.NthElementShow];
       this.element.dispatchEvent(this.event);
       return;
     }
@@ -203,17 +216,17 @@ export class Option extends AppElement {
 
   private setText(element: HTMLElement, move: Move) {
     element.textContent = "";
-    if (move.direction) {
+    if (move.direction !== undefined) {
       element.textContent +=
         (element.textContent ? " " : "") + DirectionIcons.get(move.direction)!;
       element.setAttribute("alt", MoveDirection[move.direction]);
     }
-    if (move.spin) {
+    if (move.spin !== undefined) {
       element.textContent +=
         (element.textContent ? " " : "") + SpinIcons.get(move.spin)!;
       element.setAttribute("alt", MoveSpin[move.spin]);
     }
-    if (move.grow) {
+    if (move.grow !== undefined) {
       element.textContent +=
         (element.textContent ? " " : "") + GrowIcons.get(move.grow)!;
       element.setAttribute("alt", MoveGrow[move.grow]);
