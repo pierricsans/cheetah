@@ -13,6 +13,9 @@ import up_right_arrow from "./emojis/emoji_u2197.png";
 import up_left_arrow from "./emojis/emoji_u2196.png";
 import down_left_arrow from "./emojis/emoji_u2199.png";
 
+import star from "./emojis/emoji_u2b50.png";
+import glowing_star from "./emojis/emoji_u1f31f.png";
+
 export const UP_ARROW = up_arrow;
 export const DOWN_ARROW = down_arrow;
 export const RIGHT_ARROW = right_arrow;
@@ -27,3 +30,6 @@ export const DOWN_RIGHT_ARROW = down_right_arrow;
 export const UP_RIGHT_ARROW = up_right_arrow;
 export const UP_LEFT_ARROW = up_left_arrow;
 export const DOWN_LEFT_ARROW = down_left_arrow;
+
+export const STAR = star;
+export const GLOWING_STAR = glowing_star;

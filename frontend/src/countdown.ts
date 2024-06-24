@@ -4,20 +4,21 @@ import {
   TOTAL_NUM_STARS,
 } from "./constants.js";
 import { AppElement } from "./util.js";
+import * as emoji from "../emojis.js";
 
 export class CountDown extends AppElement {
   numStars: number = TOTAL_NUM_STARS;
-  private stars: Array<HTMLElement> = [];
+  private stars: Array<HTMLImageElement> = [];
 
   constructor() {
     super();
     this.element.classList.add("horizontalChoices");
     this.element.classList.add("bottomBar");
     for (var i = 0; i < this.numStars; i++) {
-      const star = document.createElement("span");
+      const star = document.createElement("img");
+      star.src = emoji.GLOWING_STAR;
       star.classList.add("active");
       star.classList.add("star");
-      star.textContent = "🌟";
       this.element.appendChild(star);
       this.stars.push(star);
     }
@@ -27,7 +28,7 @@ export class CountDown extends AppElement {
     return new Promise((resolve) => {
       const star = this.stars[this.numStars - 1];
       const animation = this.FadeOutStar(star);
-      star.textContent = "⭐";
+      star.src = emoji.STAR;
       animation.playbackRate = playbackRate;
       animation.onfinish = (event) => {
         star.classList.remove("active");
