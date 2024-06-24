@@ -10,6 +10,7 @@
     "css-loader": "latest",
     "css-minimizer-webpack-plugin": "latest",
     "favicons-webpack-plugin": "latest",
+    "file-loader": "latest",
     "html-webpack-plugin": "latest",
     "mini-css-extract-plugin": "latest",
     "source-map-support": "latest",

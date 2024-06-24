@@ -7,23 +7,24 @@ import {
   MoveGrow,
   MoveSpin,
 } from ".././protos/level_pb.js";
+import * as emoji from "../emojis.js";
 
 // Map between MoveDirection and Material Icon name.
 export const DirectionIcons: Map<MoveDirection, string> = new Map([
-  [MoveDirection.NO_MOVE, "🚫"],
-  [MoveDirection.NORTH, "🔼"],
-  [MoveDirection.SOUTH, "🔽"],
-  [MoveDirection.WEST, "◀️"],
-  [MoveDirection.EAST, "▶️"],
-  [MoveDirection.SOUTH_EAST, "↘️"],
-  [MoveDirection.SOUTH_WEST, "↙️"],
-  [MoveDirection.NORTH_WEST, "↖️"],
-  [MoveDirection.NORTH_EAST, "↗️"],
-  [MoveDirection.DOUBLE_NORTH, "⏫"],
-  [MoveDirection.DOUBLE_SOUTH, "⏬"],
-  [MoveDirection.DOUBLE_WEST, "⏪"],
-  [MoveDirection.DOUBLE_EAST, "⏩"],
-  [MoveDirection.UNSPECIFIED, "❓"],
+  [MoveDirection.NO_MOVE, emoji.PROHIBITED],
+  [MoveDirection.NORTH, emoji.UP_ARROW],
+  [MoveDirection.SOUTH, emoji.DOWN_ARROW],
+  [MoveDirection.WEST, emoji.LEFT_ARROW],
+  [MoveDirection.EAST, emoji.RIGHT_ARROW],
+  [MoveDirection.SOUTH_EAST, emoji.DOWN_RIGHT_ARROW],
+  [MoveDirection.SOUTH_WEST, emoji.DOWN_LEFT_ARROW],
+  [MoveDirection.NORTH_WEST, emoji.UP_LEFT_ARROW],
+  [MoveDirection.NORTH_EAST, emoji.UP_RIGHT_ARROW],
+  [MoveDirection.DOUBLE_NORTH, emoji.DOUBLE_UP_ARROW],
+  [MoveDirection.DOUBLE_SOUTH, emoji.DOUBLE_DOWN_ARROW],
+  [MoveDirection.DOUBLE_WEST, emoji.DOUBLE_LEFT_ARROW],
+  [MoveDirection.DOUBLE_EAST, emoji.DOUBLE_RIGHT_ARROW],
+  [MoveDirection.UNSPECIFIED, emoji.QUESTION_MARK],
 ]);
 
 export const SpinIcons: Map<MoveSpin, string> = new Map([
@@ -103,7 +104,6 @@ export class Option extends AppElement {
     this.allowedMoves = allowedMoves;
     this.maxIterations = maxIterations;
     shuffleArray(this.allowedMoves);
-    this.element.classList.add("option");
     this.element.classList.add("notSelectable");
     this.element.setAttribute("tabindex", "0");
     this.createElements();
@@ -134,9 +134,14 @@ export class Option extends AppElement {
     // Insert a dummy "?" element which will be shown as the starting
     // roll element. This is does not belong to allowdMoved, it will be
     // discarded when moveToFrontAnd() is called.
-    this.element.insertBefore(this.createElement(new Move().fromJson({
-      'direction': MoveDirection.UNSPECIFIED
-    })), this.element.children[2]);
+    this.element.insertBefore(
+      this.createElement(
+        new Move().fromJson({
+          direction: MoveDirection.UNSPECIFIED,
+        })
+      ),
+      this.element.children[2]
+    );
     // Also remove the first element so that we always only have exactly
     // this.numMovesInDom in the container.
     if (this.element.firstElementChild) {
@@ -203,7 +208,8 @@ export class Option extends AppElement {
       return;
     }
     if (this.numIteration > this.maxIterations) {
-      this.move = this.allowedMoves[this.allowedMoves.length - this.NthElementShow];
+      this.move =
+        this.allowedMoves[this.allowedMoves.length - this.NthElementShow];
       this.element.dispatchEvent(this.event);
       return;
     }
@@ -217,19 +223,22 @@ export class Option extends AppElement {
   private setText(element: HTMLElement, move: Move) {
     element.textContent = "";
     if (move.direction !== undefined) {
-      element.textContent +=
-        (element.textContent ? " " : "") + DirectionIcons.get(move.direction)!;
-      element.setAttribute("alt", MoveDirection[move.direction]);
+      const image = document.createElement("img");
+      image.src = DirectionIcons.get(move.direction) || "";
+      image.setAttribute("alt", MoveDirection[move.direction]);
+      element.appendChild(image);
     }
     if (move.spin !== undefined) {
-      element.textContent +=
-        (element.textContent ? " " : "") + SpinIcons.get(move.spin)!;
-      element.setAttribute("alt", MoveSpin[move.spin]);
+      const image = document.createElement("img");
+      image.src = SpinIcons.get(move.spin) || "";
+      image.setAttribute("alt", MoveDirection[move.spin]);
+      element.appendChild(image);
     }
     if (move.grow !== undefined) {
-      element.textContent +=
-        (element.textContent ? " " : "") + GrowIcons.get(move.grow)!;
-      element.setAttribute("alt", MoveGrow[move.grow]);
+      const image = document.createElement("img");
+      image.src = GrowIcons.get(move.grow) || "";
+      image.setAttribute("alt", MoveDirection[move.grow]);
+      element.appendChild(image);
     }
   }
 }

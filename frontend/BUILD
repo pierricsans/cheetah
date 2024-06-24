@@ -26,6 +26,22 @@ ts_project(
     ],
 )
 
+ts_project(
+    name = "emojis",
+    srcs = [
+        "emojis.ts",
+        "emojis/custom.d.ts",
+    ] + glob(["emojis/*.png"]),
+    declaration = True,
+    declaration_map = True,
+    transpiler = "tsc",
+    tsconfig = "//:tsconfig",
+    deps = [],
+    visibility = [
+        "//frontend/src:__pkg__"
+    ]
+)
+
 webpack_bundle(
     name = "bundle",
     srcs = [
@@ -33,7 +49,7 @@ webpack_bundle(
         "static/index.html",
         "static/style.css",
         ":main",
-    ],
+    ] + glob(["emojis/*.png"]),
     entry_point = ":main",
     node_modules = "//:node_modules",
     output_dir = True,
@@ -44,6 +60,7 @@ webpack_bundle(
         "//:node_modules/css-loader",
         "//:node_modules/css-minimizer-webpack-plugin",
         "//:node_modules/favicons-webpack-plugin",
+        "//:node_modules/file-loader",
         "//:node_modules/html-webpack-plugin",
         "//:node_modules/mini-css-extract-plugin",
         "//:node_modules/terser-webpack-plugin",

@@ -16,6 +16,18 @@ module.exports = (_env, options) => {
           test: /\.css$/,
           use: [MiniCssExtractPlugin.loader, "css-loader"],
         },
+        {
+          test: /\.png$/i,
+          use: [
+            {
+              loader: 'file-loader',
+              options: {
+                name: '[name].[ext]',
+                outputPath: 'emojis'
+              }
+            },
+          ],
+        },
       ],
     },
     plugins: [
@@ -31,36 +43,39 @@ module.exports = (_env, options) => {
       new FaviconsWebpackPlugin({
         logo: path.resolve(__dirname, "static/favicon.png"),
         favicons: {
-          appName: 'gospot.it',
-          appDescription: 'Pick a trajectory, and spot the icon following it',
-          developerName: 'Pierric Sans',
+          appName: "gospot.it",
+          appDescription: "Pick a trajectory, and spot the icon following it",
+          developerName: "Pierric Sans",
           developerURL: null, // prevent retrieving from the nearest package.json
-          background: '#ddd',
-          theme_color: '#333',
+          background: "#ddd",
+          theme_color: "#333",
           icons: {
             coast: false,
             yandex: false,
             appleIcon: false,
             appleStartup: false,
             android: false,
-          }
-        }
+          },
+        },
       }),
     ],
     optimization: {
-      minimizer: [new CssMinimizerPlugin(), new TerserPlugin({
-        terserOptions: {
-          module: true,
-          toplevel: true,
-          mangle: {
-            eval: true,
+      minimizer: [
+        new CssMinimizerPlugin(),
+        new TerserPlugin({
+          terserOptions: {
             module: true,
-            toplevel: true
-          }
-        }
-      })],
+            toplevel: true,
+            mangle: {
+              eval: true,
+              module: true,
+              toplevel: true,
+            },
+          },
+        }),
+      ],
     },
-    mode: 'production',
-    target: ['web'],
+    mode: "production",
+    target: ["web"],
   };
 };

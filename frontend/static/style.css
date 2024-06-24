@@ -6,13 +6,6 @@
   --app-background: #1768AC;
 }
 
-@font-face {
-  font-family: "Noto Emoji", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: 400;
-  src: url('https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=swap');
-}
-
 body {
   background-color: var(--body-background);
   font-family: "Orbitron", sans-serif;
@@ -53,12 +46,6 @@ body {
 }
 
 @container app-content (min-width: 100px) {
-  .option {
-    font-size: var(--cell-size);
-    font-family: "Noto Emoji", sans-serif;
-    color: var(--app-background);
-    background-color: var(--body-background);
-  }
 
   #selector {
     bottom: 50%;
@@ -107,7 +94,6 @@ body {
 }
 
 .journeyBoard {
-  font-family: "Noto Emoji";
   font-weight: 400;
   font-style: normal;
   font-size: calc(var(--cell-size) * 0.7); /* Magic number: Test this on more screens */ 
@@ -139,14 +125,12 @@ body {
 }
 
 .active {
-  font-family: "Noto Emoji", sans-serif;
   font-weight: 400;
   font-optical-sizing: auto;
   color: #ffffff;
 }
 
 .inactive {
-  font-family: "Noto Emoji", sans-serif;
   font-weight: 400;
   font-optical-sizing: auto;
   color: #000000;
@@ -212,4 +196,8 @@ body {
 
 .avatarBead {
   font-size: calc(var(--cell-size) / 2);
+}
+
+img {
+  width: var(--cell-size);
 }
