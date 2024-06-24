@@ -128,6 +128,7 @@ ts_project(
     tsconfig = "//:tsconfig",
     deps = [
         "//:node_modules/@bufbuild/protobuf",
+        "//frontend:emojis",
         "//frontend/protos:level_ts_proto",
     ],
 )

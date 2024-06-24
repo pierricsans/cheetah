@@ -176,7 +176,8 @@ body {
 }
 
 .bead {
-  font-size: var(--cell-size);
+  width: var(--cell-size);
+  height: var(--cell-size);
   transform-origin: center center;
 }
 

@@ -78,7 +78,7 @@ export class ScoreBoard extends AppElement {
 class JourneyBoard extends AppElement {
   journey: Journey;
   levels: Map<number, LevelBoard> = new Map<number, LevelBoard>();
-  header = document.createElement("div");
+  header = document.createElement("img");
   star = document.createElement("span");
   starNum: number = 0;
 
@@ -87,7 +87,7 @@ class JourneyBoard extends AppElement {
     this.journey = journey;
     this.Hide();
     this.element.classList.add("journeyBoard");
-    this.header.textContent = this.journey.symbols[0];
+    this.header.src = this.journey.symbols[0];
     this.header.classList.add("journeyBoardHeader");
     this.star.setAttribute("id", "starCounter");
     this.header.appendChild(this.star);

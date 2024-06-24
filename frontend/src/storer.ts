@@ -69,7 +69,7 @@ export class GameStorer {
         return level;
       }
     }
-    throw new Error("Journey is completed");
+    throw new Error("Journey is completed. Requested: " + levelNumber);
   }
 
   StoreGameAsLocalStorage() {

@@ -25,7 +25,9 @@ abstract class Bead extends AppElement {
     this.level = level;
     this.element.classList.add("bead");
     this.element.classList.add("active");
-    this.element.textContent = this.person.color!;
+    const image = document.createElement("img")
+    image.src = this.person.color!;
+    this.element.appendChild(image);
   }
 
   WaitForClick() {
@@ -99,13 +101,13 @@ export class BoardBead extends Bead {
     var left = this.movementIncrement * this.person.position?.xOffset!;
     const frames: Array<Keyframe> = new Array<Keyframe>();
     frames.push({
-      fontSize: "0px",
+      opacity: "0",
       offset: 0,
       bottom: bottom.toString() + "%",
       left: left.toString() + "%",
     });
     frames.push({
-      fontSize: "var(--cell-size)",
+      opacity: "1",
       offset: 1,
       bottom: bottom.toString() + "%",
       left: left.toString() + "%",
@@ -127,11 +129,11 @@ export class BoardBead extends Bead {
   private generateFadeOutFrames(): Array<Keyframe> {
     const frames: Array<Keyframe> = new Array<Keyframe>();
     frames.push({
-      fontSize: "var(--cell-size)",
+      opacity: "1",
       offset: 0,
     });
     frames.push({
-      fontSize: "0px",
+      opacity: "0",
       offset: 1,
     });
     return frames;
