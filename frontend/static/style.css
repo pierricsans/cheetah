@@ -125,15 +125,11 @@ body {
 }
 
 .active {
-  font-weight: 400;
-  font-optical-sizing: auto;
-  color: #ffffff;
+  visibility: visible;
 }
 
 .inactive {
-  font-weight: 400;
-  font-optical-sizing: auto;
-  color: #000000;
+  opacity: .1;
 }
 
 #selection {
@@ -200,4 +196,8 @@ body {
 
 img {
   width: var(--cell-size);
+}
+
+img.score {
+  width: calc(var(--cell-size) * 0.7); /* Magic number: Test this on more screens */ 
 }

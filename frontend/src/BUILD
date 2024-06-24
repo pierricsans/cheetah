@@ -45,9 +45,9 @@ ts_project(
     transpiler = "tsc",
     tsconfig = "//:tsconfig",
     deps = [
-        "//frontend:emojis",
         ":util",
         "//:node_modules/@bufbuild/protobuf",
+        "//frontend:emojis",
         "//frontend/protos:level_ts_proto",
     ],
 )
@@ -89,6 +89,7 @@ ts_project(
         ":storer",
         ":util",
         "//:node_modules/@bufbuild/protobuf",
+        "//frontend:emojis",
         "//frontend/protos:level_ts_proto",
     ],
 )

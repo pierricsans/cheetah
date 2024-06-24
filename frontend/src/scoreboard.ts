@@ -2,6 +2,7 @@ import { Game, Journey, Level, NextLevelAction } from ".././protos/level_pb.js";
 import { MOUSEDOWN, TOTAL_NUM_STARS } from "./constants.js";
 import { AppElement } from "./util.js";
 import { GameStorer } from "./storer.js";
+import { STAR } from "../emojis.js";
 
 export class ScoreBoard extends AppElement {
   private buttonContainer: HTMLElement = document.createElement("div");
@@ -176,8 +177,9 @@ class LevelBoard extends AppElement {
 
   private setLevelScore() {
     for (var i = 0; i < TOTAL_NUM_STARS; i++) {
-      const star = document.createElement("span");
-      star.textContent = "⭐";
+      const star = document.createElement("img");
+      star.classList.add("score");
+      star.src = STAR;
       this.levelScore.appendChild(star);
     }
   }
