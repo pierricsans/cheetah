@@ -18,21 +18,29 @@ export class ScoreBoard extends AppElement {
     this.build();
   }
 
-  Update() {
+  Update(nextJourney: number | undefined) {
     this.journeyBoards.forEach((journeyBoard: JourneyBoard) => {
       journeyBoard.Update();
       journeyBoard.Hide();
     });
-    this.journeyBoards.get(this.storer.GetNextJourney())?.Show();
+    if (nextJourney === undefined) {
+      console.warn("Found unexpected undefined nextJourney");
+      nextJourney = 1;
+    }
+    this.journeyBoards.get(nextJourney)?.Show();
     this.element.appendChild(this.buttonContainer);
     this.buttonContainer.classList.add("horizontalChoices");
     this.buttonContainer.classList.add("bottomBar");
   }
 
-  waitforUserSelection(): Promise<NextLevelAction> {
+  waitforUserSelection(nextJourney: number | undefined): Promise<NextLevelAction> {
+    if (nextJourney === undefined) {
+      nextJourney = 1;
+      console.warn("Found undefined nextJourney");
+    }
     this.buttonContainer.textContent = "";
     return new Promise<NextLevelAction>((resolve) => {
-      if (this.journeyBoards.get(this.storer.GetNextJourney())?.CanAccessNextLevel()) {
+      if (this.journeyBoards.get(nextJourney)?.CanAccessNextLevel()) {
         const nextLevelButton = this.generateButton("next");
         this.buttonContainer.appendChild(nextLevelButton);
         nextLevelButton.addEventListener(MOUSEDOWN, (event: MouseEvent) =>

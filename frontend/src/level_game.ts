@@ -53,18 +53,18 @@ export class LevelGame extends AppElement {
     this.Append(this.validateElement);
   }
 
-  async Start() {
+  async Start(): Promise<number | undefined>{
     await this.WaitForUserSelection();
-    await this.BuildGridAndStartGame();
+    return await this.BuildGridAndStartGame();
   }
 
-  private BuildGridAndStartGame(): Promise<void> {
+  private BuildGridAndStartGame(): Promise<number | undefined> {
     return new Promise(async (resolve) => {
       this.Append(this.grid);
       const score: number | undefined = await this.grid.StartGame(this.level);
       this.level.score = score;
       this.grid.End();
-      setTimeout(() => resolve(), TIMEOUT_BETWEEN_GAME_AND_SCOREBOARD);
+      setTimeout(() => resolve(score), TIMEOUT_BETWEEN_GAME_AND_SCOREBOARD);
     });
   }
 

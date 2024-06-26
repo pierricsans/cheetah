@@ -27,16 +27,6 @@ export class GoSpotItApp extends AppElement {
     this.journey = new Journey().fromJsonString(
       this.storer.getJourney().toJsonString()
     );
-    try {
-      const nextLevel = this.storer
-      .getLevel(this.journey, this.journey.nextLevel || 1);
-    } catch {
-      console.log("Erasing all score from Journey " +
-        this.journey.number + " and setting next level to 1"
-      );
-      this.storer.RestartJourney();
-      this.journey.nextLevel = 1;
-    }
     this.level = new Level().fromJsonString(
       this.storer
         .getLevel(this.journey, this.journey.nextLevel || 1)
@@ -46,9 +36,10 @@ export class GoSpotItApp extends AppElement {
     this.Append(this.levelGame);
     this.scoreboard = new ScoreBoard(this.storer);
     this.Append(this.scoreboard);
-    await this.levelGame.Start();
+    const score = await this.levelGame.Start();
+    this.storer.storeScore(score);
     this.UpdateAndShowScoreBoard();
-    const action = await this.scoreboard.waitforUserSelection();
+    const action = await this.scoreboard.waitforUserSelection(this.journey.number);
     this.performNextLevelAction(action);
   }
 
@@ -73,7 +64,7 @@ export class GoSpotItApp extends AppElement {
       this.journey.nextLevel || 1
     ).score = this.level.score;
     this.storer.StoreGameAsLocalStorage();
-    this.scoreboard.Update();
+    this.scoreboard.Update(this.journey.number);
     this.scoreboard.Show();
   }
 
@@ -107,6 +98,7 @@ export class GoSpotItApp extends AppElement {
     }
     if (gameJourney.nextLevel >= gameJourney.levels.length) {
       this.storer.IncrementJourney();
+      return;
     }
     gameJourney.nextLevel += 1;
   }
