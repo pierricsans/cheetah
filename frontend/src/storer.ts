@@ -46,6 +46,10 @@ export class GameStorer {
           if (level.number === journey.nextLevel) {
             haveSeenLevel = true;
           }
+          if (level.number > journey.nextLevel) {
+            level.score = undefined;
+            continue
+          }
           for (const storedLevel of storedJourney.levels) {
             if (level.number !== storedLevel.number) {
               continue;
@@ -91,6 +95,20 @@ export class GameStorer {
       }
     }
     throw new Error("Journey is completed. Requested: " + levelNumber);
+  }
+
+  getScore(journeyNum: number, levelNum: number): number | undefined {
+    for (const journey of this.game.journeys) {
+      if (journey.number !== journeyNum) {
+        continue;
+      }
+      for (const level of journey.levels) {
+        if (level.number !== levelNum) {
+          continue
+        }
+        return level.score;
+      }
+    }
   }
 
   StoreGameAsLocalStorage() {

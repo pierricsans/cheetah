@@ -29,6 +29,9 @@ import sun from "./emojis/emoji_u2600.png";
 import soft_ice_cream from "./emojis/emoji_u1f366.png";
 import thong_sandal from "./emojis/emoji_u1fa74.png";
 import beach_with_umbrella from "./emojis/emoji_u1f3d6.png";
+import desert_island from "./emojis/emoji_u1f30d.png";
+import coral from "./emojis/emoji_u1fab8.png";
+import spiral_shell from "./emojis/emoji_u1f41a.png";
 
 import ice_skate from "./emojis/emoji_u26f8.png";
 import snowman_without_snow from "./emojis/emoji_u26c4.png";
@@ -95,6 +98,9 @@ export const SUN = sun;
 export const SOFT_ICE_CREAM = soft_ice_cream;
 export const THONG_SANDAL = thong_sandal;
 export const BEACH_WITH_UMBRELLA = beach_with_umbrella;
+export const DESERT_ISLAND = desert_island;
+export const CORAL = coral;
+export const SPIRAL_SHELL = spiral_shell;
 
 export const ICE_SKATE = ice_skate;
 export const SNOWMAN_WITHOUT_SNOW = snowman_without_snow;

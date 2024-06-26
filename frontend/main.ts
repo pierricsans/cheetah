@@ -38,7 +38,7 @@ export class GoSpotItApp extends AppElement {
     this.Append(this.scoreboard);
     const score = await this.levelGame.Start();
     this.storer.storeScore(score);
-    this.UpdateAndShowScoreBoard();
+    this.UpdateAndShowScoreBoard(score);
     const action = await this.scoreboard.waitforUserSelection(this.journey.number);
     this.performNextLevelAction(action);
   }
@@ -48,7 +48,7 @@ export class GoSpotItApp extends AppElement {
     this.Remove(this.scoreboard);
   }
 
-  private UpdateAndShowScoreBoard() {
+  private UpdateAndShowScoreBoard(score: number | undefined) {
     if (!this.scoreboard) {
       return;
     }
@@ -58,11 +58,15 @@ export class GoSpotItApp extends AppElement {
     if (!this.level) {
       return;
     }
+    if (!score) {
+      console.warn("Fallback to score 0");
+      score = 0;
+    }
     this.levelGame?.Hide();
     this.storer.getLevel(
       this.storer.getJourney(),
       this.journey.nextLevel || 1
-    ).score = this.level.score;
+    ).score = score;
     this.storer.StoreGameAsLocalStorage();
     this.scoreboard.Update(this.journey.number);
     this.scoreboard.Show();

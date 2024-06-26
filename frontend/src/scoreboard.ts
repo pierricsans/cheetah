@@ -68,7 +68,7 @@ export class ScoreBoard extends AppElement {
       if (journey.number === undefined) {
         throw Error("Journey number not defined: " + journey);
       }
-      const journeyBoard = new JourneyBoard(journey);
+      const journeyBoard = new JourneyBoard(journey, this.storer);
       this.journeyBoards.set(journey.number, journeyBoard);
       this.Append(journeyBoard);
     }
@@ -90,7 +90,7 @@ class JourneyBoard extends AppElement {
   starCounter = document.createElement("span");
   starNum: number = 0;
 
-  constructor(journey: Journey) {
+  constructor(journey: Journey, storer: GameStorer) {
     super();
     this.journey = journey;
     this.Hide();
@@ -104,7 +104,7 @@ class JourneyBoard extends AppElement {
       if (level.number === undefined) {
         throw Error("Level number undefined " + level);
       }
-      const levelBoard = new LevelBoard(level);
+      const levelBoard = new LevelBoard(level, storer, journey.number || 1);
       this.levels.set(level.number, levelBoard);
       this.Append(levelBoard);
     }
@@ -145,11 +145,15 @@ class JourneyBoard extends AppElement {
 
 class LevelBoard extends AppElement {
   private level: Level;
+  private journeyNumber: number;
   private levelNumber: HTMLElement = document.createElement("span");
   private levelScore: HTMLElement = document.createElement("span");
+  storer: GameStorer;
 
-  constructor(level: Level) {
+  constructor(level: Level, storer: GameStorer, journeyNumber: number) {
     super();
+    this.storer = storer;
+    this.journeyNumber = journeyNumber;
     this.level = level;
     this.levelNumber.classList.add("levelBoard-number");
     this.levelNumber.textContent = this.level.number?.toString() || "";
@@ -160,6 +164,7 @@ class LevelBoard extends AppElement {
   }
 
   Update() {
+    this.level.score = this.storer.getScore(this.journeyNumber, this.level.number || 1);
     const stars = this.levelScore.children;
     if (this.level.score === undefined) {
       for (var i = 0; i < TOTAL_NUM_STARS; i++) {
