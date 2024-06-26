@@ -63,6 +63,10 @@ import cookie from "./emojis/emoji_u1f36a.png";
 import chocolate_bar from "./emojis/emoji_u1f36b.png";
 import lollipop from "./emojis/emoji_u1f36d.png";
 import doughnut from "./emojis/emoji_u1f369.png";
+import honey_pot from "./emojis/emoji_u1f36f.png";
+import candy from "./emojis/emoji_u1f36c.png";
+import ice_cream from "./emojis/emoji_u1f368.png";
+import fortune_cookie from "./emojis/emoji_u1f960.png";
 
 import ear_of_corn from "./emojis/emoji_u1f33d.png";
 import hot_pepper from "./emojis/emoji_u1f336.png";
@@ -70,6 +74,20 @@ import beans from "./emojis/emoji_u1fad8.png";
 import potato from "./emojis/emoji_u1f954.png";
 import carrot from "./emojis/emoji_u1f955.png";
 import avocado from "./emojis/emoji_u1f951.png";
+import eggplant from "./emojis/emoji_u1f346.png";
+import broccoli from "./emojis/emoji_u1f966.png";
+import ginger_root from "./emojis/emoji_u1fada.png";
+import leafy_green from "./emojis/emoji_u1f96c.png";
+
+import french_fries from "./emojis/emoji_u1f35f.png";
+import pizza from "./emojis/emoji_u1f355.png";
+import hot_dog from "./emojis/emoji_u1f32d.png";
+import taco from "./emojis/emoji_u1f32e.png";
+import burrito from "./emojis/emoji_u1f32f.png";
+import sandwich from "./emojis/emoji_u1f96a.png";
+import hanmburger from "./emojis/emoji_u1f354.png";
+import bacon from "./emojis/emoji_u1f953.png";
+import poultry_leg from "./emojis/emoji_u1f957.png";
 
 export const UP_ARROW = up_arrow;
 export const DOWN_ARROW = down_arrow;
@@ -136,10 +154,28 @@ export const COOKIE = cookie;
 export const CHOCOLATE_BAR = chocolate_bar;
 export const LOLLIPOP = lollipop;
 export const DOUGHNUT = doughnut;
-
+export const HONEY_POT = honey_pot;
+export const CANDY = candy;
+export const ICE_CREAM = ice_cream;
+export const FFORTUNE_COOKIE = fortune_cookie;
+ 
 export const EAR_OF_CORN = ear_of_corn;
 export const HOT_PEPPER = hot_pepper;
 export const BEANS = beans;
 export const POTATO = potato;
 export const CARROT = carrot;
 export const AVOCADO = avocado;
+export const EGGPLANT = eggplant;
+export const BROCCOLI = broccoli;
+export const GINGER_ROOT = ginger_root;
+export const LAEFY_GREEN = leafy_green;
+
+export const FRENCH_FRIES = french_fries;
+export const PIZZA = pizza;
+export const HOT_DOG = hot_dog;
+export const TACO = taco;
+export const BURRITO = burrito;
+export const SANDWICH = sandwich;
+export const HAMBURGER = hanmburger;
+export const BACON = bacon;
+export const POULTRY_LEG = poultry_leg;
