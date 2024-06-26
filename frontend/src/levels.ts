@@ -570,7 +570,7 @@ export const GAME: Game = new Game({
         emoji.DESERT_ISLAND,
         emoji.SPIRAL_SHELL,
       ],
-      minimumStarNumber: 40,
+      minimumStarNumber: 45,
       nextLevel: 1,
     }),
   ],
