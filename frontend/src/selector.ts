@@ -107,24 +107,6 @@ export class Option extends AppElement {
     this.element.classList.add("notSelectable");
     this.element.setAttribute("tabindex", "0");
     this.createElements();
-    this.getNumDimensions();
-  }
-
-  private getNumDimensions() {
-    if (this.numDimensions !== 0) {
-      return this.numDimensions;
-    }
-    // Assumes all allowed moves have the same number of dimensions
-    const firstMove = this.allowedMoves[0];
-    if (firstMove.direction) {
-      this.numDimensions++;
-    }
-    if (firstMove.spin) {
-      this.numDimensions++;
-    }
-    if (firstMove.grow) {
-      this.numDimensions++;
-    }
   }
 
   private createElements() {
@@ -140,7 +122,7 @@ export class Option extends AppElement {
           direction: MoveDirection.UNSPECIFIED,
         })
       ),
-      this.element.children[2]
+      this.element.children[this.NthElementShow]
     );
     // Also remove the first element so that we always only have exactly
     // this.numMovesInDom in the container.
@@ -177,7 +159,7 @@ export class Option extends AppElement {
     });
     frames.push({
       transform:
-        "translateY(calc(var(--cell-size) * -1 * " + this.numDimensions + "))",
+        "translateY(calc(var(--cell-size) * -1))",
       offset: 1,
     });
     const keyframes = new KeyframeEffect(this.element, frames, {
