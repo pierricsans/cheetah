@@ -1,5 +1,5 @@
 import { AppElement } from "./src/util.js";
-import { Game, Journey, Level, NextLevelAction } from "./protos/level_pb.js";
+import { Journey, Level, NextLevelAction } from "./protos/level_pb.js";
 import { ScoreBoard } from "./src/scoreboard.js";
 import "./static/style.css";
 import { LevelGame } from "./src/level_game.js";

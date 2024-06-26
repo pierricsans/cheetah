@@ -192,7 +192,7 @@ body {
 
 #avatarBeadsContainer {
   display: flex;
-  justify-content: stretch;
+  justify-content: space-evenly;
   flex-flow: wrap;
   align-items: stretch;
   max-height: 10cqh;
