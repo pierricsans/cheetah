@@ -13,21 +13,41 @@ message Journey {
   repeated string symbols = 5;
   optional int32 minimum_star_number = 6;
   optional int32 next_level = 7;
+  // Size of the grid. This journey-level size will be propagated down
+  // to the level's grid if it is not already set there. Otherwise this
+  // field is ignored.
+  optional int32 size = 8;
+  // Number of moves done by each peron. If level.num_moves
+  // is set; this field will be ignored. If set, must be at least 1.
+  optional int32 num_moves = 9;
+  // Number of other people; in addition to person to guess.
+  // If level.num_aliens is set, this field will be ignored.
+  // If set; must be at least 1.
+  optional int32 num_aliens = 10;
+  // This field will be ignored it level.grid is set.
+  optional Grid grid = 11;
 }
 
 message Level {
   optional int32 number = 1;
-  // This is the rank of the level. A journey should have levels with
-  // unique and sequential ranks.
+  // Size of the grid. Same size is used for height and width.
+  // The number expresses how many moves can be done before overflowing
+  // the grid. The number should always be at least
+  // num_moves * the individual value of the greatest move
+  // (e.g. MOVE_DIRECTION_DOUBLE_NORTH) has a value of 2.
+  // If not set, the Journey's field level "size" will be used instead.
   optional int32 size = 2;
-  // How many moves the users is going to have to input
+  // How many moves the users is going to have to input.
+  // Can be ignored if journey.num_moves is set.
   optional int32 num_moves = 3;
   // How many non-self pawns will be present in the grid. 
   // If the value is 1, then the grid will contain two pawns:
   // self and 1 intruder.
+  // Can be ignored if journey.num_aliens is set.
   optional int32 num_aliens = 4;
   // The moves that are valid for this level
   // The name of the grid that this level uses.
+  // Can be ignored if journey.grid is set.
   optional Grid grid = 5;
 
   // Number of milliseconds per move.

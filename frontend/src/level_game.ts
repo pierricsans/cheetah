@@ -44,13 +44,43 @@ export class LevelGame extends AppElement {
   constructor(journey: Journey, level: Level) {
     super();
     this.journey = journey;
-    this.level = level;
+    this.level = this.MergelevelAndJourney(level);
+
     shuffleArray(this.journey.symbols);
     this.selector = new Selector(this.journey, this.level);
     this.Append(this.selector);
     this.grid = new GridInst(this.journey, this.level);
     this.validateElement = new ValidationElement();
     this.Append(this.validateElement);
+  }
+
+  MergelevelAndJourney(level: Level): Level {
+    const mergedLevel: Level = new Level().fromJsonString(level.toJsonString());
+    if (mergedLevel.size === undefined) {
+      if (this.journey.size === undefined) {
+        throw new Error("Both journey and level has undefined sizes");
+      }
+      mergedLevel.size = this.journey.size;
+    }
+    if (mergedLevel.numMoves === undefined) {
+      if (this.journey.numMoves === undefined) {
+        throw new Error("Both journey and level has undefined numMoves");
+      }
+      mergedLevel.numMoves = this.journey.numMoves;
+    }
+    if (mergedLevel.numAliens === undefined) {
+      if (this.journey.numAliens === undefined) {
+        throw new Error("Both journey and level has undefined numAliens");
+      }
+      mergedLevel.numAliens = this.journey.numAliens;
+    }
+    if (mergedLevel.grid === undefined) {
+      if (this.journey.grid === undefined) {
+        throw new Error("Both journey and level has undefined numMoves");
+      }
+      mergedLevel.grid = this.journey.grid;
+    }
+    return mergedLevel;
   }
 
   async Start(): Promise<number | undefined>{
