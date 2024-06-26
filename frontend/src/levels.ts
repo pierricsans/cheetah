@@ -535,7 +535,7 @@ export const GAME: Game = new Game({
       levels: [
         new Level({
           number: 1,
-          size: 5,
+          size: 6,
           numMoves: 3,
           numAliens: 6,
           grid: getDefaultGrid(),
@@ -544,7 +544,7 @@ export const GAME: Game = new Game({
         }),
         new Level({
           number: 2,
-          size: 5,
+          size: 6,
           numMoves: 3,
           numAliens: 5,
           grid: getDefaultGrid(),
@@ -553,7 +553,7 @@ export const GAME: Game = new Game({
         }),
         new Level({
           number: 3,
-          size: 5,
+          size: 6,
           numMoves: 3,
           numAliens: 5,
           grid: getDefaultGrid(),
@@ -562,7 +562,7 @@ export const GAME: Game = new Game({
         }),
         new Level({
           number: 4,
-          size: 5,
+          size: 6,
           numMoves: 3,
           numAliens: 5,
           grid: getDefaultGrid(),
@@ -571,7 +571,7 @@ export const GAME: Game = new Game({
         }),
         new Level({
           number: 5,
-          size: 5,
+          size: 6,
           numMoves: 3,
           numAliens: 5,
           grid: getDefaultGrid(),
@@ -580,7 +580,7 @@ export const GAME: Game = new Game({
         }),
         new Level({
           number: 6,
-          size: 5,
+          size: 6,
           numMoves: 3,
           numAliens: 5,
           grid: getDefaultGrid(),
@@ -590,7 +590,7 @@ export const GAME: Game = new Game({
         }),
         new Level({
           number: 7,
-          size: 5,
+          size: 6,
           numMoves: 3,
           numAliens: 5,
           grid: getDefaultGrid(),
@@ -599,7 +599,7 @@ export const GAME: Game = new Game({
         }),
         new Level({
           number: 8,
-          size: 5,
+          size: 6,
           numMoves: 3,
           numAliens: 5,
           grid: getDefaultGrid(),
@@ -608,7 +608,7 @@ export const GAME: Game = new Game({
         }),
         new Level({
           number: 9,
-          size: 5,
+          size: 6,
           numMoves: 3,
           numAliens: 5,
           grid: getDefaultGrid(),
@@ -619,7 +619,7 @@ export const GAME: Game = new Game({
       symbols: [
         emoji.LOLLIPOP,
         emoji.MOON_CAKE,
-        "🍬",
+        emoji.DOUGHNUT,
         emoji.BIRTHDAY_CAKE,
         emoji.COOKIE,
         emoji.CHOCOLATE_BAR,
