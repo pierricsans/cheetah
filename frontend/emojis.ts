@@ -13,6 +13,13 @@ import up_right_arrow from "./emojis/emoji_u2197.png";
 import up_left_arrow from "./emojis/emoji_u2196.png";
 import down_left_arrow from "./emojis/emoji_u2199.png";
 
+import cross_mark from "./emojis/emoji_u274c.png";
+import right_arrow_curving_left from "./emojis/emoji_u21a9.png";
+import right_arrow_curving_right from "./emojis/emoji_u21aa.png";
+
+import open_hands from "./emojis/emoji_u1f450.png";
+import pinched_hands from "./emojis/emoji_u1f90f.png";
+
 import star from "./emojis/emoji_u2b50.png";
 import glowing_star from "./emojis/emoji_u1f31f.png";
 
@@ -48,6 +55,7 @@ import birthday_cake from "./emojis/emoji_u1f382.png";
 import cookie from "./emojis/emoji_u1f36a.png";
 import chocolate_bar from "./emojis/emoji_u1f36b.png";
 import lollipop from "./emojis/emoji_u1f36d.png";
+import doughnut from "./emojis/emoji_u1f369.png";
 
 import ear_of_corn from "./emojis/emoji_u1f33d.png";
 import hot_pepper from "./emojis/emoji_u1f336.png";
@@ -70,6 +78,13 @@ export const DOWN_RIGHT_ARROW = down_right_arrow;
 export const UP_RIGHT_ARROW = up_right_arrow;
 export const UP_LEFT_ARROW = up_left_arrow;
 export const DOWN_LEFT_ARROW = down_left_arrow;
+
+export const CROSS_MARK = cross_mark;
+export const RIGHT_ARROW_CURVING_LEFT = right_arrow_curving_left;
+export const RIGHT_ARROW_CURVING_RIGHT = right_arrow_curving_right;
+
+export const OPEN_HANDS = open_hands;
+export const PINCHED_HANDS = pinched_hands;
 
 export const STAR = star;
 export const GLOWING_STAR = glowing_star;
@@ -106,6 +121,7 @@ export const BIRTHDAY_CAKE = birthday_cake;
 export const COOKIE = cookie;
 export const CHOCOLATE_BAR = chocolate_bar;
 export const LOLLIPOP = lollipop;
+export const DOUGHNUT = doughnut;
 
 export const EAR_OF_CORN = ear_of_corn;
 export const HOT_PEPPER = hot_pepper;

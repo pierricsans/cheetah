@@ -28,15 +28,15 @@ export const DirectionIcons: Map<MoveDirection, string> = new Map([
 ]);
 
 export const SpinIcons: Map<MoveSpin, string> = new Map([
-  [MoveSpin.NO_SPIN, "❌"],
-  [MoveSpin.HALF_CLOCKWISE, "↪️"],
-  [MoveSpin.HALF_COUNTER_CLOCKWISE, "↩️"],
+  [MoveSpin.NO_SPIN, emoji.CROSS_MARK],
+  [MoveSpin.HALF_CLOCKWISE, emoji.RIGHT_ARROW_CURVING_LEFT],
+  [MoveSpin.HALF_COUNTER_CLOCKWISE, emoji.RIGHT_ARROW_CURVING_RIGHT],
 ]);
 
 export const GrowIcons: Map<MoveGrow, string> = new Map([
-  [MoveGrow.NO_GROW, "❌"],
-  [MoveGrow.ENLARGE, "👐"],
-  [MoveGrow.SHRINK, "🤏"],
+  [MoveGrow.NO_GROW, emoji.CROSS_MARK],
+  [MoveGrow.ENLARGE, emoji.OPEN_HANDS],
+  [MoveGrow.SHRINK, emoji.PINCHED_HANDS],
 ]);
 
 // Instead of the user clicking on several options, a RandomSelector is

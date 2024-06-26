@@ -79,7 +79,7 @@ class JourneyBoard extends AppElement {
   journey: Journey;
   levels: Map<number, LevelBoard> = new Map<number, LevelBoard>();
   header = document.createElement("img");
-  star = document.createElement("span");
+  starCounter = document.createElement("span");
   starNum: number = 0;
 
   constructor(journey: Journey) {
@@ -89,8 +89,8 @@ class JourneyBoard extends AppElement {
     this.element.classList.add("journeyBoard");
     this.header.src = this.journey.symbols[0];
     this.header.classList.add("journeyBoardHeader");
-    this.star.setAttribute("id", "starCounter");
-    this.header.appendChild(this.star);
+    this.starCounter.setAttribute("id", "starCounter");
+    this.element.appendChild(this.starCounter);
     this.element.appendChild(this.header);
     for (const level of this.journey.levels) {
       if (level.number === undefined) {
@@ -105,7 +105,7 @@ class JourneyBoard extends AppElement {
   Update() {
     this.levels.forEach((levelBoard: LevelBoard) => levelBoard.Update());
     this.starNum = this.element.getElementsByClassName("active").length;
-    this.star.textContent =
+    this.starCounter.textContent =
       this.starNum.toString() + "/" + this.journey.minimumStarNumber;
   }
 
