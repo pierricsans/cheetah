@@ -52,6 +52,10 @@ import lemon from "./emojis/emoji_u1f34b.png";
 import pineapple from "./emojis/emoji_u1f34d.png";
 import watermelon from "./emojis/emoji_u1f349.png";
 import kiwi_fruit from "./emojis/emoji_u1f95d.png";
+import banana from "./emojis/emoji_u1f34c.png";
+import blueberries from "./emojis/emoji_u1fad0.png";
+import lime from "./emojis/emoji_u1f34b_200d_1f7e9.png";
+import melon from "./emojis/emoji_u1f348.png";
 
 import moon_cake from "./emojis/emoji_u1f96e.png";
 import birthday_cake from "./emojis/emoji_u1f382.png";
@@ -121,6 +125,10 @@ export const LEMON = lemon;
 export const PINEAPPLE = pineapple;
 export const WATERMELON = watermelon;
 export const KIWI_FRUIT = kiwi_fruit;
+export const BANANA = banana;
+export const BLUEBERRIES = blueberries;
+export const LIME = lime;
+export const MELON = melon;
 
 export const MOON_CAKE = moon_cake;
 export const BIRTHDAY_CAKE = birthday_cake;
