@@ -502,7 +502,71 @@ export const GAME: Game = new Game({
         emoji.CARROT,
         emoji.BEANS,
       ],
-      minimumStarNumber: 45,
+      minimumStarNumber: 30,
+      nextLevel: 1,
+    }),
+    new Journey({
+      number: 7,
+      allowedMoves: [
+        new Move({ direction: MoveDirection.NORTH }),
+        new Move({ direction: MoveDirection.SOUTH }),
+        new Move({ direction: MoveDirection.WEST }),
+        new Move({ direction: MoveDirection.EAST }),
+      ],
+      size: 10,
+      numMoves: 4,
+      numAliens: 8,
+      grid: getDefaultGrid(),
+      levels: [
+        new Level({
+          number: 1,
+          timePerMoveMs: 400,
+        }),
+        new Level({
+          number: 2,
+          timePerMoveMs: 380,
+        }),
+        new Level({
+          number: 3,
+          timePerMoveMs: 360,
+        }),
+        new Level({
+          number: 4,
+          timePerMoveMs: 340,
+        }),
+        new Level({
+          number: 5,
+          timePerMoveMs: 320,
+        }),
+        new Level({
+          number: 6,
+          timePerMoveMs: 300,
+        }),
+        new Level({
+          number: 7,
+          timePerMoveMs: 280,
+        }),
+        new Level({
+          number: 8,
+          timePerMoveMs: 260,
+        }),
+        new Level({
+          number: 9,
+          timePerMoveMs: 240,
+        }),
+      ],
+      symbols: [
+        emoji.CORAL,
+        emoji.SHORT,
+        emoji.BEACH_WITH_UMBRELLA,
+        emoji.BIKINI,
+        emoji.SUN,
+        emoji.SOFT_ICE_CREAM,
+        emoji.THONG_SANDAL,
+        emoji.DESERT_ISLAND,
+        emoji.SPIRAL_SHELL,
+      ],
+      minimumStarNumber: 40,
       nextLevel: 1,
     }),
   ],
