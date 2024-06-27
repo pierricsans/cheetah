@@ -72,6 +72,9 @@ export class GridInst extends AppElement {
     const seenCycles = new Set<number>();
     return new Promise<number | undefined>(async (resolve) => {
       for (const bead of this.beads) {
+        // The beads fire a window event with payload endOfCycleParams
+        // to signal that they have finished one cycle.
+        // Whenever that happens, remove 1 star.
         window.addEventListener(
           "message",
           async (event: MessageEvent<endOfCycleParams>) => {
@@ -113,6 +116,7 @@ export class GridInst extends AppElement {
             }
             break;
           case BeadSelection.CORRECT_GUESS:
+            this.countdown.CancelAnimationAndRestoreStar();
             resolve(LevelStatus.WIN);
             break;
         }

@@ -113,7 +113,6 @@ export class GameStorer {
 
   StoreGameAsLocalStorage() {
     localStorage.setItem("game", this.game.toJsonString());
-    console.log("stored");
   }
 
   storeScore(score: number | undefined) {

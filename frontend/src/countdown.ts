@@ -9,6 +9,8 @@ import * as emoji from "../emojis.js";
 export class CountDown extends AppElement {
   numStars: number = TOTAL_NUM_STARS;
   private stars: Array<HTMLImageElement> = [];
+  private nextStar: HTMLImageElement;
+  private fadeOutAnimation: Animation = new Animation();
 
   constructor() {
     super();
@@ -22,21 +24,30 @@ export class CountDown extends AppElement {
       this.element.appendChild(star);
       this.stars.push(star);
     }
+    this.nextStar = this.stars[this.numStars - 1];
+  }
+
+  CancelAnimationAndRestoreStar() {
+    if (this.fadeOutAnimation.playState === "running") {
+      const star = this.stars[this.numStars - 1];
+      star.src = emoji.GLOWING_STAR;
+      this.fadeOutAnimation.cancel();
+    }
   }
 
   RemoveStar(playbackRate: number): Promise<boolean> {
     return new Promise((resolve) => {
-      const star = this.stars[this.numStars - 1];
-      const animation = this.FadeOutStar(star);
-      star.src = emoji.STAR;
-      animation.playbackRate = playbackRate;
-      animation.onfinish = (event) => {
-        star.classList.remove("active");
-        star.classList.add("inactive");
+      this.fadeOutAnimation = this.FadeOutStar(this.nextStar);
+      this.nextStar.src = emoji.STAR;
+      this.fadeOutAnimation.playbackRate = playbackRate;
+      this.fadeOutAnimation.onfinish = (event) => {
+        this.nextStar.classList.remove("active");
+        this.nextStar.classList.add("inactive");
         this.numStars -= 1;
+        this.nextStar = this.stars[this.numStars - 1];
         resolve(this.numStars > 0);
       };
-      animation.play();
+      this.fadeOutAnimation.play();
     });
   }
 
