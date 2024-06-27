@@ -25,7 +25,7 @@ abstract class Bead extends AppElement {
     this.level = level;
     this.element.classList.add("bead");
     this.element.classList.add("active");
-    const image = document.createElement("img")
+    const image = document.createElement("img");
     image.src = this.person.color!;
     this.element.appendChild(image);
   }
@@ -105,6 +105,7 @@ export class BoardBead extends Bead {
       offset: 0,
       bottom: bottom.toString() + "%",
       left: left.toString() + "%",
+      transform: "translate(-50%,50%) rotate(0deg)",
     });
     frames.push({
       opacity: "1",
