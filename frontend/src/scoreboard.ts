@@ -7,6 +7,7 @@ import { STAR } from "../emojis.js";
 export class ScoreBoard extends AppElement {
   private buttonContainer: HTMLElement = document.createElement("div");
   private storer: GameStorer;
+  private header: HTMLElement = document.createElement("div");
   private journeyBoards: Map<number, JourneyBoard> = new Map<
     number,
     JourneyBoard
@@ -18,16 +19,19 @@ export class ScoreBoard extends AppElement {
     this.build();
   }
 
-  Update(nextJourney: number | undefined) {
+  async Update(nextJourney: number | undefined) {
+    const allHidden: Array<Promise<void>> = [];
     this.journeyBoards.forEach((journeyBoard: JourneyBoard) => {
       journeyBoard.Update();
-      journeyBoard.Hide();
+      allHidden.push(journeyBoard.Hide());
     });
     if (nextJourney === undefined) {
       console.warn("Found unexpected undefined nextJourney");
       nextJourney = 1;
     }
-    this.journeyBoards.get(nextJourney)?.Show();
+    Promise.all(allHidden).then(() => {
+      this.journeyBoards.get(nextJourney)?.Show();
+    });
     this.element.appendChild(this.buttonContainer);
     this.buttonContainer.classList.add("horizontalChoices");
     this.buttonContainer.classList.add("bottomBar");
@@ -64,10 +68,27 @@ export class ScoreBoard extends AppElement {
 
   private build() {
     this.Hide();
+    this.element.appendChild(this.header);
+    this.header.classList.add("flexBox");
     for (const journey of this.storer.GetJourneys()) {
       if (journey.number === undefined) {
         throw Error("Journey number not defined: " + journey);
       }
+      const image = document.createElement("img");
+      image.src = journey.symbols[0];
+      image.addEventListener(MOUSEDOWN,  (e) => {
+        const allHidden: Array<Promise<void>> = [];
+        this.journeyBoards.forEach((journeyBoard: JourneyBoard) => {
+          journeyBoard.Update();
+          allHidden.push(journeyBoard.Hide());
+        });
+        Promise.all(allHidden).then(() => {
+          if (journey.number !== undefined) {
+            this.journeyBoards.get(journey.number)?.Show();
+          }
+        });
+      });
+      this.header.appendChild(image);
       const journeyBoard = new JourneyBoard(journey, this.storer);
       this.journeyBoards.set(journey.number, journeyBoard);
       this.Append(journeyBoard);
@@ -86,7 +107,6 @@ export class ScoreBoard extends AppElement {
 class JourneyBoard extends AppElement {
   journey: Journey;
   levels: Map<number, LevelBoard> = new Map<number, LevelBoard>();
-  header = document.createElement("img");
   starCounter = document.createElement("span");
   starNum: number = 0;
 
@@ -95,11 +115,8 @@ class JourneyBoard extends AppElement {
     this.journey = journey;
     this.Hide();
     this.element.classList.add("journeyBoard");
-    this.header.src = this.journey.symbols[0];
-    this.header.classList.add("journeyBoardHeader");
     this.starCounter.setAttribute("id", "starCounter");
     this.element.appendChild(this.starCounter);
-    this.element.appendChild(this.header);
     for (const level of this.journey.levels) {
       if (level.number === undefined) {
         throw Error("Level number undefined " + level);
@@ -108,6 +125,54 @@ class JourneyBoard extends AppElement {
       this.levels.set(level.number, levelBoard);
       this.Append(levelBoard);
     }
+  }
+
+  async Hide(): Promise<void> {
+    const keyframes = new KeyframeEffect(
+      this.element,
+      [
+        {
+          offset: 0,
+          opacity: "1",
+        },
+        {
+          offset: 1,
+          opacity: "0",
+        },
+      ],
+      {
+        duration: 300,
+        fill: "forwards",
+      }
+    );
+    const animation = new Animation(keyframes);
+    animation.play();
+    await animation.finished;
+    this.element.hidden = true;
+  }
+
+  async Show(): Promise<void> {
+    this.element.hidden = false;
+    const keyframes = new KeyframeEffect(
+      this.element,
+      [
+        {
+          offset: 0,
+          opacity: "0",
+        },
+        {
+          offset: 1,
+          opacity: "1",
+        },
+      ],
+      {
+        duration: 300,
+        fill: "forwards",
+      }
+    );
+    const animation = new Animation(keyframes);
+    animation.play();
+    await animation.finished;
   }
 
   Update() {

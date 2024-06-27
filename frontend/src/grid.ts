@@ -28,6 +28,7 @@ class BeadsContainer extends AppElement {
   constructor() {
     super();
     this.element.setAttribute("id", "avatarBeadsContainer");
+    this.element.classList.add("flexBox");
   }
 }
 
